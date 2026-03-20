@@ -67,7 +67,6 @@ brew "kubectx"
 brew "tilt"
 
 # ── Build Tools ───────────────────────────────────────────────────────────────
-brew "mage"
 brew "dagger/tap/dagger"
 brew "go-task"
 brew "heroku/brew/heroku"
