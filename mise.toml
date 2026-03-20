@@ -14,6 +14,7 @@ brew bundle --no-upgrade --file=install/Brewfile || true
 
 [tasks.stow]
 description = "Create symlinks via GNU Stow"
+depends = ["brew"]
 run = "stow -v -t $HOME home/"
 
 [tasks.secrets-pull]
