@@ -112,8 +112,7 @@ push_file() {
     diff --color=always "$tmp_path" "$local_path" || true
   else
     echo "New document (doesn't exist in 1Password yet):"
-    head -20 "$local_path"
-    [[ $(wc -l < "$local_path") -gt 20 ]] && echo "... (truncated)"
+    cat "$local_path"
   fi
 
   echo ""
