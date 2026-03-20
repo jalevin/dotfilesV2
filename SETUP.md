@@ -37,6 +37,8 @@
 - [ ] Enable Safari extension
 - [ ] System Settings > Privacy & Security > Accessibility > 1Password (for autofill)
 - [ ] Configure SSH Agent: 1Password > Settings > Developer > SSH Agent
+- [ ] Enable CLI integration: 1Password > Settings > Developer > "Integrate with 1Password CLI"
+- [ ] Test CLI: `op account list`
 
 ### Alfred
 - [ ] Open Alfred, enter license key (stored in 1Password or iCloud)
