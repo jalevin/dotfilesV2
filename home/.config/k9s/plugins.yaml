@@ -1,0 +1,42 @@
+plugins:
+  flux-ignore:
+    shortCut: Ctrl-U
+    description: Launch Flux Ignore for namespaced resources
+    scopes:
+      - all
+    command: /Users/jeff/projects/deployment_tools/scripts/flux/ignore.sh
+    background: false
+    args:
+      - --namespace
+      - $NAMESPACE
+      - --reason
+      - From K9S
+      - --context
+      - $CONTEXT
+  flux-ignore-cluster:
+    shortCut: Ctrl-O
+    description: Launch Flux Ignore for cluster-scoped resources
+    scopes:
+      - all
+    command: /Users/jeff/projects/deployment_tools/scripts/flux/ignore.sh
+    background: false
+    args:
+      - --cluster-scoped
+      - --reason
+      - From K9S
+      - --context
+      - $CONTEXT
+  crossplane-pause:
+    shortCut: Ctrl-Y
+    description: Launch Crossplane Pause for namespaced resources
+    scopes:
+      - all
+    command: /Users/jeff/projects/deployment_tools/scripts/crossplane/pause-reconciliaton.sh
+    background: false
+    args:
+      - --namespace
+      - $NAMESPACE
+      - --reason
+      - From K9S
+      - --context
+      - $CONTEXT

@@ -1,0 +1,7 @@
+.swp
+.swo
+vim/
+Library/
+.DS_Store
+
+**/.claude/settings.local.json

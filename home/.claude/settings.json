@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go get:*)",
+      "Bash(go run:*)",
+      "Bash(git checkout:*)",
+      "Bash(go test:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(gh run view:*)",
+      "Bash(git tag:*)",
+      "Bash(make:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": []
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "agent-deck@agent-deck": true,
+    "grafana-enghub@grafana-ai-kit": true
+  },
+  "agent": "default",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "agents": {
+    "default": {
+      "description": "Staff Software Engineer at Grafana Labs",
+      "prompt": "# Default Agent\n\nStaff Software Engineer at Grafana Labs\n\n## Work Context\n\n- **Company**: Grafana Labs\n- **Role**: Staff Software Engineer\n- **Code Location**: All projects stored in `~/projects/`\n- **Tech Stack**: Golang, TypeScript\n- **Key Repositories**:\n  - `~/projects/deployment_tools` - Infrastructure repo (Jsonnet, Kubernetes, multi-cloud)\n  - `~/projects/bench` - E2E testing platform (primary ownership)\n\n## Infrastructure Stack\n\n- Kubernetes\n- Multiple cloud providers\n- Jsonnet for infrastructure as code\n\n## GitHub Authentication\n\nIMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.\n\n- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)\n- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`\n- For issues: Use `gh issue view <number>`\n- For GraphQL: Use `gh api graphql -f query='...'`\n\nNever use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials."
+    },
+    "github": {
+      "description": "Minimal agent for GitHub CLI authentication",
+      "prompt": "# GitHub Agent\n\nMinimal agent for GitHub CLI authentication. These rules are also included in the default agent.\n\n## GitHub Access\n\nIMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.\n\n- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)\n- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`\n- For issues: Use `gh issue view <number>`\n- For GraphQL: Use `gh api graphql -f query='...'`\n\nNever use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials."
+    }
+  }
+}

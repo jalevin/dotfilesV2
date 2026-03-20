@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "anthropic-docs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "anthropic-docs-mcp",
+        "--transport",
+        "stdio"
+      ]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "~/projects/dotfiles/configs/claude/github-mcp-wrapper.sh"
+      ]
+    },
+    "fetch": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "mcp/fetch"]
+    }
+  }
+}

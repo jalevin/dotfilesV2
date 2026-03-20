@@ -1,0 +1,106 @@
+tap "dagger/tap"
+tap "go-task/tap"
+tap "hashicorp/tap"
+tap "heroku/brew"
+tap "homebrew/bundle"
+
+# ── Core CLI ──────────────────────────────────────────────────────────────────
+brew "stow"
+brew "git"
+brew "gh"
+brew "curl"
+brew "wget"
+brew "coreutils"
+brew "bat"
+brew "fd"
+brew "fswatch"
+brew "ripgrep"
+brew "jq"
+brew "tree"
+brew "tldr"
+brew "entr"
+brew "shellcheck"
+brew "gnupg"
+
+# ── Tmux ──────────────────────────────────────────────────────────────────────
+brew "tmux"
+brew "bash"
+brew "bc"
+brew "fzf"
+brew "lazygit"
+
+# ── Neovim ────────────────────────────────────────────────────────────────────
+brew "neovim"
+brew "luarocks"
+
+# ── Languages & Runtimes ──────────────────────────────────────────────────────
+brew "mise"
+brew "yarn"
+
+# ── Dev Tools ─────────────────────────────────────────────────────────────────
+brew "git-gui"
+brew "htop"
+brew "ctop"
+brew "dive"
+brew "nmap"
+brew "speedtest-cli"
+
+# ── Infrastructure ────────────────────────────────────────────────────────────
+brew "ansible"
+brew "azure-cli"
+brew "awscli"
+brew "aws-sam-cli"
+brew "terraform"
+brew "tflint"
+brew "hashicorp/tap/terraform-ls"
+
+# ── Kubernetes ────────────────────────────────────────────────────────────────
+brew "tanka"
+brew "jsonnet-bundler"
+brew "go-jsonnet"
+brew "kustomize"
+brew "k3d"
+brew "k6"
+brew "kind"
+brew "kubernetes-cli"
+brew "k9s"
+brew "kubectx"
+brew "tilt"
+
+# ── Build Tools ───────────────────────────────────────────────────────────────
+brew "mage"
+brew "dagger/tap/dagger"
+brew "go-task"
+brew "heroku/brew/heroku"
+
+# ── Media ─────────────────────────────────────────────────────────────────────
+brew "ffmpeg"
+brew "imagemagick"
+brew "vips"
+
+# ── Casks ─────────────────────────────────────────────────────────────────────
+cask "font-jetbrains-mono-nerd-font"
+cask "1password"
+cask "1password-cli"
+cask "alfred"
+cask "brave-browser"
+cask "cleanshot"
+cask "cyberduck"
+cask "dbeaver-community"
+cask "discord"
+cask "ghostty"
+cask "google-chrome"
+cask "handy"
+cask "jordanbaird-ice"
+cask "meetingbar"
+cask "obsidian"
+cask "orbstack"
+cask "pearcleaner"
+cask "rectangle"
+cask "sequel-ace"
+cask "signal"
+cask "slack"
+cask "spotify"
+cask "tuple"
+cask "visual-studio-code"
+cask "whatsapp"

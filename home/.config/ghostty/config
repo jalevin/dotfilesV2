@@ -1,0 +1,5 @@
+font-family = Monaco Nerd Font Mono
+
+keybind = shift+enter=text:\n
+keybind = cmd+r=prompt_surface_title
+auto-update-channel = tip

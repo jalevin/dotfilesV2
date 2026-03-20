@@ -1,0 +1,90 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+	name = Jeff Levin
+	email = jeff@levinology.com
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICSifg2hVNreHw8bqshGDhzONFURBSViI4fIkR+e2rl6
+[core]
+	editor = 'nvim'
+[push]
+	default = simple
+	autoSetupRemote = true
+[core]
+	autocrlf = input
+[alias]
+	# === Commit Operations ===
+	# Stage all changes and commit
+	ac = !git add -A && git commit
+
+  # Shorthand
+  c = commit
+  p = pull
+
+	# Amend the last commit
+	ca = commit --amend
+
+	# === Viewing Changes ===
+	# View staged but not committed changes (diff cached)
+	d = diff --cached
+	# View file changes between current branch and master (diff master)
+	dm = diff master...HEAD --stat
+
+	# === Logs ===
+	# View last commit with file stats
+	l = log -1 --stat
+	# Show log with full commit hashes (one line per commit) (log pretty)
+	lp = log --pretty=oneline
+	# Show log with short commit hashes (one line per commit) (log oneline)
+	lo = log --oneline
+	# View commit log of what's on current branch vs master (log master)
+	lm = log master..HEAD --oneline
+
+	# === Fetch & Sync ===
+	# Fetch all remotes and prune deleted branches (fetch all prune)
+	fap = fetch --all --prune
+	# Fetch and rebase current branch on origin/master (rebase origin master)
+	rom = !git fetch origin && git rebase origin/main
+
+	# === Reset Operations ===
+	# Reset current branch to match remote (discards local commits/changes) (reset remote)
+	rr = "!f() { git fetch origin && git reset --hard origin/$(git branch --show-current); }; f"
+	# Reset to a specific remote branch: git rb <branch-name> (reset branch)
+	rb = "!f() { git fetch origin && git reset --hard origin/${1:-main}; }; f"
+
+	# === Branch Operations ===
+	# Show all branches (local and remote) containing a commit: git fc <commit-hash> (find commit)
+	fc = branch -a --contains
+	# Check if a commit is in a specific branch: git ib <commit-hash> <branch-name> (in branch)
+	ib = \\!sh -c 'git merge-base --is-ancestor $1 $2 && echo \"✓ Commit $1 is in branch $2\" || echo \"✗ Commit $1 is NOT in branch $2\"' -
+
+	# === Utility ===
+	# List all git aliases with their descriptions
+	aliases = "!f() { sed -n '/^\\[alias\\]/,/^\\[/{/^\\[alias\\]/d;/^\\[/d;p;}' ~/.config/git/config | sed -E 's/^[[:space:]]*#(.*)$/\\x1b[90m#\\1\\x1b[0m/' | sed -E 's/^[[:space:]]*([a-z-]+)[[:space:]]*=/\\x1b[1;36m\\1\\x1b[0m =/'; }; f"
+[url "git@gitlab.com:"]
+	insteadOf = https://gitlab.com/
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path =
+[mergetool "sourcetree"]
+	cmd = /Users/jefe/Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[pull]
+	rebase = false
+[init]
+	defaultBranch = main
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+# signing keys
+[gpg]
+  format = ssh
+[gpg "ssh"]
+  program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+	allowedSignersFile = /Users/jeff/.ssh/allowed_signers
+[commit]
+  gpgsign = true

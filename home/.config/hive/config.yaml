@@ -1,0 +1,52 @@
+workspaces:
+  - /Users/jeff/projects
+
+views:
+  store:
+    enabled: true
+  sessions:
+    refresh_interval: 10s
+    preview_enabled: true
+    keybindings:
+      A:
+        cmd: SendAccept
+      #ctrl+d:
+      #  cmd: TmuxKill
+      p:
+        cmd: TmuxPopUp
+      S:
+        cmd: TmuxStart
+
+plugins:
+  shell_workers: 10 # shared subprocess concurrency limit
+  github:
+    enabled: true
+    results_cache: 30m
+  claude:
+    yellow_threshold: 60 # % to turn yellow
+    red_threshold: 80 # % to turn red
+    model_limit: 200000 # context window size
+
+rules:
+  - pattern: ""
+    clone_strategy: full
+    max_recycled: 3
+    commands:
+      - git checkout -b "jalevin/{{ .Slug }}-{{ .ID }}"
+      - hive ctx init
+      - mise trust
+    windows:
+      - name: "{{ agentWindow }}"
+        command: "{{ agentCommand }} {{ agentFlags }}"
+        focus: true
+      - name: shell
+      - name: server
+
+  - pattern: "deployment_tools"
+    clone_strategy: worktree
+
+  - pattern: "grafana-enterprise"
+    clone_strategy: worktree
+
+  - pattern: "grafana"
+    clone_strategy: worktree

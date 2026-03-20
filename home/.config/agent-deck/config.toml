@@ -1,0 +1,5 @@
+# Agent Deck Configuration
+
+[defaults]
+agent = "claude-code"
+use_sockets = true
