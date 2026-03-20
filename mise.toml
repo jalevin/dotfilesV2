@@ -1,6 +1,3 @@
-[hooks]
-enter = "mise run secrets-check"
-
 [tasks.brew]
 description = "Install Homebrew packages from Brewfile"
 run = """
