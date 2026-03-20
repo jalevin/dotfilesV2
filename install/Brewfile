@@ -2,7 +2,6 @@ tap "dagger/tap"
 tap "go-task/tap"
 tap "hashicorp/tap"
 tap "heroku/brew"
-tap "homebrew/bundle"
 
 # ── Core CLI ──────────────────────────────────────────────────────────────────
 brew "stow"

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Temporarily disable SSH URL rewriting (1Password SSH agent not set up yet)
+git config --global --unset-all url."git@github.com:".insteadOf 2>/dev/null || true
+git config --global --unset-all url."git@gitlab.com:".insteadOf 2>/dev/null || true
+
 # Install Xcode command line tools
 xcode-select --install || true
 
