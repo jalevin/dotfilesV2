@@ -37,7 +37,6 @@ else
 fi
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
-export HOMEBREW_GITHUB_API_TOKEN="ea146b5cef777f50d0078d34149cfe4b5acfdb34"
 
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
