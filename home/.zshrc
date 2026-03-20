@@ -40,6 +40,7 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_GITHUB_API_TOKEN="ea146b5cef777f50d0078d34149cfe4b5acfdb34"
 
 # PATH
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="${BREW_PATH}/opt/libpq/bin:$PATH"
 export PATH="${BREW_PATH}/opt/ansible@2.0/bin:$PATH"
 export PATH="${BREW_PATH}/opt/awscli:$PATH"
