@@ -3,7 +3,14 @@ enter = "mise run secrets-check"
 
 [tasks.brew]
 description = "Install Homebrew packages from Brewfile"
-run = "brew bundle --no-upgrade --file=install/Brewfile || true"
+run = """
+#!/bin/bash
+# Disable SSH URL rewrites (1Password SSH agent may not be set up yet)
+git config --global --unset-all url."git@github.com:".insteadOf 2>/dev/null || true
+git config --global --unset-all url."git@gitlab.com:".insteadOf 2>/dev/null || true
+
+brew bundle --no-upgrade --file=install/Brewfile || true
+"""
 
 [tasks.stow]
 description = "Create symlinks via GNU Stow"
