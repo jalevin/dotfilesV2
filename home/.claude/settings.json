@@ -1,4 +1,8 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Bash(go get:*)",
@@ -30,10 +34,6 @@
     "grafana-enghub@grafana-ai-kit": true
   },
   "agent": "default",
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
   "agents": {
     "default": {
       "description": "Staff Software Engineer at Grafana Labs",

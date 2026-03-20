@@ -1,13 +1,6 @@
 [tasks.brew]
 description = "Install Homebrew packages from Brewfile"
-run = """
-#!/bin/bash
-# Disable SSH URL rewrites (1Password SSH agent may not be set up yet)
-git config --global --unset-all url."git@github.com:".insteadOf 2>/dev/null || true
-git config --global --unset-all url."git@gitlab.com:".insteadOf 2>/dev/null || true
-
-brew bundle --no-upgrade --file=install/Brewfile || true
-"""
+run = "./tasks/brew.sh"
 
 [tasks.stow]
 description = "Create symlinks via GNU Stow"
@@ -16,193 +9,19 @@ run = "stow -v -t $HOME home/"
 
 [tasks.secrets-pull]
 description = "Fetch secrets from 1Password (with preview)"
-run = """
-#!/bin/bash
-set -e
-
-if ! op account list &>/dev/null; then
-  echo "Sign in to 1Password first: eval \\$(op signin)"
-  exit 1
-fi
-
-TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
-
-pull_file() {
-  local name="$1"
-  local local_path="$2"
-  local tmp_path="$TMPDIR/$name"
-
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "📄 $name → $local_path"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-  if ! op document get "$name" > "$tmp_path" 2>/dev/null; then
-    echo "⚠️  Document '$name' not found in 1Password. Skipping."
-    return
-  fi
-
-  if [[ -f "$local_path" ]]; then
-    if diff -q "$local_path" "$tmp_path" &>/dev/null; then
-      echo "✓ Already in sync. No changes needed."
-      return
-    fi
-    echo "Changes from 1Password:"
-    diff --color=always "$local_path" "$tmp_path" || true
-  else
-    echo "New file (local doesn't exist):"
-    head -20 "$tmp_path"
-    [[ $(wc -l < "$tmp_path") -gt 20 ]] && echo "... (truncated)"
-  fi
-
-  echo ""
-  read -p "Apply this change? [y/N] " confirm
-  if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    if [[ "$local_path" == /etc/* ]]; then
-      sudo cp "$tmp_path" "$local_path"
-    else
-      mkdir -p "$(dirname "$local_path")"
-      cp "$tmp_path" "$local_path"
-      chmod 600 "$local_path"
-    fi
-    echo "✓ Updated $local_path"
-  else
-    echo "⏭️  Skipped"
-  fi
-}
-
-pull_file "ssh-config" ~/.ssh/config
-pull_file "hosts-file" /etc/hosts
-
-echo ""
-echo "Done!"
-"""
+run = "./tasks/secrets-pull.sh"
 
 [tasks.secrets-push]
 description = "Upload local secrets to 1Password (with preview)"
-run = """
-#!/bin/bash
-set -e
-
-if ! op account list &>/dev/null; then
-  echo "Sign in to 1Password first: eval \\$(op signin)"
-  exit 1
-fi
-
-TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
-
-push_file() {
-  local name="$1"
-  local local_path="$2"
-  local tmp_path="$TMPDIR/$name"
-
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "📄 $local_path → 1Password '$name'"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-  if [[ ! -f "$local_path" ]]; then
-    echo "⚠️  Local file '$local_path' not found. Skipping."
-    return
-  fi
-
-  if op document get "$name" > "$tmp_path" 2>/dev/null; then
-    if diff -q "$local_path" "$tmp_path" &>/dev/null; then
-      echo "✓ Already in sync. No changes needed."
-      return
-    fi
-    echo "Changes to upload:"
-    diff --color=always "$tmp_path" "$local_path" || true
-  else
-    echo "New document (doesn't exist in 1Password yet):"
-    cat "$local_path"
-  fi
-
-  echo ""
-  read -p "Upload this to 1Password? [y/N] " confirm
-  if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    if op document get "$name" &>/dev/null; then
-      op document edit "$name" "$local_path"
-    else
-      op document create "$local_path" --title "$name"
-    fi
-    echo "✓ Uploaded to 1Password"
-  else
-    echo "⏭️  Skipped"
-  fi
-}
-
-push_file "ssh-config" ~/.ssh/config
-push_file "hosts-file" /etc/hosts
-
-echo ""
-echo "Done!"
-"""
+run = "./tasks/secrets-push.sh"
 
 [tasks.secrets-check]
 description = "Check if local secrets match 1Password"
-run = """
-#!/bin/bash
-
-if ! op account list &>/dev/null 2>&1; then
-  echo "⚠️  1Password not signed in - run: eval \\$(op signin)"
-  exit 0
-fi
-
-check_file() {
-  local name="$1"
-  local local_path="$2"
-
-  if [[ ! -f "$local_path" ]]; then
-    echo "⚠️  $name: local file missing ($local_path)"
-    return
-  fi
-
-  local_hash=$(shasum -a 256 "$local_path" 2>/dev/null | cut -d' ' -f1)
-  remote_hash=$(op document get "$name" 2>/dev/null | shasum -a 256 | cut -d' ' -f1)
-
-  if [[ -z "$remote_hash" ]]; then
-    echo "⚠️  $name: not in 1Password (run: mise run secrets-push)"
-  elif [[ "$local_hash" != "$remote_hash" ]]; then
-    echo "⚠️  $name: out of sync"
-    echo "   Local:  $local_path"
-    echo "   Remote: 1Password document '$name'"
-    echo "   Run: mise run secrets-push (upload local) or secrets-pull (download remote)"
-  else
-    echo "✓  $name: in sync"
-  fi
-}
-
-check_file "ssh-config" ~/.ssh/config
-check_file "hosts-file" /etc/hosts
-"""
+run = "./tasks/secrets-check.sh"
 
 [tasks.backup-projects]
 description = "Create tar archive of ~/projects (excludes large dirs and dotfiles)"
-run = """
-#!/bin/bash
-set -e
-
-OUTPUT=~/projects.tar.gz
-
-echo "Creating $OUTPUT..."
-tar --exclude='go' \
-    --exclude='.go' \
-    --exclude='node_modules' \
-    --exclude='vendor' \
-    --exclude='tmp' \
-    --exclude='.gems' \
-    --exclude='dotfiles' \
-    -czvf "$OUTPUT" -C ~ projects
-
-echo ""
-echo "✓ Created: $OUTPUT"
-ls -lh "$OUTPUT"
-echo ""
-echo "Copy this to your backup drive before resetting."
-"""
+run = "./tasks/backup-projects.sh"
 
 [tasks.fonts]
 description = "Install fonts to ~/Library/Fonts"
@@ -223,19 +42,8 @@ depends = ["brew", "fonts", "neovim-setup"]
 run = "./install/macos"
 
 [tasks.install-scripts]
-description = "Install tools via scripts (not Homebrew)"
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Claude Code
-if ! command -v claude &>/dev/null; then
-  echo "Installing Claude Code..."
-  curl -fsSL https://claude.ai/install.sh | bash
-else
-  echo "Claude Code already installed, skipping."
-fi
-"""
+description = "Run install scripts for tools not managed by Homebrew"
+run = "./tasks/install-scripts.sh"
 
 [tasks.setup]
 description = "Full machine setup — run after bootstrap.sh"
