@@ -174,6 +174,31 @@ check_file "ssh-config" ~/.ssh/config
 check_file "hosts-file" /etc/hosts
 """
 
+[tasks.backup-projects]
+description = "Create tar archive of ~/projects (excludes large dirs and dotfiles)"
+run = """
+#!/bin/bash
+set -e
+
+OUTPUT=~/projects.tar.gz
+
+echo "Creating $OUTPUT..."
+tar --exclude='go' \
+    --exclude='.go' \
+    --exclude='node_modules' \
+    --exclude='vendor' \
+    --exclude='tmp' \
+    --exclude='.gems' \
+    --exclude='dotfiles' \
+    -czvf "$OUTPUT" -C ~ projects
+
+echo ""
+echo "✓ Created: $OUTPUT"
+ls -lh "$OUTPUT"
+echo ""
+echo "Copy this to your backup drive before resetting."
+"""
+
 [tasks.fonts]
 description = "Install fonts to ~/Library/Fonts"
 run = "find fonts -name '*.ttf' -exec cp {} ~/Library/Fonts/ \\;"
