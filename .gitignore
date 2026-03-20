@@ -1,6 +1,6 @@
 /completion/yarn
 .mcp.json
-configs/tmux/plugins/
+home/.config/tmux/plugins/
 bootstrap.log
 dev.log
 

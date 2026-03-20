@@ -36,6 +36,11 @@ run = "nvim --headless \"+Lazy! sync\" +qa"
 description = "Remove Neovim lazy.nvim data"
 run = "rm -rf ~/.local/share/nvim/lazy ~/.local/share/nvim/lazy-rocks"
 
+[tasks.tmux-setup]
+description = "Install TPM and tmux plugins"
+depends = ["stow"]
+run = "./tasks/tmux-setup.sh"
+
 [tasks.osx-settings]
 description = "Apply macOS system defaults"
 depends = ["brew", "fonts", "neovim-setup"]
@@ -47,4 +52,4 @@ run = "./tasks/install-scripts.sh"
 
 [tasks.setup]
 description = "Full machine setup — run after bootstrap.sh"
-depends = ["osx-settings", "stow", "install-scripts"]
+depends = ["osx-settings", "stow", "install-scripts", "tmux-setup"]
