@@ -11,7 +11,17 @@ INSTALL_DIR="/Applications"
 
 current_version=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$INSTALL_DIR/$APP_NAME/Contents/Info.plist" 2>/dev/null || echo "none")
 
-if [[ "$current_version" == *"0.11.13"* ]]; then
+# Check for newer releases
+latest_tag=$(gh release list --repo "$REPO" --limit 1 --json tagName --jq '.[0].tagName')
+if [[ "$latest_tag" != "$TAG" ]]; then
+  read -r -p "Newer Ice release available: $TAG → $latest_tag. Update pinned version and install? [y/N] " choice
+  if [[ "$choice" =~ ^[Yy]$ ]]; then
+    sed -i '' "s/^TAG=\".*\"/TAG=\"$latest_tag\"/" "$0"
+    TAG="$latest_tag"
+  fi
+fi
+
+if [[ "$current_version" == *"${TAG#v}"* ]]; then
   echo "Ice $current_version already installed, skipping."
   exit 0
 fi
