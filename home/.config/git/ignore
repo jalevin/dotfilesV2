@@ -5,3 +5,7 @@ Library/
 .DS_Store
 
 **/.claude/settings.local.json
+
+.hive
+dev.log
+.env
