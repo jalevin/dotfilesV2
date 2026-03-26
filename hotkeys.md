@@ -38,6 +38,17 @@
 
 ---
 
+## Zsh / Readline (Terminal Input)
+
+| Key | Action |
+|-----|--------|
+| `ctrl+w` / `opt+backspace` | Delete word backwards |
+| `opt+d` | Delete word forwards |
+| `ctrl+u` | Delete entire line |
+| `ctrl+k` | Delete from cursor to end of line |
+
+---
+
 ## Hive TUI
 
 ### Hard-coded (all views)
