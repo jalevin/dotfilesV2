@@ -12,7 +12,7 @@
   - Installs Xcode CLI tools
   - Installs Homebrew
   - Installs mise + stow
-  - Runs `mise run setup` (brew packages, stow symlinks, fonts, neovim plugins, macOS defaults)
+  - Runs `mise run apply` (brew packages, stow symlinks, fonts, neovim plugins, macOS defaults)
 
 ## Phase 2: Apple ID & iCloud (System Settings)
 

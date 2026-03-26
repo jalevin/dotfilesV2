@@ -15,12 +15,12 @@ if ! command -v brew &>/dev/null; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# Install mise and stow (prerequisites for mise run setup)
+# Install mise and stow (prerequisites for mise run apply)
 if ! command -v mise &>/dev/null || ! command -v stow &>/dev/null; then
   brew install mise stow
 fi
 
-mise run setup
+mise run apply
 
 # Clear default Dock apps (only on fresh install)
 echo "Clearing Dock - add your preferred apps manually"

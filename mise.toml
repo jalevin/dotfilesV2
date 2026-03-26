@@ -50,6 +50,6 @@ run = "./install/macos"
 description = "Run install scripts for tools not managed by Homebrew"
 run = "./tasks/install-scripts.sh"
 
-[tasks.setup]
+[tasks.apply]
 description = "Full machine setup — run after bootstrap.sh"
 depends = ["osx-settings", "stow", "install-scripts", "tmux-setup"]

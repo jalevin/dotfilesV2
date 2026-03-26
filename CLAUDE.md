@@ -108,13 +108,13 @@ Single workspace configured: `/Users/jeff/projects`
 
 ```bash
 # Fresh machine setup
-./bootstrap.sh        # Installs Xcode CLI tools, Homebrew, mise, then runs mise run setup
+./bootstrap.sh        # Installs Xcode CLI tools, Homebrew, mise, then runs mise run apply
 
 # Individual tasks (after bootstrap)
 mise run stow         # Create all symlinks via GNU Stow
 mise run brew         # Install Homebrew packages from Brewfile
 mise run fonts        # Install fonts to ~/Library/Fonts
-mise run setup        # Run all setup tasks (brew + stow + fonts + neovim + osx-settings)
+mise run apply        # Run all setup tasks (brew + stow + fonts + neovim + osx-settings)
 ```
 
 ## Secrets Management
