@@ -9,3 +9,4 @@ Library/
 .hive
 dev.log
 .env
+.env.*
