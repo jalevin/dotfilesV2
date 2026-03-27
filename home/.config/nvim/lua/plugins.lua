@@ -7,7 +7,6 @@ return {
   { 'williamboman/mason.nvim' },
   { 'williamboman/mason-lspconfig.nvim' },
   { 'neovim/nvim-lspconfig' },
-  { 'esmuellert/nvim-eslint' },
 
   -- FORMATTING
   { 'nvimtools/none-ls.nvim' },
@@ -38,7 +37,32 @@ return {
   { 'luochen1990/rainbow' },
 
   -- TREESITTER
-  { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
+  {
+    'nvim-treesitter/nvim-treesitter',
+    branch = 'master',
+    build = ':TSUpdate',
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
+          "comment",
+          "html",
+          "go",
+          "graphql",
+          "javascript",
+          "json",
+          "python",
+          "ruby",
+          "tsx",
+          "typescript",
+          "jsonnet",
+        },
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+      })
+    end,
+  },
   { 'nvim-treesitter/nvim-treesitter-context' },
 
   -- LANGUAGE

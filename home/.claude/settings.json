@@ -8,7 +8,6 @@
       "Bash(curl:*)",
       "Bash(jq:*)",
       "Bash(make:*)",
-
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(fd:*)",
@@ -24,7 +23,6 @@
       "Bash(echo:*)",
       "Bash(mkdir:*)",
       "Bash(basename:*)",
-
       "Bash(git log:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
@@ -40,7 +38,6 @@
       "Bash(git rebase:*)",
       "Bash(git rev-parse:*)",
       "Bash(git tag:*)",
-
       "Bash(gh api:*)",
       "Bash(gh repo view:*)",
       "Bash(gh repo list:*)",
@@ -60,7 +57,6 @@
       "Bash(gh release view:*)",
       "Bash(gh search:*)",
       "Bash(gh status:*)",
-
       "Bash(go get:*)",
       "Bash(go run:*)",
       "Bash(go build:*)",
@@ -71,7 +67,6 @@
       "Bash(go doc:*)",
       "Bash(gofumpt:*)",
       "Bash(golangci-lint run:*)",
-
       "Bash(task --list)",
       "Bash(task build)",
       "Bash(task test:*)",
@@ -82,7 +77,6 @@
       "Bash(task go:*)",
       "Bash(task check:*)",
       "Bash(task pr)",
-
       "Bash(pnpm run:*)",
       "Bash(pnpm install)",
       "Bash(pnpm build)",
@@ -127,5 +121,6 @@
       "description": "Minimal agent for GitHub CLI authentication",
       "prompt": "# GitHub Agent\n\nMinimal agent for GitHub CLI authentication. These rules are also included in the default agent.\n\n## GitHub Access\n\nIMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.\n\n- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)\n- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`\n- For issues: Use `gh issue view <number>`\n- For GraphQL: Use `gh api graphql -f query='...'`\n\nNever use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials."
     }
-  }
+  },
+  "model": "opus[1m]"
 }

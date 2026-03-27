@@ -1,32 +1,20 @@
--- eslint
-require("nvim-eslint").setup({})
+-- AUTOCOMPLETE get default capabilities for autocomplete
+local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
--- TREESITTER - highlighting
-require("nvim-treesitter.configs").setup({
-	ensure_installed = {
-		"comment",
-		"dot",
-		"html",
-		"go",
-		"graphql",
-		"javascript",
-		"json",
-		"php",
-		"python",
-		"ruby",
-		"tsx",
-		"typescript",
-		"jsonnet",
-	},
-	highlight = {
-		enable = true,
-		additional_vim_regex_highlighting = false,
-	},
+-- Global LSP defaults (applies to all servers)
+vim.lsp.config('*', {
+	capabilities = capabilities,
+	on_attach = on_attach,
 })
 
--- AUTOCOMPLETE get default capabilities for autocomplete
-local lspconfig = require("lspconfig")
-local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
+-- lua_ls: suppress unknown global warnings for vim/on_attach
+vim.lsp.config('lua_ls', {
+	settings = {
+		Lua = {
+			diagnostics = { globals = { "vim", "on_attach" } },
+		},
+	},
+})
 
 -- MASON package manager
 require("mason").setup({
@@ -42,7 +30,6 @@ require("mason").setup({
 require("mason-lspconfig").setup({
 	ensure_installed = {
 		"bashls",
-		"cmake",
 		"dockerls",
 		"eslint",
 		"golangci_lint_ls",
@@ -51,24 +38,16 @@ require("mason-lspconfig").setup({
 		"jsonls",
 		"jsonnet_ls",
 		"lua_ls",
+		"marksman",
 		"sqlls",
 		"tailwindcss",
 		"terraformls",
-		"tflint",
 		"ts_ls",
 		"vimls",
 	},
-	handlers = { -- NEW: handlers go inside setup()
+	handlers = {
 		function(server_name)
-			lspconfig[server_name].setup({
-				capabilities = capabilities,
-				on_attach = on_attach,
-				settings = {
-					Lua = {
-						diagnostics = { globals = { "vim", "on_attach" } },
-					},
-				},
-			})
+			vim.lsp.enable(server_name)
 		end,
 	},
 })
@@ -83,16 +62,17 @@ require("mason-null-ls").setup({
 		"misspell",
 		"standardrb",
 		"staticcheck",
-		"tlint",
 		"yamllint",
 		"stylua",
 		"jq",
+		"prettier",
 		--"action-lint",
 	},
 	handlers = {},
 })
 
-require("lspconfig").solargraph.setup({
+-- solargraph: use bundle exec instead of system solargraph
+vim.lsp.config('solargraph', {
 	cmd = { "bundle", "exec", "solargraph", "stdio" },
 	settings = {
 		solargraph = {
