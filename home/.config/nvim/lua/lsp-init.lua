@@ -57,10 +57,8 @@ require("mason-null-ls").setup({
 	ensure_installed = {
 		"ansible-lint",
 		--"goimports_reviser",
-		"luacheck",
 		"markdownlint",
 		"misspell",
-		"standardrb",
 		"staticcheck",
 		"yamllint",
 		"stylua",
@@ -71,16 +69,14 @@ require("mason-null-ls").setup({
 	handlers = {},
 })
 
--- solargraph: use bundle exec instead of system solargraph
-vim.lsp.config('solargraph', {
-	cmd = { "bundle", "exec", "solargraph", "stdio" },
-	settings = {
-		solargraph = {
-			diagnostics = true,
-			completion = true,
-		},
+-- ruby_lsp: installed via install script, not Mason (C extension ABI issues)
+vim.lsp.config('ruby_lsp', {
+	init_options = {
+		formatter = 'standard',
+		linters = { 'standard' },
 	},
 })
+vim.lsp.enable('ruby_lsp')
 
 local async_formatting = function(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()

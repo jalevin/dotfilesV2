@@ -7,4 +7,4 @@ if ! command -v go &>/dev/null; then
 fi
 
 echo "Installing hive..."
-go install github.com/colonyops/hive@latest
+go install github.com/colonyops/hive@main
