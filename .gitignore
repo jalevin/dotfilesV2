@@ -16,3 +16,6 @@ home/.claude/projects/
 home/.claude/session-env/
 home/.claude/sessions/
 home/.claude/shell-snapshots/
+home/.claude/mcp-needs-auth-cache.json
+home/.claude/paste-cache/
+home/.config/git/gitk

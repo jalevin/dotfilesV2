@@ -35,6 +35,7 @@
 | Key | Action |
 |-----|--------|
 | `prefix r l` | Reload tmux config |
+| `prefix I` | Install/update TPM plugins |
 
 ---
 
