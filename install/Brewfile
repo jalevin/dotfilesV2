@@ -47,6 +47,7 @@ brew "speedtest-cli"
 brew "ansible"
 brew "azure-cli"
 brew "awscli"
+brew "sops"
 brew "terraform"
 
 # ── Kubernetes ────────────────────────────────────────────────────────────────
