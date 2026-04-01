@@ -190,3 +190,56 @@
 | Alias | Command |
 |-------|---------|
 | `cleandocker` | `docker system prune -f` |
+
+### Obsidian
+| Alias | Command |
+|-------|---------|
+| `obs` | Open Obsidian vault |
+
+---
+
+## Claude Code Skills
+
+Skills are invoked with `/skill-name` in Claude Code.
+
+| Skill | Description |
+|-------|-------------|
+| `/daily-prep` | Generate morning brief: open PRs, review queue, carryover tasks, yesterday summary. Writes to Obsidian daily note. |
+| `/obsidian` | Save a document (research, plan, design doc) to `.hive/` context directory, which is symlinked into Obsidian. |
+| `/summarize <url>` | Fetch and summarize a web article. |
+
+### Daily Prep Workflow
+
+1. Open Claude Code (or run from hive session)
+2. Run `/daily-prep`
+3. Claude gathers GitHub data (open PRs, reviews, merged PRs) from deployment_tools, bench, and recipinned
+4. Creates/updates today's daily note in Obsidian at `Daily/YYYY-MM-DD - ddd.md`
+5. Carries over incomplete tasks from yesterday
+
+### Obsidian + Hive Integration
+
+- `.hive/` in each repo is a symlink into the Obsidian vault (created by `hive ctx init`)
+- Documents saved via `/obsidian` skill appear in Obsidian automatically
+- Hive todos have an "obsidian" action to open items directly in Obsidian
+
+---
+
+## Obsidian Setup (Fresh Install)
+
+1. **Install**: `brew install --cask obsidian` (already in Brewfile)
+2. **Open Obsidian** and it should detect the "Notebook" vault in iCloud
+   - If not: click "Open folder as vault" and select `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Notebook`
+3. **Enable community plugins**: Settings > Community plugins > Turn on community plugins
+4. **Install plugins** (as needed): browse community plugins in Settings
+5. **Verify Daily folder** exists in the vault sidebar
+6. **Verify daily notes config**: Settings > Core plugins > Daily notes > Folder = `Daily`, Format = `YYYY-MM-DD - ddd`
+7. **iCloud sync** handles the rest — config and notes sync to all devices automatically
+
+### Environment
+
+The vault path is exported in `.zshrc`:
+```
+OBSIDIAN_NOTEBOOK_DIR="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Notebook"
+```
+
+This is used by the `daily-prep` skill and the `obs` shell alias.

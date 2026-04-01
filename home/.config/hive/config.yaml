@@ -17,6 +17,10 @@ views:
       S:
         cmd: TmuxStart
 
+todos:
+  actions:
+    obsidian: "open {{ .URI | shq }}"
+
 plugins:
   shell_workers: 10 # shared subprocess concurrency limit
   github:
@@ -41,6 +45,10 @@ rules:
         focus: true
       - name: shell
       - name: server
+
+  - pattern: "recipinned"
+    commands:
+      - mise run pc:install
 
   - pattern: "deployment_tools"
     clone_strategy: worktree

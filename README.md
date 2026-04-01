@@ -32,7 +32,8 @@ dotfiles/
 │   │   ├── mise/
 │   │   ├── gh/
 │   │   └── agent-deck/
-│   └── .claude/        # Claude Code: settings, agents, commands, statusline
+│   ├── .ai/            # Editor-agnostic skills, commands, agents (Claude, Cursor, Codex)
+│   └── .claude/        # Claude Code: settings, statusline, symlinks to .ai/
 ├── install/
 │   ├── Brewfile
 │   ├── macos           # macOS system defaults
