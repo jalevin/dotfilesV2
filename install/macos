@@ -50,6 +50,14 @@ defaults write com.apple.dock autohide -bool true
 defaults write com.apple.dock magnification -bool false
 
 ###############################################################################
+# iCloud                                                                      #
+###############################################################################
+
+# MANUAL: Enable iCloud Desktop & Documents sync
+# System Settings > Apple ID > iCloud > iCloud Drive > Options > "Desktop & Documents Folders"
+# This cannot be reliably automated — macOS requires the UI toggle to activate sync plumbing.
+
+###############################################################################
 # Finder                                                                      #
 ###############################################################################
 

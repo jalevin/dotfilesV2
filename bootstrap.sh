@@ -26,3 +26,17 @@ mise run apply
 echo "Clearing Dock - add your preferred apps manually"
 defaults write com.apple.dock persistent-apps -array
 killall Dock
+
+# Prompt for manual iCloud setup
+echo ""
+echo "========================================="
+echo " Manual Step: Enable iCloud Desktop & Documents"
+echo "========================================="
+echo "System Settings > Apple ID > iCloud > iCloud Drive > Options"
+echo "  → Enable 'Desktop & Documents Folders'"
+echo ""
+read -p "Press Enter once complete (or 's' to skip): " -n 1 response
+echo ""
+if [[ "$response" == "s" ]]; then
+  echo "Skipped — remember to enable this later."
+fi
