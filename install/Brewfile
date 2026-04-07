@@ -5,6 +5,7 @@ tap "heroku/brew"
 # ── Core CLI ──────────────────────────────────────────────────────────────────
 brew "git"
 brew "gh"
+brew "glow"
 brew "curl"
 brew "wget"
 brew "coreutils"
