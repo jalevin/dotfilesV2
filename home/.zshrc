@@ -41,7 +41,7 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="${BREW_PATH}/opt/libpq/bin:$PATH"
-export PATH="/Users/jeff/google-cloud-sdk/bin:$PATH"
+export PATH="$HOME/.local/share/google-cloud-sdk/bin:$PATH"
 #export PATH="/Users/jeff/projects/g/deployment_tools/scripts/gcom/:$PATH"
 
 # General
@@ -90,11 +90,11 @@ export DOCKER_ID_USER="levinology"
 alias cleandocker="docker system prune -f"
 
 # gcloud
-if [ -f '/Users/jeff/Downloads/google-cloud-sdk/path.zsh.inc' ]; then
-  . '/Users/jeff/Downloads/google-cloud-sdk/path.zsh.inc'
+if [ -f "$HOME/.local/share/google-cloud-sdk/path.zsh.inc" ]; then
+  . "$HOME/.local/share/google-cloud-sdk/path.zsh.inc"
 fi
-if [ -f '/Users/jeff/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then
-  . '/Users/jeff/Downloads/google-cloud-sdk/completion.zsh.inc'
+if [ -f "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc" ]; then
+  . "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc"
 fi
 
 # ripgrep

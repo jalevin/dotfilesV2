@@ -22,3 +22,7 @@ home/.claude/mcp-needs-auth-cache.json
 home/.claude/paste-cache/
 home/.config/git/gitk
 home/.config/.semgrep/
+
+# Tool runtime data (credentials, caches)
+home/.config/gcloud/
+home/.config/gws/
