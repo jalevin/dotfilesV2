@@ -64,6 +64,10 @@ run = """
 description = "Upgrade Homebrew cask apps that can't self-update"
 run = "brew update && brew upgrade --cask brave-browser google-chrome signal whatsapp"
 
+[tasks.upgrade-mise]
+description = "Upgrade mise"
+run = "brew update && brew upgrade mise"
+
 [tasks.apply]
 description = "Full machine setup — run after bootstrap.sh"
 depends = ["osx-settings", "stow", "install-scripts", "tmux-setup"]
