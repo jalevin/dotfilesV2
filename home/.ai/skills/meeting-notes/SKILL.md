@@ -38,9 +38,9 @@ Obsidian and the recurring/carryover sections need it.
 
 ## 2. Read the daily note and confirm structure
 
-Read `$DAILY_FILE`. Verify it contains both `## Meetings` and `## Notes` sections
-(the standard template layout). If `## Meetings` is missing, stop and tell the
-user the note doesn't match the expected template structure.
+Read `$DAILY_FILE`. Verify it contains a `## Meetings` section (the template's
+last section). If `## Meetings` is missing, stop and tell the user the note
+doesn't match the expected template structure.
 
 ## 3. Check the pasted content
 
@@ -51,19 +51,17 @@ headings.
 
 ## 4. Insert the content
 
-Use Edit to insert the pasted content between `## Meetings` and `## Notes`.
-Specifically:
+`## Meetings` is the last section in the template, so appending is simple:
 
-- Find the existing block: `## Meetings\n\n## Notes` (with whatever existing
-  meeting content sits between them)
-- Insert the new content after the last existing meeting (or directly after
-  `## Meetings` if the section is empty), keeping `## Notes` exactly where it is
+- Read the file; find the end of the `## Meetings` section (which is the end of
+  the file, since nothing comes after it)
+- Append the new content after any existing meetings, with one blank line
+  separating sections
+- If `## Meetings` is currently empty, the new content goes directly below the
+  heading (with one blank line after the heading)
 
 **Preserve the user's formatting verbatim** — don't reflow bullets, normalize
 whitespace, or fix typos. The notes are theirs as written.
-
-If `## Meetings` already has content, append new meetings below the existing
-ones, with one blank line between sections.
 
 ## 5. Report
 
