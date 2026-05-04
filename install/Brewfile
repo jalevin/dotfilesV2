@@ -46,6 +46,7 @@ brew "nmap"
 brew "speedtest-cli"
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
+brew "age"
 brew "ansible"
 brew "azure-cli"
 brew "awscli"
