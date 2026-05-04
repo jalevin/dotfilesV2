@@ -104,7 +104,7 @@ export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/rg.conf"
 export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME/sops/age/keys.txt"
 
 # Obsidian
-export OBSIDIAN_NOTEBOOK_DIR="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Notebook"
+export OBSIDIAN_NOTEBOOK_DIR="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"
 obs() { open "obsidian://open?path=$OBSIDIAN_NOTEBOOK_DIR"; }
 
 # ── Aliases ─────────────────────────────────────────────────────────────────────

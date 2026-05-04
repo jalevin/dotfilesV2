@@ -1,6 +1,7 @@
 tap "go-task/tap"
 tap "hashicorp/tap"
 tap "heroku/brew"
+tap "xykong/tap"
 
 # ── Core CLI ──────────────────────────────────────────────────────────────────
 brew "git"
@@ -44,6 +45,7 @@ brew "dive"
 brew "mole"
 brew "nmap"
 brew "speedtest-cli"
+brew "weave"                           # semantic merge driver for git
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
 brew "age"
@@ -73,7 +75,8 @@ brew "heroku/brew/heroku"
 # ── Media ─────────────────────────────────────────────────────────────────────
 brew "ffmpeg"
 brew "imagemagick"
-brew "vips"
+#brew "vips"
+brew "yt-dlp"
 
 # ── Casks ─────────────────────────────────────────────────────────────────────
 cask "font-jetbrains-mono-nerd-font"
@@ -85,6 +88,7 @@ cask "claude"
 cask "cleanshot"
 cask "dbeaver-community"
 cask "discord"
+cask "flux-markdown"
 cask "ghostty"
 cask "google-chrome"
 cask "handy"
