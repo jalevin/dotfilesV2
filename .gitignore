@@ -26,3 +26,5 @@ home/.config/.semgrep/
 # Tool runtime data (credentials, caches)
 home/.config/gcloud/
 home/.config/gws/
+home/.config/sops/age/keys.txt
+home/.config/op/

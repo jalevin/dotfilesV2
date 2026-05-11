@@ -138,6 +138,7 @@ mise run secrets-pull
 |---------------|------------|----------|
 | `ssh-config` | `~/.ssh/config` | SSH host aliases, 1Password agent config |
 | `hosts-file` | `/etc/hosts` | Custom host entries |
+| `sops-age-key` | `~/.config/sops/age/keys.txt` | Age private key for sops decryption (loaded via `SOPS_AGE_KEY_FILE` in `.zshrc`) |
 
 **First-time setup:** Run `mise run secrets-push` to upload local files to 1Password.
 

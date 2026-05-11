@@ -50,6 +50,7 @@ brew "speedtest-cli"
 brew "weave"                           # semantic merge driver for git
 
 # ── Infrastructure ────────────────────────────────────────────────────────────
+brew "age"
 brew "ansible"
 brew "azure-cli"
 brew "awscli"

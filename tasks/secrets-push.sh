@@ -52,6 +52,7 @@ push_file() {
 
 push_file "ssh-config" ~/.ssh/config
 push_file "hosts-file" /etc/hosts
+push_file "sops-age-key" ~/.config/sops/age/keys.txt
 
 echo ""
 echo "Done!"
