@@ -42,6 +42,7 @@ let g:go_metalinter_command = 'golangci-lint'
 
 " filetype detection for extensions not in Neovim's built-ins
 autocmd BufRead,BufNewFile *.libsonnet,*.ksonnet set filetype=jsonnet
+autocmd BufRead,BufNewFile .env,.env.* set filetype=conf
 
 " treesitter folding (set per-buffer via autocmd)
 function! FoldConfig()

@@ -54,7 +54,7 @@ New configs should target `~/.config/{tool}/` (XDG Base Directory spec) rather t
 - **GOPATH**: `~/projects/go`; go binaries at `~/projects/go/bin`
 - **Python**: managed via `pyenv`
 - **Ruby**: managed via `rbenv`
-- **Node**: pinned versions via `node18` / `node22` aliases; `pnpm` configured
+- **Node**: managed via `mise`; `pnpm` configured
 - **Hive alias**: `hv` → opens/attaches tmux session named `hive` running `hive`
 
 Notable aliases:

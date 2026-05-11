@@ -123,5 +123,6 @@
       "description": "Minimal agent for GitHub CLI authentication",
       "prompt": "# GitHub Agent\n\nMinimal agent for GitHub CLI authentication. These rules are also included in the default agent.\n\n## GitHub Access\n\nIMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.\n\n- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)\n- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`\n- For issues: Use `gh issue view <number>`\n- For GraphQL: Use `gh api graphql -f query='...'`\n\nNever use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials."
     }
-  }
+  },
+  "theme": "dark-daltonized"
 }

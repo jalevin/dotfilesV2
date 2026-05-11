@@ -1,4 +1,5 @@
 tap "go-task/tap"
+tap "grafana/grafana"
 tap "hashicorp/tap"
 tap "heroku/brew"
 tap "xykong/tap"
@@ -42,6 +43,7 @@ brew "git-gui"
 brew "htop"
 brew "ctop"
 brew "dive"
+brew "grafana/grafana/gcx"             # Grafana CLI
 brew "mole"
 brew "nmap"
 brew "speedtest-cli"

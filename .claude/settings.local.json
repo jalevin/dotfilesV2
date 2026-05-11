@@ -11,7 +11,10 @@
       "Bash(nix flake show:*)",
       "Bash(python3:*)",
       "Bash(defaults read:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(awk '{:*)",
+      "Bash(brew search *)",
+      "Bash(brew deps *)"
     ]
   },
   "enableAllProjectMcpServers": true,
