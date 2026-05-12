@@ -103,7 +103,11 @@ export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/rg.conf"
 # sops (XDG-style key path; macOS default would be ~/Library/Application Support/sops)
 export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME/sops/age/keys.txt"
 
+# OrbStack
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+
 # Obsidian
+export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 export OBSIDIAN_NOTEBOOK_DIR="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"
 obs() { open "obsidian://open?path=$OBSIDIAN_NOTEBOOK_DIR"; }
 
