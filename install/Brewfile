@@ -1,3 +1,4 @@
+tap "eugene1g/safehouse"
 tap "go-task/tap"
 tap "grafana/grafana"
 tap "hashicorp/tap"
@@ -39,6 +40,7 @@ brew "mise"
 brew "yarn"
 
 # ── Dev Tools ─────────────────────────────────────────────────────────────────
+brew "agent-safehouse"                 # macOS sandbox for AI coding agents
 brew "git-gui"
 brew "htop"
 brew "ctop"
@@ -88,6 +90,7 @@ cask "alfred"
 cask "brave-browser"
 cask "claude"
 cask "cleanshot"
+cask "codex"
 cask "dbeaver-community"
 cask "discord"
 cask "flux-markdown"

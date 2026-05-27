@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Find .env-style files for inventory (e.g. migrating to 1Password).
+# Usage: find-env [path]   (default: ~/projects)
+
+set -euo pipefail
+
+ROOT="${1:-$HOME/projects}"
+
+if [[ ! -d "$ROOT" ]]; then
+  echo "error: $ROOT is not a directory" >&2
+  exit 1
+fi
+
+PRUNE_DIRS=(
+  node_modules .git vendor .venv venv .tox
+  build out target .next .nuxt .cache
+  __pycache__ .pytest_cache .mypy_cache
+  .terraform .gradle .idea .vscode
+  Pods DerivedData
+)
+
+# Build -prune expression
+prune_expr=()
+for d in "${PRUNE_DIRS[@]}"; do
+  prune_expr+=( -name "$d" -o )
+done
+unset 'prune_expr[${#prune_expr[@]}-1]'  # drop trailing -o
+
+# Match: .env, .env.*, .envrc, *.env
+find "$ROOT" \
+  \( "${prune_expr[@]}" \) -prune -o \
+  -type f \
+  \( -name ".env" -o -name ".env.*" -o -name ".envrc" -o -name "*.env" \) \
+  -print 2>/dev/null |
+while IFS= read -r f; do
+  size=$(stat -f%z "$f" 2>/dev/null || echo 0)
+  mtime=$(stat -f "%Sm" -t "%Y-%m-%d" "$f" 2>/dev/null || echo "????-??-??")
+  # Count KEY=VALUE lines (ignore blanks + comments)
+  keys=$(grep -cE '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=' "$f" 2>/dev/null || echo 0)
+  printf "%s\t%5sB\t%3s keys\t%s\n" "$mtime" "$size" "$keys" "$f"
+done | sort

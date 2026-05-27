@@ -42,8 +42,8 @@
 	# === Fetch & Sync ===
 	# Fetch all remotes and prune deleted branches (fetch all prune)
 	fap = fetch --all --prune
-	# Fetch and rebase current branch on origin/master (rebase origin master)
-	rom = !git fetch origin && git rebase origin/main
+	# Fetch and rebase current branch on the repo's default branch (rebase origin main/master)
+	rom = "!f() { default=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@'); default=${default:-main}; if [ \"$(git symbolic-ref --short HEAD)\" = \"$default\" ]; then git pull --ff-only; else git fetch origin \"$default\":\"$default\" && git rebase \"$default\"; fi; }; f"
 
 	# === Reset Operations ===
 	# Reset current branch to match remote (discards local commits/changes) (reset remote)

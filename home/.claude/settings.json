@@ -96,8 +96,21 @@
       "Bash(make release:*)",
       "Bash(make push:*)",
       "Bash(make publish:*)",
+      "Bash(gh repo delete*)",
+      "Bash(git push *--delete*)",
+      "Bash(git push * :*)",
+      "Bash(gh api*DELETE*refs/heads*)",
+      "Bash(gh api*deletePullRequest*)",
       "Read(.env)",
       "Read(.env.*)"
+    ],
+    "ask": [
+      "Bash(./scripts/tanka/tk apply:*)",
+      "Bash(tk apply:*)",
+      "Bash(tf-apply:*)",
+      "Bash(terraform apply:*)",
+      "Bash(kubectl apply:*)",
+      "Bash(k apply:*)"
     ]
   },
   "model": "opus[1m]",
@@ -111,9 +124,26 @@
     "gopls-lsp@claude-plugins-official": true,
     "agent-deck@agent-deck": true,
     "grafana-enghub@grafana-ai-kit": true,
-    "slack@claude-plugins-official": true
+    "slack@claude-plugins-official": true,
+    "hive@hive": true,
+    "hive-hooks@hive": true
+  },
+  "extraKnownMarketplaces": {
+    "hive": {
+      "source": {
+        "source": "github",
+        "repo": "colonyops/hive"
+      }
+    },
+    "grafana-ai-kit": {
+      "source": {
+        "source": "github",
+        "repo": "grafana/ai-kit"
+      }
+    }
   },
   "agent": "default",
+  "theme": "dark-daltonized",
   "agents": {
     "default": {
       "description": "Staff Software Engineer at Grafana Labs",
@@ -124,5 +154,5 @@
       "prompt": "# GitHub Agent\n\nMinimal agent for GitHub CLI authentication. These rules are also included in the default agent.\n\n## GitHub Access\n\nIMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.\n\n- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)\n- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`\n- For issues: Use `gh issue view <number>`\n- For GraphQL: Use `gh api graphql -f query='...'`\n\nNever use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials."
     }
   },
-  "theme": "dark-daltonized"
+  "skipDangerousModePermissionPrompt": true
 }

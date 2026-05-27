@@ -1,6 +1,25 @@
 workspaces:
   - /Users/jeff/projects
 
+agents:
+  default: claude
+  agent_selector: true
+  claude:
+    command: claude
+  claude-safehouse:
+    command: safehouse
+    flags:
+      - "--enable=1password"
+      - "--enable=keychain"
+      - "--add-dirs-ro=/Users/jeff/projects/dotfiles/home"
+      - "--add-dirs=/Users/jeff/projects/dotfiles/home/.config/gh"
+      - "claude"
+      - "--dangerously-skip-permissions"
+  claude-yolo:
+    command: claude
+    flags:
+      - "--dangerously-skip-permissions"
+
 views:
   store:
     enabled: true

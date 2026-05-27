@@ -133,7 +133,8 @@ alias gm="git commit"
 alias gdiff="git --no-pager diff"
 
 # Tmux
-alias hv='tmux new-session -As hive hive'
+#alias hv='tmux new-session -As hive hive'
+alias hv="tmux -vv new-session -As hive hive"
 alias t='tmux new-session -As $(basename $PWD)'
 
 # ── Prompt ──────────────────────────────────────────────────────────────────────
