@@ -1,0 +1,26 @@
+#!/bin/sh
+# safe-claude — launch claude inside the Agent Safehouse sandbox.
+#
+# Single source of truth for the sandbox flags: referenced both by the
+# `claude-safehouse` hive agent profile (command: safe-claude) and directly
+# from the shell. Lives on PATH so `sh -c safe-claude` resolves (hive/tmux
+# launch window commands via /bin/sh, which does not read zsh startup files).
+#
+# Flags mirror the documented safehouse-sandbox recipe:
+#   --enable=1password  1Password CLI + SSH agent socket + TouchID via IPC
+#   --enable=keychain   macOS Keychain (gh token lives here)
+#   --enable=docker     OrbStack/Docker daemon socket (run/compose/build)
+#   --add-dirs-ro       read-only access to the stowed dotfiles tree
+#                       (git/gh/etc. configs are symlinks into here)
+#   --add-dirs          read-write for gh (refreshes its own state), the Go
+#                       workspace (GOPATH: binaries + module cache) and the Go
+#                       build cache (GOCACHE) so go build/test/get work
+exec safehouse \
+  --enable=1password \
+  --enable=keychain \
+  --enable=docker \
+  --add-dirs-ro="$HOME/projects/dotfiles/home" \
+  --add-dirs="$HOME/projects/dotfiles/home/.config/gh" \
+  --add-dirs="$HOME/projects/go" \
+  --add-dirs="$HOME/Library/Caches/go-build" \
+  claude --dangerously-skip-permissions "$@"
