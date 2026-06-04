@@ -13,8 +13,9 @@
 #   --add-dirs-ro       read-only access to the stowed dotfiles tree
 #                       (git/gh/etc. configs are symlinks into here)
 #   --add-dirs          read-write for gh (refreshes its own state), the Go
-#                       workspace (GOPATH: binaries + module cache) and the Go
-#                       build cache (GOCACHE) so go build/test/get work
+#                       workspace (GOPATH: ~/projects/go binaries), the default
+#                       module cache (~/go/pkg/mod) and the Go build cache
+#                       (GOCACHE) so go build/test/get work
 exec safehouse \
   --enable=1password \
   --enable=keychain \
@@ -22,5 +23,6 @@ exec safehouse \
   --add-dirs-ro="$HOME/projects/dotfiles/home" \
   --add-dirs="$HOME/projects/dotfiles/home/.config/gh" \
   --add-dirs="$HOME/projects/go" \
+  --add-dirs="$HOME/go/pkg/mod" \
   --add-dirs="$HOME/Library/Caches/go-build" \
   claude --dangerously-skip-permissions "$@"
