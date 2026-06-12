@@ -7,6 +7,7 @@ tap "xykong/tap"
 
 # ── Core CLI ──────────────────────────────────────────────────────────────────
 brew "git"
+brew "git-lfs"
 brew "gh"
 brew "glow"
 brew "curl"
