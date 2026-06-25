@@ -49,6 +49,17 @@ description = "Apply macOS system defaults"
 depends = ["brew", "fonts", "neovim-setup"]
 run = "./install/macos"
 
+[tasks.go-link]
+description = "Symlink ~/go -> ~/projects/go (GOPATH) so default ~/go/pkg/mod resolves"
+run = """
+if [ -e "$HOME/go" ] && [ ! -L "$HOME/go" ]; then
+  echo "~/go exists and is not a symlink; leaving it alone" >&2
+  exit 1
+fi
+ln -sfn "$HOME/projects/go" "$HOME/go"
+echo "linked ~/go -> ~/projects/go"
+"""
+
 [tasks.install-scripts]
 description = "Run install scripts for tools not managed by Homebrew"
 run = "./tasks/install-scripts.sh"
@@ -70,4 +81,4 @@ run = "brew update && brew upgrade mise"
 
 [tasks.apply]
 description = "Full machine setup — run after bootstrap.sh"
-depends = ["osx-settings", "stow", "install-scripts", "tmux-setup"]
+depends = ["osx-settings", "stow", "install-scripts", "tmux-setup", "go-link"]

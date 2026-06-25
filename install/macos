@@ -11,7 +11,7 @@
 
 # Close any open System Preferences panes, to prevent them from overriding
 # settings we’re about to change
-osascript -e 'tell application "System Preferences" to quit'
+osascript -e 'tell application "System Settings" to quit'
 
 # Ask for the administrator password upfront
 sudo -v
@@ -30,9 +30,10 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 # Screen                                                                      #
 ###############################################################################
 
-# Require password immediately after sleep or screen saver begins
-defaults write com.apple.screensaver askForPassword -int 1
-defaults write com.apple.screensaver askForPasswordDelay -int 0
+# MANUAL: Require password immediately after sleep / screen saver
+# The com.apple.screensaver askForPassword keys have been ignored since macOS 10.13.
+# Set this in System Settings > Lock Screen > "Require password after screen saver
+# begins or display is turned off" — it cannot be reliably automated via defaults.
 
 ###############################################################################
 # Dock                                                                        #
@@ -107,8 +108,10 @@ defaults write NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically -bool tru
 # Disable swipe to navigate back/forward in browsers
 defaults write NSGlobalDomain AppleEnableSwipeNavigateWithScrolls -bool false
 
-# Don't minimize window on title bar double-click
-defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false
+# Don't minimize/zoom window on title bar double-click
+# (AppleMiniaturizeOnDoubleClick is a legacy key ignored on modern macOS;
+#  AppleActionOnDoubleClick is the current one — "None"/"Minimize"/"Maximize"/"Fill")
+defaults write NSGlobalDomain AppleActionOnDoubleClick -string "None"
 
 # Disable smart dashes
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
@@ -136,7 +139,7 @@ defaults write NSGlobalDomain KeyRepeat -int 1
 
 # show app switcher on all displays
 # https://gist.github.com/jthodge/c4ba15a78fb29671dfa072fe279355f0
-defaults write com.apple.Dock appswitcher-all-displays -bool true
+defaults write com.apple.dock appswitcher-all-displays -bool true
 
 ###############################################################################
 # Keyboard Shortcuts                                                          #
@@ -146,18 +149,17 @@ defaults write com.apple.Dock appswitcher-all-displays -bool true
 /usr/libexec/PlistBuddy -c "Delete :AppleSymbolicHotKeys:64" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:64:enabled bool false" ~/Library/Preferences/com.apple.symbolichotkeys.plist
 
-# Disable system screenshot shortcuts (CleanShot takes over)
-# 28 = Cmd+Shift+3 (screen to file), 29 = Cmd+Shift+Ctrl+3 (screen to clipboard)
-# 30 = Cmd+Shift+4 (selection to file), 184 = Cmd+Shift+5 (panel)
-# 31 = Cmd+Shift+Ctrl+4 (selection to clipboard) - keep enabled
-for key in 28 29 30 184; do
-  /usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:$key:enabled false" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || \
-  /usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:$key:enabled bool false" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || true
-done
-
-# Enable screenshot selection to clipboard (Cmd+Shift+Ctrl+4) - system handles this one
-/usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:31:enabled true" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || \
-/usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:31:enabled bool true" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || true
+# Native macOS area screenshots — keep the two selection-capture shortcuts enabled.
+# 30 = Cmd+Shift+4 (selection → file, ~/Downloads/Screenshots)
+# 31 = Cmd+Shift+Ctrl+4 (selection → clipboard)
+# Written via `defaults ... -dict-add` (goes through cfprefsd) instead of editing the
+# plist directly with PlistBuddy — direct edits race cfprefsd's cache and silently get
+# dropped, which is exactly what left Cmd+Shift+4 disabled after a prior apply.
+# params = (ASCII '4'=52, keycode '4'=21, modifier mask); mask 1179648=Cmd+Shift, 1441792=Cmd+Shift+Ctrl.
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 30 \
+  '{enabled=1;value={type=standard;parameters=(52,21,1179648);};}'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 31 \
+  '{enabled=1;value={type=standard;parameters=(52,21,1441792);};}'
 
 # Add Do Not Disturb hotkey (Cmd+Shift+D)
 # Key 175 = Toggle Do Not Disturb
@@ -192,5 +194,9 @@ fi
 # Apply Changes                                                               #
 ###############################################################################
 
-killall Dock
-killall SystemUIServer 2>/dev/null || true
+# Restart Dock and SystemUIServer to apply the settings above.
+# `launchctl kickstart -k` kills-if-running and (re)starts atomically, so it works even
+# when the process is already down — unlike `killall`, which does nothing to a dead Dock
+# and can leave it down if a kill races launchd's relaunch.
+launchctl kickstart -k "gui/$(id -u)/com.apple.Dock.agent" 2>/dev/null || killall Dock 2>/dev/null || true
+launchctl kickstart -k "gui/$(id -u)/com.apple.SystemUIServer.agent" 2>/dev/null || killall SystemUIServer 2>/dev/null || true
