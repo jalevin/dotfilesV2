@@ -63,13 +63,6 @@ gosrc() { go doc -u -src "$@" | bat -l go }
 # mise — universal version manager (replaces pyenv, rbenv)
 eval "$(mise activate zsh)"
 
-# pnpm
-export PNPM_HOME="/Users/jeff/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-
 # AWS
 alias aws-ident="aws sts get-caller-identity"
 alias aws-unset="unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION && echo 'Cleared AWS Credentials'"
