@@ -1,41 +1,69 @@
 #!/usr/bin/env bash
-# Find .env-style files for inventory (e.g. migrating to 1Password).
-# Usage: find-env [path]   (default: ~/projects)
+# Inventory .env-style files (e.g. for migrating to 1Password environments).
+#
+# Usage: find-env [path]        (default path: ~/projects)
+#
+# Output columns (tab-separated, sorted by path):
+#   created  updated  key-count  path
+# key-count = number of KEY=VALUE lines (optionally `export `-prefixed).
 
 set -euo pipefail
 
 ROOT="${1:-$HOME/projects}"
 
 if [[ ! -d "$ROOT" ]]; then
-  echo "error: $ROOT is not a directory" >&2
+  echo "find-env: $ROOT is not a directory" >&2
   exit 1
 fi
 
 PRUNE_DIRS=(
-  node_modules .git vendor .venv venv .tox
+  node_modules node_env nodeenv .git vendor .venv venv .tox
   build out target .next .nuxt .cache
   __pycache__ .pytest_cache .mypy_cache
-  .terraform .gradle .idea .vscode
+  .terraform terraform .gradle .idea .vscode
   Pods DerivedData
+  hayden-dotfiles   # a colleague's dotfiles cloned into ~/projects, not our secrets
 )
 
-# Build -prune expression
+# Filename patterns to skip — templates/examples with placeholder values, not real secrets.
+EXCLUDE_NAMES=( "*.sample" "*.example" "*.tmpl" "*.template" "*TEMPLATE*" "example.*" )
+
+# Build -prune expression from dir names, plus the Go module cache by path
+# (third-party dependency source — never your own secrets).
 prune_expr=()
 for d in "${PRUNE_DIRS[@]}"; do
   prune_expr+=( -name "$d" -o )
 done
-unset 'prune_expr[${#prune_expr[@]}-1]'  # drop trailing -o
+prune_expr+=( -path '*/pkg/mod' )  # replaces the trailing -o
 
-# Match: .env, .env.*, .envrc, *.env
-find "$ROOT" \
-  \( "${prune_expr[@]}" \) -prune -o \
-  -type f \
-  \( -name ".env" -o -name ".env.*" -o -name ".envrc" -o -name "*.env" \) \
-  -print 2>/dev/null |
+# Build the exclusion expression (! -name X ! -name Y ...)
+exclude_expr=()
+for n in "${EXCLUDE_NAMES[@]}"; do
+  exclude_expr+=( ! -name "$n" )
+done
+
+# A KEY=VALUE line, optionally prefixed with `export `.
+KEY_RE='^[[:space:]]*(export[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*='
+
+total_files=0
+
+printf "CREATED\tUPDATED\tKEYS\tPATH\n"
+
+# Process substitution (not a pipe) keeps the loop in this shell so totals survive.
 while IFS= read -r f; do
-  size=$(stat -f%z "$f" 2>/dev/null || echo 0)
-  mtime=$(stat -f "%Sm" -t "%Y-%m-%d" "$f" 2>/dev/null || echo "????-??-??")
-  # Count KEY=VALUE lines (ignore blanks + comments)
-  keys=$(grep -cE '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=' "$f" 2>/dev/null || echo 0)
-  printf "%s\t%5sB\t%3s keys\t%s\n" "$mtime" "$size" "$keys" "$f"
-done | sort
+  keys=$(grep -cE "$KEY_RE" "$f" 2>/dev/null || true)
+  keys=${keys:-0}
+  created=$(stat -f "%SB" -t "%Y-%m-%d" "$f" 2>/dev/null || echo "????-??-??")
+  updated=$(stat -f "%Sm" -t "%Y-%m-%d" "$f" 2>/dev/null || echo "????-??-??")
+  printf "%s\t%s\t%s\t%s\n" "$created" "$updated" "$keys" "$f"
+  total_files=$(( total_files + 1 ))
+done < <(
+  find "$ROOT" \
+    \( "${prune_expr[@]}" \) -prune -o \
+    -type f \
+    \( -name ".env" -o -name ".env.*" -o -name ".envrc" -o -name "*.env" \) \
+    "${exclude_expr[@]}" \
+    -print 2>/dev/null | sort
+)
+
+printf '\n%d files (root=%s)\n' "$total_files" "$ROOT" >&2
