@@ -28,3 +28,11 @@ IMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh`
 - For GraphQL: Use `gh api graphql -f query='...'`
 
 Never use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials.
+
+## IMPORTANT: all comments MUST be reviewed by me
+
+Never use my credentials to reply to a comment in github, slack, or any other service without first prompting me to
+review the text.
+
+When refactoring code and removing things that were not in the original branch, do not leave comments about what code
+was removed in the same PR.
