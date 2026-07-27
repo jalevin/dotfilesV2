@@ -37,7 +37,7 @@ review the text.
 ## Code Comments: Comment the Why, Never the What
 
 Default to self-documenting code: descriptive names, small functions, obvious
-control flow. If you're tempted to write a comment explaining *what* code does,
+control flow. If you're tempted to write a comment explaining _what_ code does,
 rename or restructure until the comment is unnecessary.
 
 A comment earns its place only when it carries information the code can't:
@@ -53,8 +53,12 @@ A comment earns its place only when it carries information the code can't:
    comment only when the name and signature don't tell the whole story.
 3. **Surprises** — code that looks wrong but is correct on purpose. Say why,
    or the next reader will "fix" it.
+4. **Test intent** — when a test's name can't reasonably capture what it's
+   verifying and why, a comment stating the intent is encouraged. Explain the
+   scenario and the behavior being protected, not the test's mechanics.
 
 Never write comments that:
+
 - narrate the code ("increment the counter", "loop over the pods")
 - talk to the reviewer ("changed this to use X", "new helper") — that's
   commit-message content, and it's stale the moment the PR merges
@@ -64,8 +68,8 @@ Never write comments that:
 
 ## Commit & PR Messages: Capture Intent, Not Just Change
 
-The diff already shows *what* changed. The commit/PR message is the only durable
-record of *why* — write it while the reasoning is still in your context, because
+The diff already shows _what_ changed. The commit/PR message is the only durable
+record of _why_ — write it while the reasoning is still in your context, because
 the plan, constraints, and rejected alternatives are lost when the session ends.
 
 For any non-trivial commit body and every PR description, cover three things:
@@ -82,6 +86,7 @@ For any non-trivial commit body and every PR description, cover three things:
    odd on purpose, say so here.
 
 Rules:
+
 - Scale detail to decision content, not diff size. A mechanical change gets one
   line; a small diff with a subtle reason gets a full explanation.
 - If the change deviates from a spec, ADR, or documented behavior, name the
@@ -91,7 +96,7 @@ Rules:
 - Subject line: imperative, ≤72 chars, describes the outcome using the domain
   terms someone would search for — it's the discovery index for `git log`.
 - Don't append a bullet summary of the diff for "discoverability" — `git log
-  --stat` and pickaxe already provide the mechanical what, accurately. The
+--stat` and pickaxe already provide the mechanical what, accurately. The
   subject line and intent sentence are the discovery index; invest there.
 - PR descriptions may include a short "changes at a glance" section for human
   reviewers, but keep it at the design-decision level, not file-by-file.
