@@ -34,8 +34,33 @@ Never use curl or WebFetch for github.com or api.github.com URLs - the gh CLI ha
 Never use my credentials to reply to a comment in github, slack, or any other service without first prompting me to
 review the text.
 
-When refactoring code and removing things that were not in the original branch, do not leave comments about what code
-was removed in the same PR.
+## Code Comments: Comment the Why, Never the What
+
+Default to self-documenting code: descriptive names, small functions, obvious
+control flow. If you're tempted to write a comment explaining *what* code does,
+rename or restructure until the comment is unnecessary.
+
+A comment earns its place only when it carries information the code can't:
+
+1. **Why** — non-obvious constraints, workarounds, and invariants ("the K8s
+   API briefly returns 409 during rollout; the retry is intentional"). Link
+   the issue/incident if one exists.
+2. **API docs** — follow the project's existing convention first. Where an
+   identifier is consumed outside the codebase (a published library, a module
+   other repos import), write doc comments per language convention (godoc,
+   TSDoc) covering behavior and contract — edge cases, errors — not
+   implementation. For exports only used within the same codebase, add a doc
+   comment only when the name and signature don't tell the whole story.
+3. **Surprises** — code that looks wrong but is correct on purpose. Say why,
+   or the next reader will "fix" it.
+
+Never write comments that:
+- narrate the code ("increment the counter", "loop over the pods")
+- talk to the reviewer ("changed this to use X", "new helper") — that's
+  commit-message content, and it's stale the moment the PR merges
+- record what was removed or how it used to work — git history has that.
+  When refactoring, never leave comments describing code that was removed
+  in the same PR.
 
 ## Commit & PR Messages: Capture Intent, Not Just Change
 
