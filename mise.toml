@@ -60,6 +60,10 @@ ln -sfn "$HOME/projects/go" "$HOME/go"
 echo "linked ~/go -> ~/projects/go"
 """
 
+[tasks.first-run]
+description = "One-time fresh-machine steps (clear Dock, iCloud reminder)"
+run = "./tasks/first-run.sh"
+
 [tasks.install-scripts]
 description = "Run install scripts for tools not managed by Homebrew"
 run = "./tasks/install-scripts.sh"
@@ -76,8 +80,8 @@ description = "Upgrade Homebrew cask apps that can't self-update"
 run = "brew update && brew upgrade --cask brave-browser google-chrome signal whatsapp"
 
 [tasks.upgrade-mise]
-description = "Upgrade mise"
-run = "brew update && brew upgrade mise"
+description = "Upgrade mise (installed via mise.run, not brew)"
+run = "mise self-update"
 
 [tasks.apply]
 description = "Full machine setup — run after bootstrap.sh"

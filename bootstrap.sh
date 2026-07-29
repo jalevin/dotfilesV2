@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-# Temporarily disable SSH URL rewriting (1Password SSH agent not set up yet)
-git config --global --unset-all url."git@github.com:".insteadOf 2>/dev/null || true
-git config --global --unset-all url."git@gitlab.com:".insteadOf 2>/dev/null || true
-
 # Install Xcode command line tools
 xcode-select --install || true
 
@@ -15,28 +11,23 @@ if ! command -v brew &>/dev/null; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# Install mise and stow (prerequisites for mise run apply)
-if ! command -v mise &>/dev/null || ! command -v stow &>/dev/null; then
-  brew install mise stow
+# Install stow (prerequisite for mise run stow)
+if ! command -v stow &>/dev/null; then
+  brew install stow
 fi
 
-mise run apply
-
-# Clear default Dock apps (only on fresh install)
-echo "Clearing Dock - add your preferred apps manually"
-defaults write com.apple.dock persistent-apps -array
-killall Dock
-
-# Prompt for manual iCloud setup
-echo ""
-echo "========================================="
-echo " Manual Step: Enable iCloud Desktop & Documents"
-echo "========================================="
-echo "System Settings > Apple ID > iCloud > iCloud Drive > Options"
-echo "  → Enable 'Desktop & Documents Folders'"
-echo ""
-read -p "Press Enter once complete (or 's' to skip): " -n 1 response
-echo ""
-if [[ "$response" == "s" ]]; then
-  echo "Skipped — remember to enable this later."
+# Install mise via the official installer (upgraded via `mise self-update`, not brew)
+if ! command -v mise &>/dev/null; then
+  curl -fsSL https://mise.run | sh
+  export PATH="$HOME/.local/bin:$PATH"
 fi
+
+# Ignore global git config during apply: once stow links ~/.config/git/config,
+# its https->ssh URL rewrites would break setup-time clones (TPM, lazy.nvim)
+# because the 1Password SSH agent isn't configured yet.
+GIT_CONFIG_GLOBAL=/dev/null mise run apply
+
+echo ""
+echo "Bootstrap complete. On a brand-new machine, also run:"
+echo "  mise run first-run   # one-time steps (clear Dock, iCloud reminder)"
+echo "Then follow SETUP.md for 1Password, secrets, and app setup."

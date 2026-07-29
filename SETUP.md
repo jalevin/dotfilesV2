@@ -11,8 +11,10 @@
 - [ ] Run bootstrap: `cd ~/projects/dotfiles && ./bootstrap.sh`
   - Installs Xcode CLI tools
   - Installs Homebrew
-  - Installs mise + stow
+  - Installs stow (brew) and mise (mise.run installer; upgrade via `mise self-update`)
   - Runs `mise run apply` (brew packages, stow symlinks, fonts, neovim plugins, macOS defaults)
+  - Idempotent — safe to re-run on a configured machine
+- [ ] Run one-time steps: `mise run first-run` (clears Dock, iCloud reminder)
 
 ## Phase 2: Apple ID & iCloud (System Settings)
 
