@@ -113,7 +113,7 @@
       "Bash(k apply:*)"
     ]
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh",
@@ -126,7 +126,7 @@
     "grafana-enghub@grafana-ai-kit": true,
     "slack@claude-plugins-official": true,
     "hive@hive": true,
-    "hive-hooks@hive": true
+    "hive-hooks@hive": false
   },
   "extraKnownMarketplaces": {
     "hive": {

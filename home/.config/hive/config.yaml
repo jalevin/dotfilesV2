@@ -2,12 +2,9 @@ workspaces:
   - /Users/jeff/projects
 
 agents:
-  default: claude
-  agent_selector: true
+  default: claude-yolo
   claude:
     command: claude
-  claude-safehouse:
-    command: safe-claude
   claude-yolo:
     command: claude
     flags:

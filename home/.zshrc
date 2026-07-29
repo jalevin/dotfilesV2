@@ -135,8 +135,7 @@ hv() {
 }
 alias t='tmux new-session -As $(basename $PWD)'
 
-# safe-claude (Safehouse-sandboxed claude) lives at ~/.local/bin/safe-claude,
-# shared with the claude-safehouse hive profile. On PATH, so no alias needed.
+alias claude='claude --dangerously-skip-permissions'
 
 # ── Prompt ──────────────────────────────────────────────────────────────────────
 
