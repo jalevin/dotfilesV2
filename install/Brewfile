@@ -45,6 +45,7 @@ brew "ctop"
 brew "dive"
 brew "grafana/grafana/gcx"             # Grafana CLI
 brew "mole"
+brew "mosh"
 brew "nmap"
 brew "speedtest-cli"
 brew "weave"                           # semantic merge driver for git
