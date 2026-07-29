@@ -80,6 +80,7 @@ brew "heroku/brew/heroku"
 brew "ffmpeg"
 brew "imagemagick"
 #brew "vips"
+brew "whisper-cpp"
 brew "yt-dlp"
 
 # ── Casks ─────────────────────────────────────────────────────────────────────
