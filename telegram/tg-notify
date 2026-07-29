@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# tg-notify — send a Telegram message as THIS machine's bot.
+#
+# Each machine has its own Telegram bot (its own token), so the sender you see
+# on your phone tells you which computer is messaging. Credentials live in the
+# macOS login Keychain under fixed item names (see tg-setup); this script is
+# byte-identical on every machine.
+#
+# The safehouse sandbox (see safe-claude) already grants Keychain access, so
+# agents launched there can call this directly.
+#
+# Request/response: with --force-reply or --button, the sent message's id is
+# printed to stdout so a caller can `tg-await <id>` the routed reply. That path
+# requires a running tg-brokerd (the single poller that routes replies back to
+# the session that sent each message). See the package README.
+#
+# Usage:
+#   tg-notify [-t TITLE] [--force-reply | --button "LABEL=data" ...] MESSAGE...
+#   COMMAND 2>&1 | tg-notify [options]
+#
+# Exits non-zero (and prints to stderr) if creds are missing or the send fails.
+set -euo pipefail
+
+SVC_TOKEN="telegram-bot-token"
+SVC_CHAT="telegram-chat-id"
+
+usage() {
+  cat <<'EOF'
+tg-notify — send a Telegram message as this machine's bot.
+
+Usage:
+  tg-notify [-t TITLE] [--force-reply | --button "LABEL=data" ...] MESSAGE...
+  COMMAND 2>&1 | tg-notify [options]
+
+Options:
+  -t TITLE           Prepend a bold title line above the message.
+  --force-reply      Attach a force-reply prompt so the user's typed reply links
+                     back to this message. Prints the sent message_id to stdout.
+  --button "L=data"  Attach an inline button labelled L carrying callback_data
+                     "data" (repeatable; all buttons share one row, max 64 bytes
+                     of data each). Prints the sent message_id. Mutually
+                     exclusive with --force-reply.
+  -h, --help         Show this help.
+
+The message body comes from the arguments, or stdin if none are given. Every
+message is prefixed with [ComputerName]; body text is HTML-escaped so raw log
+output is safe to pipe in.
+
+Credentials are read from the macOS login Keychain (items 'telegram-bot-token'
+and 'telegram-chat-id'). Run tg-setup once per machine to populate them.
+
+For routed request/response across multiple sessions, run tg-brokerd and use
+tg-await <message_id>. See the package README.
+
+Examples:
+  tg-notify "build finished"
+  make deploy 2>&1 | tg-notify -t "deploy"
+  id=$(tg-notify --force-reply "Which region?"); region=$(tg-await "$id")
+  id=$(tg-notify --button "Yes=yes" --button "No=no" "Approve deploy?")
+EOF
+}
+
+# --- args ---
+title=""; force_reply=0; buttons=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -h|--help)     usage; exit 0 ;;
+    -t)            title="${2:-}"; shift 2 ;;
+    --force-reply) force_reply=1; shift ;;
+    --button)      buttons+=("${2:-}"); shift 2 ;;
+    --)            shift; break ;;
+    -*)            echo "tg-notify: unknown option: $1" >&2; exit 2 ;;
+    *)             break ;;
+  esac
+done
+
+if [ "$force_reply" = 1 ] && [ "${#buttons[@]}" -gt 0 ]; then
+  echo "tg-notify: --force-reply and --button are mutually exclusive" >&2; exit 2
+fi
+
+token=$(security find-generic-password -a "$USER" -s "$SVC_TOKEN" -w 2>/dev/null) || {
+  echo "tg-notify: no '$SVC_TOKEN' in Keychain — run tg-setup" >&2; exit 1; }
+chat=$(security find-generic-password -a "$USER" -s "$SVC_CHAT" -w 2>/dev/null) || {
+  echo "tg-notify: no '$SVC_CHAT' in Keychain — run tg-setup" >&2; exit 1; }
+api="https://api.telegram.org/bot${token}"
+
+# --- body ---
+if [ "$#" -gt 0 ]; then body="$*"; else body="$(cat)"; fi
+[ -n "${body//[[:space:]]/}" ] || { echo "tg-notify: empty message" >&2; exit 1; }
+
+host=$(scutil --get ComputerName 2>/dev/null || hostname -s)
+esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
+text="<b>[$(printf '%s' "$host" | esc)]</b>"
+[ -n "$title" ] && text="$text <b>$(printf '%s' "$title" | esc)</b>"
+text="$text
+$(printf '%s' "$body" | esc)"
+
+# --- reply markup ---
+markup=""
+if [ "${#buttons[@]}" -gt 0 ]; then
+  row=$(for b in "${buttons[@]}"; do
+          jq -nc --arg t "${b%%=*}" --arg d "${b#*=}" '{text:$t,callback_data:$d}'
+        done | jq -sc '.')
+  markup=$(jq -nc --argjson row "$row" '{inline_keyboard:[$row]}')
+elif [ "$force_reply" = 1 ]; then
+  markup='{"force_reply":true,"input_field_placeholder":"reply to this"}'
+fi
+
+# --- send ---
+send_args=(--data-urlencode "chat_id=${chat}"
+           --data-urlencode "parse_mode=HTML"
+           --data-urlencode "text=${text}")
+[ -n "$markup" ] && send_args+=(--data-urlencode "reply_markup=${markup}")
+
+resp=$(curl -fsS "$api/sendMessage" "${send_args[@]}") || {
+  echo "tg-notify: send failed" >&2; exit 1; }
+
+# For request/response flows, emit the sent message_id so a caller can tg-await it.
+if [ "$force_reply" = 1 ] || [ "${#buttons[@]}" -gt 0 ]; then
+  printf '%s' "$resp" | jq -r '.result.message_id'
+fi

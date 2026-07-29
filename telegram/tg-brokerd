@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# tg-brokerd — single Telegram poller that ROUTES replies to the session that
+# sent the original message.
+#
+# One bot = one getUpdates consumer, so concurrent sessions can't each poll.
+# The broker is that single consumer: it reads every update and fans each reply
+# out to a per-message inbox, keyed by the id of the message being replied to.
+# Each session then blocks on tg-await <its own message_id> and thus only ever
+# sees replies to messages it sent.
+#
+# Routing key = id of the message being replied to:
+#   - text reply -> update.message.reply_to_message.message_id   (payload: text)
+#   - button tap -> update.callback_query.message.message_id     (payload: callback_data)
+#
+# Inbox: ~/.local/state/telegram/replies/<message_id>
+#
+# Only messages/callbacks from my own user id (stored telegram-chat-id) are
+# routed; everything else is dropped. Fails closed if that id is missing/bad.
+#
+# Run ONE broker per bot. It is the single getUpdates consumer — do NOT also run
+# tg-listen against the same bot (they'd 409 and steal each other's updates).
+# Foreground loop; background with `tg-brokerd &` or a launchd agent.
+set -euo pipefail
+
+SVC_TOKEN="telegram-bot-token"
+SVC_CHAT="telegram-chat-id"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/telegram"
+REPLY_DIR="$STATE_DIR/replies"
+OFFSET_FILE="$STATE_DIR/offset"
+PID_FILE="$STATE_DIR/brokerd.pid"
+POLL_TIMEOUT=25
+
+usage() {
+  cat <<'EOF'
+tg-brokerd — single Telegram poller that routes replies to the sending session.
+
+Run one per bot (it owns getUpdates; don't also run tg-listen). Pair with
+tg-notify --force-reply / --button (which print the sent message_id) and
+tg-await <message_id>. Only replies from your own user id are routed.
+
+Usage:  tg-brokerd [-h|--help]
+EOF
+}
+case "${1:-}" in -h|--help) usage; exit 0 ;; esac
+
+token=$(security find-generic-password -a "$USER" -s "$SVC_TOKEN" -w 2>/dev/null) || {
+  echo "tg-brokerd: no '$SVC_TOKEN' in Keychain — run tg-setup" >&2; exit 1; }
+allowed=$(security find-generic-password -a "$USER" -s "$SVC_CHAT" -w 2>/dev/null) || {
+  echo "tg-brokerd: no '$SVC_CHAT' in Keychain — run tg-setup" >&2; exit 1; }
+case "$allowed" in
+  ''|*[!0-9]*) echo "tg-brokerd: stored '$SVC_CHAT' is empty or non-numeric — re-run tg-setup" >&2; exit 1 ;;
+esac
+
+api="https://api.telegram.org/bot${token}"
+mkdir -p "$REPLY_DIR"
+printf '%s' "$$" > "$PID_FILE"
+trap 'rm -f "$PID_FILE"' EXIT
+offset=$(cat "$OFFSET_FILE" 2>/dev/null || true)
+
+# Atomically drop a reply payload into the inbox for a message id.
+route() { # $1=message_id  $2=payload
+  local tmp
+  tmp=$(mktemp "$REPLY_DIR/.tmp.XXXXXX")
+  printf '%s' "$2" > "$tmp"
+  mv -f "$tmp" "$REPLY_DIR/$1"
+}
+
+echo "tg-brokerd: listening as user $allowed (pid $$)" >&2
+
+while :; do
+  touch "$PID_FILE"   # heartbeat for tg-await
+  args=(--data-urlencode "timeout=${POLL_TIMEOUT}"
+        --data-urlencode 'allowed_updates=["message","callback_query"]')
+  [ -n "$offset" ] && args+=(--data-urlencode "offset=${offset}")
+
+  resp=$(curl -fsS "$api/getUpdates" "${args[@]}" 2>/dev/null) || { sleep 3; continue; }
+  ok=$(printf '%s' "$resp" | jq -r '.ok' 2>/dev/null || echo false)
+  [ "$ok" = "true" ] || { echo "tg-brokerd: bad response: $resp" >&2; sleep 3; continue; }
+
+  mapfile -t updates < <(printf '%s' "$resp" | jq -c '.result[]' 2>/dev/null || true)
+  [ "${#updates[@]}" -gt 0 ] || continue
+
+  for upd in "${updates[@]}"; do
+    uid=$(printf '%s' "$upd" | jq -r '.update_id')
+    offset=$((uid + 1)); printf '%s' "$offset" > "$OFFSET_FILE"   # ack every update
+
+    kind=$(printf '%s' "$upd" | jq -r 'if .callback_query then "cb" elif .message then "msg" else "other" end')
+    case "$kind" in
+      cb)
+        from=$(printf '%s' "$upd" | jq -r '.callback_query.from.id // empty')
+        [ "$from" = "$allowed" ] || continue
+        mid=$(printf '%s' "$upd" | jq -r '.callback_query.message.message_id // empty')
+        data=$(printf '%s' "$upd" | jq -r '.callback_query.data // empty')
+        cbid=$(printf '%s' "$upd" | jq -r '.callback_query.id')
+        # Ack so the phone stops showing the button's loading spinner.
+        curl -fsS "$api/answerCallbackQuery" --data-urlencode "callback_query_id=${cbid}" \
+          -o /dev/null 2>/dev/null || true
+        [ -n "$mid" ] && route "$mid" "$data"
+        ;;
+      msg)
+        from=$(printf '%s' "$upd" | jq -r '.message.from.id // empty')
+        [ "$from" = "$allowed" ] || continue
+        mid=$(printf '%s' "$upd" | jq -r '.message.reply_to_message.message_id // empty')
+        text=$(printf '%s' "$upd" | jq -r '.message.text // empty')
+        # Only route messages that are replies to one of our sent messages.
+        [ -n "$mid" ] && [ -n "$text" ] && route "$mid" "$text"
+        ;;
+    esac
+  done
+done

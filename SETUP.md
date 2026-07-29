@@ -71,6 +71,30 @@
 ### Slack / Discord / Signal
 - [ ] Sign in to each app
 
+### Telegram agent notifications (per-machine bot)
+
+Local agents message my phone via Telegram. **Each machine has its own bot** so
+the sender identity tells me which computer is talking. Full details in
+`~/projects/dotfiles/telegram/README.md`. Setup per machine:
+
+- [ ] In Telegram, create a bot for this machine via `@BotFather` → `/newbot`
+  (unique, non-descriptive username ending in `bot`, e.g. `jl_relay_bot`).
+  Optional: `/setjoingroups` → Disable, keep `/setprivacy` on.
+- [ ] Get my numeric user id from `@userinfobot` (same on every machine).
+- [ ] Message the new bot once (bots can't DM you until you've talked to them).
+- [ ] Store creds in the login Keychain: `tg-setup`
+  (prompts for the bot token + chat_id; validates the token; sends a test).
+- [ ] Send from anywhere: `tg-notify "message"` or `cmd 2>&1 | tg-notify`.
+
+Notes:
+- Creds live in the **local login Keychain** (items `telegram-bot-token`,
+  `telegram-chat-id`), never in this repo and not iCloud-synced. `tg-setup` and
+  `tg-notify` are identical across machines; only the Keychain contents differ.
+- The safehouse sandbox already `--enable=keychain`, so agents launched via
+  `safe-claude` can call `tg-notify` directly.
+- Two-way bots must allowlist my `from.id` in their handler — anyone can *send*
+  to a bot; the code decides what to act on.
+
 ### Tuple
 - [ ] Sign in, grant screen recording & microphone permissions
 

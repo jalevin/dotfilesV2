@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# tg-await — block until tg-brokerd routes a reply for a given message id.
+#
+# Pairs with `tg-notify --force-reply|--button` (which prints the sent message
+# id) and a running tg-brokerd. Prints the reply payload — typed text, or a
+# button's callback_data — to stdout, then consumes it. Because the id is the
+# one THIS session sent, a session only ever receives replies to its own message.
+#
+# Usage:
+#   tg-await <message_id> [--timeout SECONDS]
+#   id=$(tg-notify --force-reply "Which region?"); region=$(tg-await "$id")
+set -euo pipefail
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/telegram"
+REPLY_DIR="$STATE_DIR/replies"
+PID_FILE="$STATE_DIR/brokerd.pid"
+POLL=1
+
+usage() {
+  cat <<'EOF'
+tg-await — block until tg-brokerd routes a reply for a message id.
+
+Usage:
+  tg-await <message_id> [--timeout SECONDS]
+
+Prints the reply payload (typed text or a button's callback_data) and consumes
+it. Requires a running tg-brokerd. --timeout 0 (default) waits forever; a
+positive value exits 2 if no reply arrives within that many seconds.
+EOF
+}
+
+mid=""; timeout=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --timeout) timeout="${2:-0}"; shift 2 ;;
+    -*) echo "tg-await: unknown option: $1" >&2; exit 2 ;;
+    *) mid="$1"; shift ;;
+  esac
+done
+case "$mid" in ''|*[!0-9]*) echo "tg-await: need a numeric <message_id>" >&2; exit 2 ;; esac
+case "$timeout" in *[!0-9]*) echo "tg-await: --timeout must be a whole number of seconds" >&2; exit 2 ;; esac
+
+[ -e "$PID_FILE" ] || echo "tg-await: warning — tg-brokerd does not appear to be running" >&2
+
+f="$REPLY_DIR/$mid"
+waited=0
+while [ ! -e "$f" ]; do
+  sleep "$POLL"
+  if [ "$timeout" -gt 0 ]; then
+    waited=$((waited + POLL))
+    [ "$waited" -ge "$timeout" ] && {
+      echo "tg-await: timed out after ${timeout}s waiting for reply to $mid" >&2; exit 2; }
+  fi
+done
+cat "$f"
+rm -f "$f"

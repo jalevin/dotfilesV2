@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# tg-listen — receive messages sent TO this machine's bot, via long polling.
+#
+# Companion to tg-notify. Uses Telegram getUpdates long polling (pull-based, so
+# it works behind NAT with no public endpoint). Credentials come from the login
+# Keychain (see tg-setup).
+#
+# SECURITY: anyone can message a bot. Only messages whose sender id matches the
+# stored telegram-chat-id (my own user id) are delivered; all others are
+# consumed and dropped. This allowlist — not the bot's name — is the boundary.
+#
+# CONSTRAINT: only ONE getUpdates consumer may run per bot token (a second one
+# gets HTTP 409 and they steal each other's updates). One listener per machine.
+#
+# The ack offset is persisted so restarts don't replay old messages (Telegram
+# retains undelivered updates ~24h).
+#
+# Usage:
+#   tg-listen [options] [-- COMMAND ...]
+#
+# Options:
+#   --once        Deliver the next allowed message, then exit.
+#   --from-now    Skip any backlog; only deliver messages arriving from now on.
+#   --json        Emit the full update object as JSON (one per line).
+#   -h, --help    Show this help.
+#
+# Default: print each allowed message's text to stdout. If COMMAND is given
+# after `--`, it's run once per message with the text piped to its stdin.
+#
+# Examples:
+#   tg-listen                                 # stream replies to stdout
+#   reply=$(tg-listen --once --from-now)      # block for one reply (approvals)
+#   tg-listen -- ~/bin/handle-msg             # dispatch each message to a handler
+set -euo pipefail
+
+SVC_TOKEN="telegram-bot-token"
+SVC_CHAT="telegram-chat-id"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/telegram"
+OFFSET_FILE="$STATE_DIR/offset"
+POLL_TIMEOUT=25
+
+usage() {
+  cat <<'EOF'
+tg-listen — receive messages sent to this machine's bot via long polling.
+
+Only messages from your own Telegram user id (the stored telegram-chat-id) are
+delivered; everything else is consumed and dropped. Run one listener per bot.
+
+Usage:
+  tg-listen [options] [-- COMMAND ...]
+
+Options:
+  --once        Deliver the next allowed message, then exit.
+  --from-now    Skip any backlog; only deliver messages arriving from now on.
+  --json        Emit the full update object as JSON (one per line).
+  -h, --help    Show this help.
+
+Default: print each allowed message's text to stdout. If COMMAND is given after
+`--`, it's run once per message with the text piped to its stdin.
+
+Examples:
+  tg-listen                                 # stream replies to stdout
+  reply=$(tg-listen --once --from-now)      # block for one reply (approvals)
+  tg-listen -- ~/bin/handle-msg             # dispatch each message to a handler
+EOF
+}
+
+once=0; from_now=0; json=0; cmd=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --once)     once=1; shift ;;
+    --from-now) from_now=1; shift ;;
+    --json)     json=1; shift ;;
+    -h|--help)  usage; exit 0 ;;
+    --)         shift; cmd=("$@"); break ;;
+    *)          echo "tg-listen: unknown arg: $1" >&2; exit 2 ;;
+  esac
+done
+
+token=$(security find-generic-password -a "$USER" -s "$SVC_TOKEN" -w 2>/dev/null) || {
+  echo "tg-listen: no '$SVC_TOKEN' in Keychain — run tg-setup" >&2; exit 1; }
+allowed=$(security find-generic-password -a "$USER" -s "$SVC_CHAT" -w 2>/dev/null) || {
+  echo "tg-listen: no '$SVC_CHAT' in Keychain — run tg-setup" >&2; exit 1; }
+
+# Fail closed: never poll unless the allowlist id is a valid, non-empty number.
+# Otherwise a blank/garbage id could weaken the per-message sender check below.
+case "$allowed" in
+  ''|*[!0-9]*) echo "tg-listen: stored '$SVC_CHAT' is empty or non-numeric — re-run tg-setup" >&2; exit 1 ;;
+esac
+
+api="https://api.telegram.org/bot${token}"
+mkdir -p "$STATE_DIR"
+offset=$(cat "$OFFSET_FILE" 2>/dev/null || true)
+
+# --from-now: fast-forward past any pending backlog without delivering it.
+if [ "$from_now" = 1 ]; then
+  last=$(curl -fsS "$api/getUpdates" \
+           --data-urlencode "offset=-1" --data-urlencode "timeout=0" \
+           2>/dev/null | jq -r '.result[-1].update_id // empty' 2>/dev/null || true)
+  if [ -n "$last" ]; then offset=$((last + 1)); printf '%s' "$offset" > "$OFFSET_FILE"; fi
+fi
+
+deliver() { # $1=text  $2=update-json
+  if [ "$json" = 1 ]; then printf '%s\n' "$2"
+  elif [ "${#cmd[@]}" -gt 0 ]; then printf '%s' "$1" | "${cmd[@]}"
+  else printf '%s\n' "$1"
+  fi
+}
+
+while :; do
+  args=(--data-urlencode "timeout=${POLL_TIMEOUT}"
+        --data-urlencode 'allowed_updates=["message"]')
+  [ -n "$offset" ] && args+=(--data-urlencode "offset=${offset}")
+
+  resp=$(curl -fsS "$api/getUpdates" "${args[@]}" 2>/dev/null) || { sleep 3; continue; }
+  ok=$(printf '%s' "$resp" | jq -r '.ok' 2>/dev/null || echo false)
+  [ "$ok" = "true" ] || { echo "tg-listen: bad response: $resp" >&2; sleep 3; continue; }
+
+  mapfile -t updates < <(printf '%s' "$resp" | jq -c '.result[]' 2>/dev/null || true)
+  [ "${#updates[@]}" -gt 0 ] || continue
+
+  for upd in "${updates[@]}"; do
+    uid=$(printf '%s' "$upd" | jq -r '.update_id')
+    offset=$((uid + 1)); printf '%s' "$offset" > "$OFFSET_FILE"   # ack every update
+    from=$(printf '%s' "$upd" | jq -r '.message.from.id // empty')
+    text=$(printf '%s' "$upd" | jq -r '.message.text // empty')
+    [ "$from" = "$allowed" ] || continue   # allowlist: drop anyone else
+    [ -n "$text" ] || continue             # skip non-text messages
+    deliver "$text" "$upd" || true
+    [ "$once" = 1 ] && exit 0
+  done
+done

@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# tg-setup — store this machine's Telegram bot credentials in the login Keychain.
+#
+# Run ONCE per machine. Create a separate bot per machine via @BotFather (so the
+# sender on your phone tells you which computer is messaging), and paste THAT
+# bot's token here. The chat_id is your own Telegram numeric user id and is the
+# same on every machine — get it by messaging @userinfobot.
+#
+# Stored under fixed item names so tg-notify stays portable:
+#   telegram-bot-token   (secret, per-machine)
+#   telegram-chat-id     (your user id, same everywhere)
+#
+# Creds live ONLY in the local login Keychain — never written to this repo, and
+# not synced via iCloud (generic Keychain items aren't synchronizable). Stored
+# with -A so processes running as you (incl. the safehouse sandbox) can read
+# them without a GUI prompt; acceptable blast radius for a personal notifier.
+set -euo pipefail
+
+SVC_TOKEN="telegram-bot-token"
+SVC_CHAT="telegram-chat-id"
+
+usage() {
+  cat <<'EOF'
+tg-setup — store this machine's Telegram bot credentials in the login Keychain.
+
+Usage:
+  tg-setup [-h|--help]
+
+Run once per machine. Prompts for the bot token (from @BotFather) and your
+numeric Telegram user id (from @userinfobot), validates the token against
+Telegram, stores both in the login Keychain (items 'telegram-bot-token' and
+'telegram-chat-id'), then sends a test message via tg-notify.
+
+Use a separate bot per machine so the sender identity tells you which computer
+is messaging. Re-run any time to rotate or update the stored values.
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
+read -rsp "Bot token (from @BotFather): " token; echo
+[ -n "$token" ] || { echo "tg-setup: no token entered" >&2; exit 1; }
+
+# Validate the token against Telegram before saving anything.
+resp=$(curl -fsS "https://api.telegram.org/bot${token}/getMe") || {
+  echo "tg-setup: getMe failed — Telegram rejected the token" >&2; exit 1; }
+bot=$(printf '%s' "$resp" | sed -n 's/.*"username":"\([^"]*\)".*/\1/p')
+echo "Token valid for bot: @${bot:-<unknown>}"
+
+read -rp "Your Telegram numeric user id (chat_id): " chat
+[ -n "$chat" ] || { echo "tg-setup: no chat_id entered" >&2; exit 1; }
+case "$chat" in *[!0-9-]*) echo "tg-setup: chat_id should be numeric" >&2; exit 1;; esac
+
+security add-generic-password -a "$USER" -s "$SVC_TOKEN" -w "$token" -U -A
+security add-generic-password -a "$USER" -s "$SVC_CHAT"  -w "$chat"  -U -A
+echo "Stored in login Keychain: $SVC_TOKEN, $SVC_CHAT"
+
+# Smoke test through tg-notify if it's on PATH.
+if command -v tg-notify >/dev/null 2>&1; then
+  echo "Sending a test message…"
+  tg-notify "tg-setup complete — this machine can now message you." \
+    && echo "Sent — check Telegram."
+fi
