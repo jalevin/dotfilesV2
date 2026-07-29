@@ -12,8 +12,8 @@
 #
 # Creds live ONLY in the local login Keychain — never written to this repo, and
 # not synced via iCloud (generic Keychain items aren't synchronizable). Stored
-# with -A so processes running as you (incl. the safehouse sandbox) can read
-# them without a GUI prompt; acceptable blast radius for a personal notifier.
+# with -A so processes running as you (incl. coding agents) can read them
+# without a GUI prompt; acceptable blast radius for a personal notifier.
 set -euo pipefail
 
 SVC_TOKEN="telegram-bot-token"

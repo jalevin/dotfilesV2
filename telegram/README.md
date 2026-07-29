@@ -12,9 +12,9 @@ Let local agents (and any script) message my phone via Telegram.
   - `telegram-chat-id` — my Telegram numeric user id (same on every machine)
   Generic Keychain items aren't iCloud-synced, so a machine's token never
   leaves that machine.
-- **Agents get it for free.** The safehouse sandbox (`safe-claude`) already runs
-  with `--enable=keychain`, so agents launched there can call `tg-notify`
-  directly — no Vault re-auth, no 1Password unlock, works while I'm AFK.
+- **Agents get it for free.** Agents run as my user, so they can call
+  `tg-notify` directly — no Vault re-auth, no 1Password unlock, works while
+  I'm AFK.
 
 ## Layout
 

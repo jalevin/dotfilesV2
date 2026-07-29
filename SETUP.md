@@ -90,8 +90,8 @@ Notes:
 - Creds live in the **local login Keychain** (items `telegram-bot-token`,
   `telegram-chat-id`), never in this repo and not iCloud-synced. `tg-setup` and
   `tg-notify` are identical across machines; only the Keychain contents differ.
-- The safehouse sandbox already `--enable=keychain`, so agents launched via
-  `safe-claude` can call `tg-notify` directly.
+- Agents run as my user, so they can call `tg-notify` directly — no extra
+  grants needed.
 - Two-way bots must allowlist my `from.id` in their handler — anyone can *send*
   to a bot; the code decides what to act on.
 

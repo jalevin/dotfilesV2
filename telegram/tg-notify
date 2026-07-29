@@ -6,8 +6,8 @@
 # macOS login Keychain under fixed item names (see tg-setup); this script is
 # byte-identical on every machine.
 #
-# The safehouse sandbox (see safe-claude) already grants Keychain access, so
-# agents launched there can call this directly.
+# Agents run as my user, so they can call this directly — creds come from the
+# login Keychain with no GUI prompt.
 #
 # Request/response: with --force-reply or --button, the sent message's id is
 # printed to stdout so a caller can `tg-await <id>` the routed reply. That path

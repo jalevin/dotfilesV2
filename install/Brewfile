@@ -1,4 +1,3 @@
-tap "eugene1g/safehouse"
 tap "go-task/tap"
 tap "grafana/grafana"
 tap "hashicorp/tap"
@@ -40,7 +39,6 @@ brew "luarocks"
 brew "yarn"
 
 # ── Dev Tools ─────────────────────────────────────────────────────────────────
-brew "agent-safehouse"                 # macOS sandbox for AI coding agents
 brew "git-gui"
 brew "htop"
 brew "ctop"
