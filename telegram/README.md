@@ -31,7 +31,7 @@ telegram/                        <- this package (top-level repo dir, NOT stowed
 home/.local/bin/tg-{setup,notify,listen,brokerd,await} -> ../../../telegram/tg-*
 ```
 
-Only the two commands are deployed into `$HOME`: stow links them onto PATH from
+Only the commands are deployed into `$HOME`: stow links all five onto PATH from
 `~/.local/bin`; the scripts, docs, and assets stay in the repo.
 
 ## Per-machine setup
