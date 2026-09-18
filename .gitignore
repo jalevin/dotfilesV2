@@ -28,3 +28,14 @@ home/.config/gcloud/
 home/.config/gws/
 home/.config/sops/age/keys.txt
 home/.config/op/
+
+# Agent skills are ignored by default — most arrive from grafana/ai-kit's
+# sync or a tool's own installer, and are re-fetchable rather than managed
+# here. Add an exception per skill as it's ready to be checked in.
+home/.ai/skills/*
+!home/.ai/skills/collab-plan/
+!home/.ai/skills/daily-prep/
+!home/.ai/skills/meeting-notes/
+!home/.ai/skills/meeting-segment-editor/
+!home/.ai/skills/obsidian/
+!home/.ai/skills/obsidian-cli/

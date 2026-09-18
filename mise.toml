@@ -69,10 +69,11 @@ description = "Run install scripts for tools not managed by Homebrew"
 run = "./tasks/install-scripts.sh"
 
 [tasks.bump]
-description = "Update Claude Code and Hive to latest"
+description = "Update Claude Code, Hive, and plannotator to latest"
 run = """
 ./install/scripts/claude-code.sh
 ./install/scripts/hive.sh
+./install/scripts/plannotator.sh
 """
 
 [tasks.upgrade-apps]
