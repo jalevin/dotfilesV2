@@ -1,0 +1,28 @@
+nodes:
+    assigned:
+        x: 360
+        "y": 144
+    assigned-src:
+        x: 48
+        "y": 144
+    my-open-prs:
+        x: 360
+        "y": 48
+    my-open-prs-src:
+        x: 48
+        "y": 48
+    notifications:
+        x: 360
+        "y": 240
+    notifications-src:
+        x: 48
+        "y": 240
+    review-requests:
+        x: 672
+        "y": 336
+    review-requests-filter:
+        x: 360
+        "y": 336
+    review-requests-notify:
+        x: 672
+        "y": 432

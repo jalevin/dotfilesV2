@@ -1,0 +1,5 @@
+[mcp_servers.hive-canvas]
+url = "http://127.0.0.1:50505/mcp/canvas"
+
+[mcp_servers.hive-desktop]
+url = "http://127.0.0.1:50505/mcp"

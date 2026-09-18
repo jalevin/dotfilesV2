@@ -1,0 +1,43 @@
+version: 4
+polling:
+    interval: 5m0s
+updates:
+    enabled: true
+notifications:
+    enabled: true
+    delivery: auto
+    sound: true
+appearance:
+    theme: dark
+    terminal_font_size: xxl
+    terminal_show_windows: true
+    terminal_show_status_bar: true
+    terminal_pool_size: 3
+http:
+    enabled: true
+    host: 127.0.0.1
+    port: 50505
+telemetry:
+    enabled: false
+agent_workspaces:
+    session_end_delay: 10s
+development:
+    mocks:
+        mode: live
+    vite:
+        host: 127.0.0.1
+        port: 0
+    wails:
+        host: 127.0.0.1
+        port: 0
+    pprof:
+        enabled: false
+    perf:
+        enabled: false
+    metrics:
+        enabled: false
+    devtools:
+        enabled: false
+    debug:
+        pause_ingest: 0s
+        pause_commit: 0s

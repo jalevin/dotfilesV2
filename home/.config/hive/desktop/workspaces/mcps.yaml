@@ -1,0 +1,15 @@
+version: 1
+
+# This is your own MCP server library — the escape hatch beyond the shipped
+# catalogue (playwright today). Add a server here and reference its id from a
+# workspace's "mcps:" list to enable it. A user id can also replace a shipped
+# one of the same name; the catalogue reports which entry won.
+#
+# servers:
+#   home-assistant:
+#     title: Home Assistant
+#     type: http
+#     url: http://homeassistant.local:8123/mcp
+#     headers:
+#       Authorization: "Bearer op://vault/item/token"
+servers: {}

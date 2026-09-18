@@ -1,0 +1,95 @@
+# Hive Desktop flow — nodes and wires, as code.
+# Edited by hand or by the app; on a change the engine reloads the flow set
+# and reinstalls its runners.
+version: 1
+name: grafana
+nodes:
+  - id: my-open-prs-src
+    type: sources.github
+    credential: github/jalevin
+    kind: search
+    query: is:open is:pr author:@me archived:false
+  - id: my-open-prs-cleanup
+    type: github-filter
+    exclude_repos:
+      - hay-kot/recipinned
+  - id: my-open-prs-stale
+    type: function
+    name: Drop PRs stale > 1yr
+    on_message: |
+      var cutoffMs = 365 * 24 * 60 * 60 * 1000;
+      if (msg.Payload.updatedAt && (Date.now() - msg.Payload.updatedAt) > cutoffMs) return null;
+      return msg;
+  - id: my-open-prs
+    type: feed
+    name: My open PRs
+  - id: assigned-src
+    type: sources.github
+    credential: github/jalevin
+    kind: search
+    query: is:open assignee:@me archived:false
+  - id: assigned-cleanup
+    type: github-filter
+    exclude_repos:
+      - hay-kot/recipinned
+  - id: assigned-stale
+    type: function
+    name: Drop issues stale > 1yr
+    on_message: |
+      var cutoffMs = 365 * 24 * 60 * 60 * 1000;
+      if (msg.Payload.updatedAt && (Date.now() - msg.Payload.updatedAt) > cutoffMs) return null;
+      return msg;
+  - id: assigned
+    type: feed
+    name: Assigned
+  - id: notifications-src
+    type: sources.github
+    credential: github/jalevin
+    kind: notifications
+  - id: notifications-cleanup
+    type: github-filter
+    name: Mute bots and noise repos
+    exclude_authors:
+      - updater-for-argo-workflows
+      - renovate-sh-app
+    exclude_repos:
+      - hay-kot/recipinned
+  - id: notifications
+    type: feed
+    name: Notifications
+  - id: review-requests-filter
+    type: github-filter
+    reasons:
+      - review_requested
+  - id: review-requests
+    type: feed
+    name: Review requests
+    icon: eye
+  - id: review-requests-notify
+    type: notify
+    name: Review requested
+    title: Review requested
+    body: '{{ .Payload.repo }} #{{ .Payload.num }} · {{ .Payload.title }}'
+wires:
+  - from: my-open-prs-src
+    to: my-open-prs-cleanup
+  - from: my-open-prs-cleanup
+    to: my-open-prs-stale
+  - from: my-open-prs-stale
+    to: my-open-prs
+  - from: assigned-src
+    to: assigned-cleanup
+  - from: assigned-cleanup
+    to: assigned-stale
+  - from: assigned-stale
+    to: assigned
+  - from: notifications-src
+    to: notifications-cleanup
+  - from: notifications-cleanup
+    to: notifications
+  - from: notifications-cleanup
+    to: review-requests-filter
+  - from: review-requests-filter
+    to: review-requests
+  - from: review-requests-filter
+    to: review-requests-notify

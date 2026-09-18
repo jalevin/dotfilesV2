@@ -1,0 +1,21 @@
+version: 1
+
+# Skill packages: a named set of skills a workspace enables as a unit. A
+# package is glob patterns over skill names, never copies of the skills, so
+# one skill can belong to several packages and a new skill joins every
+# workspace that wants it by matching a pattern already here.
+#
+# Names come from two places: the skills this build ships (hive-*) and the
+# ones you author under .shared/skills/<name>/SKILL.md. A pattern with no
+# wildcard is just an exact name.
+#
+#   infra:
+#     title: Infrastructure
+#     include: ["terraform-*", "k8s-*", "runbook"]
+#     exclude: ["terraform-experimental"]
+packages:
+  hive:
+    title: Hive
+    description: Configure Hive Desktop itself — flows, actions, settings, webhooks.
+    include:
+      - "hive-*"

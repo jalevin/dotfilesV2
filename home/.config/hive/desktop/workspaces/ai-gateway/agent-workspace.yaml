@@ -1,0 +1,6 @@
+version: 5
+name: spool up
+command: claude --dangerously-skip-permissions --strict-mcp-config --mcp-config {{ .MCPConfig | shq }} {{ if .Resume }}--resume{{ else }}--session-id{{ end }} {{ .SessionID }} {{ if .Prompt }}-- {{ .Prompt | shq }}{{ end }}
+mcps:
+  - hive-canvas
+  - hive-desktop

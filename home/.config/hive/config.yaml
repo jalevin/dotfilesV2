@@ -67,3 +67,6 @@ rules:
 
   - pattern: "grafana"
     clone_strategy: worktree
+
+  - pattern: "dotfilesV2"
+    clone_strategy: worktree
