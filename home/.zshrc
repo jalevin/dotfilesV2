@@ -126,12 +126,9 @@ alias gm="git commit"
 alias gdiff="git --no-pager diff"
 
 # Tmux
-# Open/attach a tmux session named "hive" running hive. If hive exits non-zero
-# (e.g. a config parse error), keep the pane open so the error stays visible
-# instead of tmux tearing the session down instantly.
+# Open/attach a tmux session named "hive" running hive.
 hv() {
-  tmux new-session -As hive \
-    'hive || { ec=$?; printf "\n\033[31mhive exited with code %s\033[0m\nPress Enter to close..." "$ec"; read _; }'
+  tmux new-session -As hive hive
 }
 alias t='tmux new-session -As $(basename $PWD)'
 
