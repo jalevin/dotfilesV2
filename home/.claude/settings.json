@@ -113,7 +113,7 @@
       "Bash(k apply:*)"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh",
@@ -122,11 +122,12 @@
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
-    "agent-deck@agent-deck": true,
     "grafana-enghub@grafana-ai-kit": true,
     "slack@claude-plugins-official": true,
     "hive@hive": true,
-    "hive-hooks@hive": false
+    "hive-hooks@hive": false,
+    "grafana-airbud@grafana-ai-kit": true,
+    "plannotator@plannotator": true
   },
   "extraKnownMarketplaces": {
     "hive": {
@@ -139,6 +140,12 @@
       "source": {
         "source": "github",
         "repo": "grafana/ai-kit"
+      }
+    },
+    "plannotator": {
+      "source": {
+        "source": "github",
+        "repo": "backnotprop/plannotator"
       }
     }
   },
