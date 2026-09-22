@@ -1,3 +1,11 @@
+# hive CLI config — personal machine.
+#
+# Selected by MISE_ENV via mise.personal.toml; hive has no include/layering
+# mechanism (one --config path), so each machine carries a whole file and the
+# shared bulk below is duplicated. Keep divergence to the `rules:` section so
+# the two files stay easy to diff:
+#   diff machines/grafana/hive-config.yaml machines/personal/hive-config.yaml
+
 workspaces:
   - /Users/jeff/projects
 
@@ -59,14 +67,8 @@ rules:
     commands:
       - mise run pc:install
 
-  - pattern: "deployment_tools"
-    clone_strategy: worktree
 
-  - pattern: "grafana-enterprise"
-    clone_strategy: worktree
 
-  - pattern: "grafana"
-    clone_strategy: worktree
 
   - pattern: "dotfilesV2"
     clone_strategy: worktree

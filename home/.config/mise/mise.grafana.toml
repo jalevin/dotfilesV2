@@ -1,0 +1,29 @@
+# Grafana work-machine tools — GLOBAL scope.
+#
+# This file sits beside the global config on purpose. A `[tools]` entry only
+# resolves inside the project that declares it, so the same block in the repo
+# root's mise.grafana.toml left `tanka` as "command not found" and `k9s` as
+# "No version is set for shim" everywhere except ~/projects/dotfiles.
+#
+# Division of labour, matching hay-kot/dotfiles:
+#   ~/.config/mise/mise.<env>.toml  -> [tools]            (global)
+#   <repo>/mise.<env>.toml          -> [dotfiles], tasks  (project)
+
+# Kubernetes / Jsonnet toolchain — work only, and pinned to the versions this
+# machine already had on Homebrew rather than to latest. Renovate's mise manager
+# opens one PR per bump, so moving forward is a per-tool decision: k6 in
+# particular sat on 1.6.1 while upstream is 2.x, because the old brew task ran
+# `brew bundle --no-upgrade` and nothing ever upgraded formulae.
+[tools]
+"tanka" = "0.36.3"
+"jsonnet-bundler" = "0.6.0"
+"go-jsonnet" = "0.21.0"
+"kustomize" = "5.8.1"
+"kubectl" = "1.35.2"          # was brew's `kubernetes-cli`
+"kubectx" = "0.9.5"
+"k9s" = "0.50.18"
+"kind" = "0.31.0"
+"k3d" = "5.8.3"
+"k6" = "1.6.1"                # upstream is 2.x — take that as a deliberate PR
+"tilt" = "0.33.11"
+"crossplane" = "2.5.0"        # aqua:crossplane/cli
