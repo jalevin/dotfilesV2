@@ -1,14 +1,268 @@
-[tools]
-ruby = "3"
+# No [tools] here on purpose. This repo needs no project-specific tools, and a
+# `[tools]` entry in a project config only resolves inside that project —
+# outside it the shim errors with "No version is set for shim: <name>".
+# Globally-available CLIs live in home/.config/mise/config.toml instead.
 
-[tasks.brew]
-description = "Install Homebrew packages from Brewfile"
-run = "./tasks/brew.sh"
+# ---------------------------------------------------------
+# Dotfiles (replaces GNU Stow) — opt-in: only what's listed deploys.
+#
+# Granularity is deliberate and mirrors what stow produced. A whole-directory
+# link is only safe when nothing else lives at that path; anywhere the tool
+# writes its own state next to our config, the entry must be `symlink-each` so
+# a link is made per file instead of shadowing the directory.
+#
+# Verify with `mise bootstrap dotfiles diff` / `status` before applying.
 
-[tasks.stow]
-description = "Create symlinks via GNU Stow"
-depends = ["brew"]
-run = "stow -v -t $HOME home/"
+[dotfiles]
+"~/.zshrc" = "home/.zshrc"
+"~/.gemrc" = "home/.gemrc"
+"~/.sqliterc" = "home/.sqliterc"
+
+# Whole-directory links — we own these paths outright.
+"~/.ai" = "home/.ai"
+"~/.config/agent-deck" = "home/.config/agent-deck"
+"~/.config/ghostty" = "home/.config/ghostty"
+"~/.config/k9s" = "home/.config/k9s"
+"~/.config/nvim" = "home/.config/nvim"
+"~/.config/ripgrep" = "home/.config/ripgrep"
+"~/.config/tmux" = "home/.config/tmux"
+
+# Per-file links — each of these directories holds live state we must not
+# shadow: Claude Code's sessions/cache/history, git's local `gitk`, gh's auth in
+# hosts.yml, mise's own miserc.toml, and ~/.local/bin's other binaries.
+"~/.claude" = { source = "home/.claude", mode = "symlink-each" }
+"~/.config/gh" = { source = "home/.config/gh", mode = "symlink-each" }
+"~/.config/git" = { source = "home/.config/git", mode = "symlink-each" }
+"~/.config/glow" = { source = "home/.config/glow", mode = "symlink-each" }
+"~/.config/lazygit" = { source = "home/.config/lazygit", mode = "symlink-each" }
+# ~/.config/mise is linked as a WHOLE DIRECTORY, unlike its neighbours above.
+# mise writes files here itself — mise.lock (`mise lock --global`), miserc.toml
+# (`mise run stamp`), and per-tool npm metadata under locks/. A per-file
+# symlink can be destroyed by a temp-file-plus-rename save, because rename()
+# replaces the directory entry rather than following it, and nothing errors when
+# that happens: the repo copy just silently stops updating. Linking the
+# directory keeps every such write inside the repo, and .gitignore decides what
+# actually gets committed (mise.lock yes; miserc.toml and locks/ no).
+"~/.config/mise" = "home/.config/mise"
+
+# Hive is split per-machine. `config.yaml`, the desktop flows, and the
+# work-only agent workspace come from an overlay (mise.grafana.toml /
+# mise.personal.toml); only the entries below are shared. That means
+# ~/.config/hive and ~/.config/hive/desktop are real directories rather than
+# whole-directory links — which is also what lets Hive Desktop keep its
+# app-written settings.yaml outside the repo.
+# Pin this machine's overlay once with `MISE_ENV=<env> mise run stamp`.
+"~/.config/hive/desktop/actions.yml" = "home/.config/hive/desktop/actions.yml"
+"~/.config/hive/desktop/workspaces" = { source = "home/.config/hive/desktop/workspaces", mode = "symlink-each" }
+
+# ~/.local/bin holds plenty we don't manage, so each binary is listed
+# explicitly rather than linking the directory. The telegram commands link
+# straight out of `telegram/` — the scripts, docs, and bot assets stay there as
+# one package, and only the five commands reach PATH.
+"~/.local/bin/find-env" = "home/.local/bin/find-env"
+"~/.local/bin/tg-await" = "telegram/tg-await"
+"~/.local/bin/tg-brokerd" = "telegram/tg-brokerd"
+"~/.local/bin/tg-listen" = "telegram/tg-listen"
+"~/.local/bin/tg-notify" = "telegram/tg-notify"
+"~/.local/bin/tg-setup" = "telegram/tg-setup"
+
+# ---------------------------------------------------------
+# System packages (was install/Brewfile)
+#
+# Both machines get the same packages — deliberately not split across the
+# overlays. If that ever changes, overlay [bootstrap.packages] merges with this
+# section the same way [dotfiles] does.
+#
+# WARNING: `mise bootstrap packages prune` is NOT dependency-aware for formulae
+# Homebrew marks "installed on request". Such a formula looks undeclared even
+# when declared packages depend on it, so prune offers to remove it out from
+# underneath them. On this machine it proposed 103 removals including cairo —
+# a dependency of ffmpeg, harfbuzz, libass, openslide, pango, poppler and
+# tesseract, all of which would break. Use `mise run packages-prune` (dry-run)
+# and treat the output as a review list to pick from by hand.
+
+# Adopt apps already present at the cask's destination instead of reinstalling
+# them. mise verifies the current artifact and adopts in place when the content
+# matches; a cask declaring auto_updates: true adopts as-is (it may have updated
+# itself already). Without this, mise defers to Homebrew for anything brew
+# installed and reports "managed by Homebrew; leaving unchanged".
+[bootstrap.brew]
+adopt = true
+
+[bootstrap.packages]
+# Core CLI
+"brew:git" = "latest"
+"brew:git-lfs" = "latest"
+"brew:gh" = "latest"
+"brew:glow" = "latest"
+"brew:curl" = "latest"
+"brew:wget" = "latest"
+"brew:coreutils" = "latest"
+"brew:bat" = "latest"
+"brew:fd" = "latest"
+"brew:fswatch" = "latest"
+"brew:ripgrep" = "latest"
+"brew:jq" = "latest"
+"brew:tree" = "latest"
+"brew:tldr" = "latest"
+"brew:entr" = "latest"
+"brew:gnupg" = "latest"
+# Tmux
+"brew:tmux" = "latest"
+"brew:bash" = "latest"
+"brew:bc" = "latest"
+"brew:fzf" = "latest"
+"brew:lazygit" = "latest"
+# Neovim
+"brew:neovim" = "latest"
+"brew:luarocks" = "latest"
+# Languages & Runtimes
+"brew:yarn" = "latest"
+# Dev Tools
+"brew:git-gui" = "latest"
+"brew:htop" = "latest"
+"brew:ctop" = "latest"
+"brew:dive" = "latest"
+"brew:gcx" = "latest"                  # Grafana Cloud CLI (in homebrew-core)
+"brew:mole" = "latest"
+"brew:mosh" = "latest"
+"brew:nmap" = "latest"
+"brew:speedtest-cli" = "latest"
+"brew:weave" = "latest"  # semantic merge driver for git
+# Infrastructure
+"brew:ansible" = "latest"
+"brew:azure-cli" = "latest"
+"brew:awscli" = "latest"
+# Build Tools
+"brew:go-task" = "latest"
+# Media
+"brew:ffmpeg" = "latest"
+"brew:imagemagick" = "latest"
+# Renamed upstream: `whisper-cpp` is now an alias for `whisper.cpp`, and the
+# stale name makes mise report "needs repair".
+"brew:whisper.cpp" = "latest"
+"brew:yt-dlp" = "latest"
+
+# Casks — `packages import` does not handle these, so they are hand-written.
+# Personal-machine apps (discord, signal) live in mise.personal.toml.
+# sequel-ace was dropped: uninstalled from both machines, DBeaver covers it.
+"brew-cask:font-jetbrains-mono-nerd-font" = "latest"
+"brew-cask:1password" = "latest"
+"brew-cask:1password-cli" = "latest"
+"brew-cask:brave-browser" = "latest"
+"brew-cask:claude" = "latest"
+"brew-cask:cleanshot" = "latest"
+"brew-cask:codex" = "latest"
+"brew-cask:dbeaver-community" = "latest"
+"brew-cask:ghostty" = "latest"
+"brew-cask:google-chrome" = "latest"
+"brew-cask:handy" = "latest"
+"brew-cask:meetingbar" = "latest"
+# adopt=false: the installed 1.11.x bundle has no obsidian-cli, which the
+# current cask declares as a binary artifact, so adoption fails. Take the real
+# install instead — it replaces the bundle but leaves the vault and settings.
+"brew-cask:obsidian" = { adopt = false }
+"brew-cask:orbstack" = "latest"
+"brew-cask:rectangle" = "latest"
+"brew-cask:slack" = "latest"
+"brew-cask:spotify" = "latest"
+"brew-cask:tuple" = "latest"
+"brew-cask:visual-studio-code" = "latest"
+"brew-cask:whatsapp" = "latest"
+
+# ---------------------------------------------------------
+# macOS system defaults (was install/macos)
+#
+# Declarative half: `mise bootstrap macos defaults status` reports drift per key
+# and `apply` converges it. The imperative remainder — anything needing sudo, a
+# `-dict-add` composite value, or PlistBuddy — stays in `install/macos`, run via
+# `mise run macos-imperative`.
+#
+# Values are NOT templated: `{{env.HOME}}` is stored literally, so the one path
+# value below is absolute.
+
+[bootstrap.directories]
+"/Users/jeff/Downloads/Screenshots" = { mode = "0755" }
+
+[bootstrap.macos.defaults."com.apple.screencapture"]
+location = "/Users/jeff/Downloads/Screenshots"
+style = "selection"
+
+[bootstrap.macos.defaults."com.apple.dock"]
+orientation = "left"
+tilesize = 36
+autohide = true
+magnification = false
+# show app switcher on all displays
+appswitcher-all-displays = true
+
+[bootstrap.macos.defaults."com.apple.finder"]
+ShowPathbar = true
+_FXShowPosixPathInTitle = true
+# search the current folder by default
+FXDefaultSearchScope = "SCcf"
+# list view everywhere; other modes are `icnv`, `clmv`, `glyv`
+FXPreferredViewStyle = "Nlsv"
+FXEnableExtensionChangeWarning = false
+
+[bootstrap.macos.defaults."com.apple.desktopservices"]
+# no .DS_Store on network or USB volumes
+DSDontWriteNetworkStores = true
+DSDontWriteUSBStores = true
+
+[bootstrap.macos.defaults."com.apple.TimeMachine"]
+DoNotOfferNewDisksForBackup = true
+
+[bootstrap.macos.defaults.NSGlobalDomain]
+AppleShowAllExtensions = true
+NSWindowResizeTime = 0.001
+AppleInterfaceStyleSwitchesAutomatically = true
+# no swipe to navigate back/forward in browsers
+AppleEnableSwipeNavigateWithScrolls = false
+# AppleMiniaturizeOnDoubleClick is legacy and ignored; this is the current key
+AppleActionOnDoubleClick = "None"
+NSAutomaticDashSubstitutionEnabled = false
+"com.apple.mouse.scaling" = 2.0
+"com.apple.trackpad.forceClick" = true
+# blazingly fast key repeat
+InitialKeyRepeat = 10
+KeyRepeat = 1
+
+[bootstrap.hooks]
+# Close System Settings first so it can't overwrite what we're about to write.
+pre-defaults = "osascript -e 'tell application \"System Settings\" to quit' || true"
+# `launchctl kickstart -k` kills-if-running and (re)starts atomically, so it works
+# even when the process is already down — unlike `killall`, which does nothing to a
+# dead Dock and can leave it down if a kill races launchd's relaunch.
+post-defaults = """
+launchctl kickstart -k "gui/$(id -u)/com.apple.Dock.agent" 2>/dev/null || killall Dock 2>/dev/null || true
+launchctl kickstart -k "gui/$(id -u)/com.apple.SystemUIServer.agent" 2>/dev/null || killall SystemUIServer 2>/dev/null || true
+"""
+
+[tasks.packages]
+description = "Install declared [bootstrap.packages] (taps, formulae, casks)"
+run = "mise bootstrap --yes --only packages"
+
+[tasks.packages-prune]
+# Dry-run only: the output needs human triage. Prune lists transitive deps that
+# Homebrew flagged "installed on request", so applying it in bulk breaks
+# declared packages (103 proposed removals here, including cairo — which ffmpeg
+# and six other installed formulae depend on).
+# Both overlays are loaded as a guard rather than a present need — no packages
+# live in an overlay today, but `prune` only ever sees the ACTIVE config, so a
+# single-env run would target anything that later did.
+description = "Report brew packages installed but no longer declared (dry-run)"
+run = """
+MISE_ENV=grafana,personal mise bootstrap packages prune --dry-run
+echo
+echo "Dry-run only. To act on the list above:"
+echo "  MISE_ENV=grafana,personal mise bootstrap packages prune   # remove them"
+echo "  mise bootstrap packages import --dry-run                  # or declare them"
+"""
+
+[tasks.dotfiles]
+description = "Deploy config symlinks from [dotfiles] (replaces GNU Stow)"
+run = "mise bootstrap --yes --only dotfiles"
 
 [tasks.secrets-pull]
 description = "Fetch secrets from 1Password (with preview)"
@@ -32,7 +286,7 @@ run = "find fonts -name '*.ttf' -exec cp {} ~/Library/Fonts/ \\;"
 
 [tasks.neovim-setup]
 description = "Sync Neovim plugins via lazy.nvim"
-depends = ["stow"]
+depends = ["dotfiles"]
 run = "nvim --headless \"+Lazy! sync\" +qa"
 
 [tasks.neovim-reset]
@@ -41,13 +295,55 @@ run = "rm -rf ~/.local/share/nvim/lazy ~/.local/share/nvim/lazy-rocks"
 
 [tasks.tmux-setup]
 description = "Install TPM and tmux plugins"
-depends = ["stow"]
+depends = ["dotfiles"]
 run = "./tasks/tmux-setup.sh"
 
-[tasks.osx-settings]
-description = "Apply macOS system defaults"
-depends = ["brew", "fonts", "neovim-setup"]
+[tasks.stamp]
+description = "Pin this machine's MISE_ENV in ~/.config/mise/miserc.toml (run once)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -z "${MISE_ENV:-}" ]; then
+  echo "stamp: MISE_ENV is not set. Run as one of:" >&2
+  echo "  MISE_ENV=grafana  mise run stamp   # work laptop" >&2
+  echo "  MISE_ENV=personal mise run stamp   # personal laptop" >&2
+  exit 1
+fi
+
+for env in ${MISE_ENV//,/ }; do
+  if [ ! -f "mise.${env}.toml" ]; then
+    echo "stamp: no mise.${env}.toml in this repo; refusing to pin a nonexistent overlay" >&2
+    exit 1
+  fi
+done
+
+mkdir -p ~/.config/mise
+printf 'env = [%s]\n' "$(printf '%s' "$MISE_ENV" | tr -d '[:space:]' | sed 's/[^,]*/"&"/g')" \
+  > ~/.config/mise/miserc.toml
+echo "stamp: pinned MISE_ENV=$MISE_ENV -> $(cat ~/.config/mise/miserc.toml)"
+echo "stamp: this file is machine-local and intentionally not committed."
+'''
+
+[tasks.check]
+description = "Read-only: report drift between this config and the machine"
+run = """
+mise bootstrap status
+echo
+mise bootstrap plan
+"""
+
+[tasks.macos-defaults]
+description = "Converge declarative macOS defaults + directories (drift-checked)"
+run = "mise bootstrap --yes --only files,macos-defaults"
+
+[tasks.macos-imperative]
+description = "Apply the macOS settings bootstrap can't express (sudo, dict-add, PlistBuddy)"
 run = "./install/macos"
+
+[tasks.osx-settings]
+description = "Apply all macOS settings (declarative pass, then the imperative remainder)"
+depends = ["macos-defaults", "macos-imperative"]
 
 [tasks.go-link]
 description = "Symlink ~/go -> ~/projects/go (GOPATH) so default ~/go/pkg/mod resolves"
@@ -69,21 +365,44 @@ description = "Run install scripts for tools not managed by Homebrew"
 run = "./tasks/install-scripts.sh"
 
 [tasks.bump]
-description = "Update Claude Code, Hive, and plannotator to latest"
+description = "Update Claude Code and Hive to latest (plannotator is pinned in [tools])"
 run = """
 ./install/scripts/claude-code.sh
 ./install/scripts/hive.sh
-./install/scripts/plannotator.sh
 """
 
-[tasks.upgrade-apps]
-description = "Upgrade Homebrew cask apps that can't self-update"
-run = "brew update && brew upgrade --cask brave-browser google-chrome signal whatsapp"
+[tasks.upgrade]
+# Replaces the old `upgrade-apps`, which hardcoded four cask names.
+# `packages upgrade` refreshes Homebrew's own metadata, so no separate
+# `brew update` is needed.
+description = "Upgrade declared packages and pinned [tools]"
+run = ["mise bootstrap packages upgrade --yes", "mise upgrade"]
 
 [tasks.upgrade-mise]
 description = "Upgrade mise (installed via mise.run, not brew)"
 run = "mise self-update"
 
+[tasks.bootstrap]
+# `mise bootstrap` runs a task named `bootstrap` as its final step, after
+# packages, dotfiles, macOS defaults and tools are all in place. This is the
+# imperative remainder — everything that cannot be declared.
+# Must stay idempotent: mise re-runs it on every converge.
+description = "Imperative setup remainder (mise bootstrap's final step)"
+depends = ["fonts", "go-link", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+
 [tasks.apply]
-description = "Full machine setup — run after bootstrap.sh"
-depends = ["osx-settings", "stow", "install-scripts", "tmux-setup", "go-link"]
+# Kept as the documented entry point; `mise bootstrap` does the real work and
+# calls the `bootstrap` task above at the end.
+description = "Converge this machine (declarative bootstrap + imperative remainder)"
+run = "mise bootstrap --yes"
+
+[tasks.sync]
+# Pull first so a machine converges against the latest committed config — useful
+# with two laptops. --ff-only so an unattended run never invents a merge commit,
+# and a failed pull is non-fatal: no network or a diverged branch must not stop
+# the machine from converging against what is already checked out.
+description = "Pull latest config, then converge this machine"
+run = """
+git pull --autostash --ff-only || echo "sync: pull failed — converging against the checked-out config" >&2
+mise bootstrap --yes
+"""

@@ -21,6 +21,14 @@ home/.claude/telemetry/
 home/.claude/mcp-needs-auth-cache.json
 home/.claude/paste-cache/
 home/.config/git/gitk
+# ~/.config/mise is linked as a whole directory (so mise.lock survives an
+# atomic temp-file-rename), which means everything mise writes there lands in
+# the repo. These two are machine-local/generated; mise.lock itself IS tracked.
+home/.config/mise/locks/
+home/.config/mise/miserc.toml
+# Hive Desktop rewrites this when preferences change (font size, theme, ports) —
+# machine-local state, not config worth tracking.
+home/.config/hive/desktop/settings.yaml
 home/.config/.semgrep/
 
 # Tool runtime data (credentials, caches)
@@ -33,9 +41,13 @@ home/.config/op/
 # sync or a tool's own installer, and are re-fetchable rather than managed
 # here. Add an exception per skill as it's ready to be checked in.
 home/.ai/skills/*
+!home/.ai/skills/cleanup-comments/
 !home/.ai/skills/collab-plan/
 !home/.ai/skills/daily-prep/
+!home/.ai/skills/diff-review/
+!home/.ai/skills/doc-review/
 !home/.ai/skills/meeting-notes/
 !home/.ai/skills/meeting-segment-editor/
+!home/.ai/skills/msg-review/
 !home/.ai/skills/obsidian/
 !home/.ai/skills/obsidian-cli/

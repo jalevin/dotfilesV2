@@ -1,4 +1,57 @@
+# Global mise config — deployed to ~/.config/mise/config.toml.
+#
+# Tools that must work in ANY directory belong here, not in the dotfiles repo's
+# own mise.toml. A `[tools]` entry in a project config only resolves inside that
+# project: outside it, the shim exists but errors with
+# "No version is set for shim: <name>".
+#
+# Versions here are PINNED EXACTLY on purpose: Renovate's mise manager opens a
+# PR when a pinned tool has a newer release, so the pin is the subscription.
+# A `"latest"` entry gives Renovate nothing to bump. See renovate.json.
+
+[settings]
+# Record exact resolved URLs + checksums in mise.lock so a fresh machine
+# installs byte-identical tools rather than whatever "latest" means that day.
+lockfile = true
+
+  [settings.github]
+  # Borrow the `gh` CLI's token. Resolving github/aqua-backed tools hits the
+  # GitHub API, and unauthenticated requests get 60/hour — enough to fail an
+  # install of a dozen tools with "API rate limit exceeded".
+  gh_cli_tokens = true
+
 [tools]
 go = "latest"
 node = "24"
+ruby = "3"
 "npm:typescript" = "latest"
+
+# ── CLI tools that replaced installer scripts ────────────────────────────────
+# Each of these previously came from a bespoke script in install/scripts/ with
+# its own "check for a newer tag and sed the pin" logic. hive was the cautionary
+# case: `go install @latest` had resolved to a local pseudo-version
+# (v0.37.3-0.2026...) and sat 22 minor releases behind for six months.
+
+# Plannotator — browser-based plan/diff review. Pinned release asset rather than
+# `curl | bash` from plannotator.ai: the vendor installer also writes agent
+# skills, Codex hooks, and pulls third-party skills via `npx skills`. The CLI is
+# the only part we want; the review skills in home/.ai/skills are hand-written.
+"github:backnotprop/plannotator" = { version = "0.27.15", matching = "plannotator-" }
+"github:colonyops/hive" = "0.59.0"
+"github:googleworkspace/cli" = "0.22.5"
+# `latest` resolves to prereleases here (0.27.0.beta5), so pin the stable line.
+"gem:ruby-lsp" = "0.26.11"
+# Heroku CLI via npm rather than brew: core's `brew:heroku` depends on brew's
+# `node`, which would install a second Node alongside the one mise already
+# manages (and collides with orphaned npm/npx in /opt/homebrew/bin). Same
+# version either way.
+"npm:heroku" = "11.10.0"
+
+# ── Moved off Homebrew ───────────────────────────────────────────────────────
+# Pinned to the versions Homebrew had, so Renovate proposes each bump rather
+# than a bulk upgrade doing it silently. sops/age back the secrets tasks
+# (SOPS_AGE_KEY_FILE in .zshrc); shellcheck lints the ~96 shell scripts here.
+# The Kubernetes/Jsonnet toolchain is work-only and lives in mise.grafana.toml.
+"sops" = "3.12.2"
+"age" = "1.3.1"
+"shellcheck" = "0.11.0"
