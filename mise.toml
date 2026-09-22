@@ -14,6 +14,11 @@
 # Verify with `mise bootstrap dotfiles diff` / `status` before applying.
 
 [dotfiles]
+# Cross-harness agent instructions. The same file reaches Claude Code as
+# ~/.claude/CLAUDE.md (via the home/.claude/CLAUDE.md symlink) and everything
+# that follows the AGENTS.md convention (Codex, Cursor, Amp) as ~/AGENTS.md.
+"~/AGENTS.md" = "home/.ai/AGENTS.md"
+
 "~/.zshrc" = "home/.zshrc"
 "~/.gemrc" = "home/.gemrc"
 "~/.sqliterc" = "home/.sqliterc"

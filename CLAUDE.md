@@ -27,11 +27,14 @@ dotfiles/
 │   │   ├── ripgrep/      # ripgrep config
 │   │   └── ghostty/      # Ghostty terminal config
 │   ├── .ai/
+│   │   ├── AGENTS.md     # Standing instructions — loaded in EVERY session
+│   │   ├── agents/       # Subagent definitions (github.md)
 │   │   └── skills/       # Agent skills (shared across harnesses)
 │   └── .claude/          # Claude Code config
 │       ├── settings.json # Permissions, statusline, agent definitions
 │       ├── statusline.sh # Custom status line script
-│       ├── agents/       # Agent prompt files (default.md, github.md)
+│       ├── CLAUDE.md -> ../.ai/AGENTS.md
+│       ├── agents -> ../.ai/agents
 │       ├── skills -> ../.ai/skills
 │       └── commands/     # Slash command prompts
 ├── machines/             # Per-machine config, selected by MISE_ENV
@@ -108,13 +111,33 @@ Notable aliases:
 
 ### Claude Code (`home/.claude/`)
 
+### Where instructions live
+
+Standing instructions go in `home/.ai/AGENTS.md`, which reaches every harness
+from one file:
+
+| Destination | Via | Scope |
+|-------------|-----|-------|
+| `~/.claude/CLAUDE.md` | `home/.claude/CLAUDE.md -> ../.ai/AGENTS.md` | **every Claude Code session** |
+| `~/AGENTS.md` | `[dotfiles]` entry | Codex, Cursor, Amp — the AGENTS.md convention |
+
+`home/.ai/agents/*.md` are **subagents** — helpers invoked for a delegated task,
+not the session's own prompt. That distinction bit us: the Telegram
+instructions lived in `agents/default.md`, which only applies when that agent is
+explicitly selected, so no ordinary session ever learned `tg-notify` existed.
+`settings.json` also carried an inline `agents` key whose `default` prompt was a
+stale copy missing four sections. Both are gone; there is one source of truth.
+
+Rule of thumb: **every session → `AGENTS.md`; on demand → a skill; delegated
+task → `agents/`.** Anything long or situational belongs in a skill so it isn't
+in every context (the Telegram details are a skill for exactly this reason).
+
 **settings.json** defines:
 - Pre-allowed Bash commands: `go get/run/test`, `git checkout/tag`, `ls`, `find`, `grep`, `jq`, `gh api/run/repo`
 - Status line: runs `~/.claude/statusline.sh` (3-line display: model/cost/duration, context bar + git info, token breakdown)
 - Enabled plugins: `typescript-lsp`, `gopls-lsp`, `agent-deck`
-- Two agents: `default` (Grafana staff eng context) and `github` (minimal GitHub CLI auth rules)
 
-**agents/default.md** system prompt context:
+**.ai/AGENTS.md** standing instructions:
 - Role: Staff Software Engineer at Grafana Labs
 - Primary repos: `~/projects/deployment_tools` (Jsonnet/K8s infra), `~/projects/bench` (E2E testing)
 - Tech stack: Golang, TypeScript, Kubernetes, Jsonnet

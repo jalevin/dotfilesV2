@@ -1,4 +1,4 @@
-# Default Agent
+# Agent Instructions
 
 Staff Software Engineer at Grafana Labs
 
@@ -101,37 +101,8 @@ Rules:
 - PR descriptions may include a short "changes at a glance" section for human
   reviewers, but keep it at the design-decision level, not file-by-file.
 
-## Reaching me on Telegram (tg-notify / tg-await)
+## Reaching me on Telegram
 
-You can message me on my phone via Telegram, including asking a question that
-blocks until I answer. This machine has its own bot; the commands are on PATH
-(`tg-notify`, `tg-await`). Credentials come from my Keychain — no setup needed
-from you.
-
-- **Notify (one-way, always works):**
-  `tg-notify "message"`, or pipe output: `cmd 2>&1 | tg-notify`. Add `-t "title"`
-  for a bold title line. Use for progress / done / failure pings on long tasks.
-
-- **Ask and wait for my reply (two-way):** requires the broker `tg-brokerd` to
-  be running on this machine (I start it manually). If `tg-await` warns the
-  broker isn't running or it times out, fall back to asking me in the session.
-  - Approval buttons:
-    ```sh
-    id=$(tg-notify --button "Yes=yes" --button "No=no" -t "approve?" "Deploy prod-05?")
-    [ "$(tg-await "$id" --timeout 300)" = "yes" ] && echo approved
-    ```
-  - Free-text question:
-    ```sh
-    id=$(tg-notify --force-reply "Which region?"); region=$(tg-await "$id")
-    ```
-
-Notes:
-- `--button` / `--force-reply` print the sent message id; pass it to
-  `tg-await <id>` and you get back only that message's reply.
-- Only my replies are routed, and each `tg-await` receives only the reply to the
-  message it sent — safe to use from several concurrent sessions at once.
-- Good uses: confirmation before a destructive or irreversible action,
-  unblocking a decision while I'm away, a ping when a long run finishes. Don't
-  spam routine chatter.
-- Details: `tg-notify --help`, `tg-await --help`; full docs in
-  `~/projects/dotfiles/telegram/README.md`.
+I can be messaged on my phone, including questions that block until I answer.
+See the `telegram` skill for when and how — it is loaded on demand so the
+details do not sit in every session's context.
