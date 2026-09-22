@@ -8,12 +8,19 @@
   mkdir -p ~/projects
   git clone https://github.com/jalevin/dotfilesV2.git ~/projects/dotfiles
   ```
-- [ ] Run bootstrap: `cd ~/projects/dotfiles && ./bootstrap.sh`
+- [ ] Run bootstrap: `cd ~/projects/dotfiles && ./bootstrap.sh grafana`
+      (or `personal` — this pins the machine's overlay)
   - Installs Xcode CLI tools
-  - Installs Homebrew
-  - Installs stow (brew) and mise (mise.run installer; upgrade via `mise self-update`)
-  - Runs `mise run apply` (brew packages, stow symlinks, fonts, neovim plugins, macOS defaults)
+  - Creates a bare, user-owned `/opt/homebrew` (the only step needing sudo).
+    **Homebrew itself is never installed** — mise pours brew bottles into that
+    prefix itself and creates `Cellar/`, `Caskroom/`, `bin/` and the rest.
+  - Installs mise (mise.run installer; upgrade via `mise self-update`)
+  - Pins `MISE_ENV` for this machine (`mise run stamp`)
+  - Runs `mise bootstrap --yes` (packages, `[dotfiles]` symlinks, macOS defaults,
+    pinned tools, then the `bootstrap` task: fonts, neovim, tmux, install scripts)
   - Idempotent — safe to re-run on a configured machine
+  - **Not headless**: `install/macos` needs Touch ID / a password for its sudo
+    calls, so expect to authenticate a few times.
 - [ ] Run one-time steps: `mise run first-run` (clears Dock, iCloud reminder)
 
 ## Phase 2: Apple ID & iCloud (System Settings)
@@ -42,14 +49,6 @@
 - [ ] Enable CLI integration: 1Password > Settings > Developer > "Integrate with 1Password CLI"
 - [ ] Test CLI: `op account list`
 
-### Alfred
-- [ ] Open Alfred, enter license key (stored in 1Password or iCloud)
-- [ ] Set preferences sync folder (if using iCloud/Dropbox sync):
-  - Alfred Preferences > Advanced > Set preferences folder
-  - Point to `~/Library/Mobile Documents/com~apple~CloudDocs/Alfred` (or your sync location)
-- [ ] System Settings > Privacy & Security > Accessibility > Alfred
-- [ ] Spotlight hotkey (Cmd+Space) already disabled by `install/macos` - Alfred can use it
-
 ### CleanShot X
 - [ ] Open CleanShot, enter license key (stored in 1Password)
 - [ ] System Settings > Privacy & Security > Screen Recording > CleanShot X
@@ -61,7 +60,7 @@
 - [ ] Import settings if backed up, or configure shortcuts
 
 ### Ghostty
-- [ ] Config already symlinked via stow
+- [ ] Config already symlinked via `[dotfiles]`
 - [ ] Set as default terminal if desired
 
 ### Docker / OrbStack
@@ -182,10 +181,92 @@ find ~/projects -maxdepth 2 -name ".env*" -type f
 
 ---
 
+## Adopting a machine that already has apps and configs
+
+Use this instead of Phase 1 when the machine is already set up by hand (e.g.
+migrating the personal laptop). The goal is to hand existing packages and apps
+to mise **without** reinstalling them.
+
+- [ ] Clone the repo and install mise (Phase 1 steps, but **stop before**
+      `./bootstrap.sh`)
+- [ ] Ensure `/opt/homebrew` is user-owned. If Homebrew is already installed it
+      will be; otherwise:
+      ```bash
+      sudo mkdir -p /opt/homebrew && sudo chown "$(id -un):admin" /opt/homebrew
+      ```
+- [ ] Pin the machine's overlay: `MISE_ENV=personal mise run stamp`
+- [ ] `mise trust`
+
+### Reconcile the config symlinks
+
+`[dotfiles]` will not overwrite a real file that already exists at a target
+path. Preview first, then move anything you want replaced out of the way:
+
+```bash
+mise bootstrap dotfiles diff      # shows every conflict before touching anything
+mise run dotfiles                 # apply
+```
+
+### Formulae adopt themselves
+
+mise reads Homebrew's `Cellar` and receipts directly, so anything already
+installed reports `installed` with no re-download. Check for genuine gaps:
+
+```bash
+mise bootstrap packages status | grep -v installed
+mise bootstrap packages apply --manager brew
+```
+
+### Casks need their Homebrew receipt dropped
+
+While a cask carries brew's receipt, mise defers to it
+(`installed and managed by Homebrew; leaving unchanged`). Dropping the receipt
+lets `[bootstrap.brew] adopt = true` take the app **in place** — mise downloads
+the artifact only to verify, then keeps the existing bundle, so macOS
+permission grants survive.
+
+An app cask's Caskroom entry is only a symlink marker, so this never touches the
+app. Verify that before deleting:
+
+```bash
+# confirm it is a symlink, not a real bundle
+find /opt/homebrew/Caskroom/<cask> -mindepth 2 -maxdepth 2
+
+rm -rf /opt/homebrew/Caskroom/<cask>
+mise bootstrap packages apply --manager brew-cask
+```
+
+Two cases cannot adopt and need a real install (which replaces the bundle):
+
+- the app is **outdated and not self-updating** — content differs, so adoption
+  fails. The real install brings it current, which it needed anyway.
+- the cask declares an artifact the installed bundle lacks. `obsidian` is pinned
+  `adopt = false` for exactly this reason.
+
+### Reconcile drift
+
+Brew's receipts drift. On the work machine, four were wrong: one pointed at an
+app version no longer installed, and three claimed apps that weren't on disk at
+all. Check every declared cask actually exists, and fix the declaration rather
+than the symptom:
+
+```bash
+for d in /opt/homebrew/Caskroom/*/; do
+  l=$(find "$d" -mindepth 2 -type l | head -1)
+  [ -n "$l" ] && [ ! -e "$(readlink "$l")" ] && echo "DANGLING: $(basename "$d")"
+done
+```
+
+- [ ] Finally, run `./bootstrap.sh personal` to converge everything else
+- [ ] Work through Phase 4 onward for anything app-specific
+
+---
+
 ## Verification
 
 After setup, verify:
-- [ ] `brew list` shows expected packages
+- [ ] `mise bootstrap packages status` shows everything `installed`
+- [ ] `mise bootstrap dotfiles diff` reports "all files are applied"
 - [ ] `ls -la ~/.config` shows symlinks pointing to dotfiles
 - [ ] `git commit --amend --no-edit` works (SSH signing via 1Password)
 - [ ] Desktop/Documents folders show iCloud sync icon
