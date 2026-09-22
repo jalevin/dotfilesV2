@@ -51,3 +51,4 @@ home/.ai/skills/*
 !home/.ai/skills/msg-review/
 !home/.ai/skills/obsidian/
 !home/.ai/skills/obsidian-cli/
+!home/.ai/skills/telegram/
