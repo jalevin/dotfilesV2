@@ -376,10 +376,111 @@ run = """
 ./install/scripts/hive.sh
 """
 
+[tasks.update]
+# Named `update` because `up` and `upgrade` are both mise builtins (`up` is an
+# alias for `mise upgrade`) and a task cannot shadow a builtin.
+#
+# One command for both kinds of package, because mise splits them:
+# `mise bootstrap packages upgrade` handles brew formulae and casks, while
+# `mise upgrade` handles [tools]. This dispatches on where the name is declared.
+#   mise update            -> everything
+#   mise update codex      -> just that cask
+#   mise update crossplane -> just that tool
+description = "Upgrade one package or tool by name (no args = everything)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -eq 0 ]; then
+  mise bootstrap packages upgrade --yes
+  mise upgrade
+  exit 0
+fi
+
+pkgs="$(mise bootstrap packages status 2>/dev/null || true)"
+tools="$(mise ls 2>/dev/null || true)"
+
+for name in "$@"; do
+  # Declared brew formula or cask? `packages status` is "<manager> <name> ...".
+  manager=""
+  while read -r mgr nm _rest; do
+    if [ "$nm" = "$name" ]; then manager="$mgr"; break; fi
+  done <<< "$pkgs"
+
+  if [ -n "$manager" ]; then
+    echo "==> $manager:$name"
+    mise bootstrap packages upgrade --yes "$manager:$name"
+    continue
+  fi
+
+  # A [tools] entry? Accept the full spec or its trailing component, so `hive`
+  # finds github:colonyops/hive. ${cand##*[/:]} strips any backend prefix.
+  spec=""
+  while read -r cand _rest; do
+    if [ -z "$cand" ]; then continue; fi
+    if [ "$cand" = "$name" ] || [ "${cand##*[/:]}" = "$name" ]; then
+      spec="$cand"; break
+    fi
+  done <<< "$tools"
+
+  if [ -n "$spec" ]; then
+    echo "==> $spec"
+    mise upgrade "$spec"
+    continue
+  fi
+
+  echo "update: '$name' is not a declared package or tool" >&2
+  echo "    packages: mise bootstrap packages status" >&2
+  echo "    tools:    mise ls" >&2
+  exit 1
+done
+'''
+
+[tasks.claude-prune]
+# Claude Code self-updates and keeps every version it has ever installed —
+# ~205MB each, 1.2GB after six releases. Nothing prunes them automatically.
+# Keeps the running version plus one rollback; override with KEEP=1 to keep
+# only the current one.
+description = "Remove old Claude Code versions (keeps current + one rollback)"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+VDIR="$HOME/.local/share/claude/versions"
+LINK="$HOME/.local/bin/claude"
+KEEP="${KEEP:-2}"
+
+[ -d "$VDIR" ] || { echo "claude-prune: no versions directory, nothing to do"; exit 0; }
+
+# Resolve the active version from the launcher rather than assuming the highest
+# number is live — a rollback would make that wrong.
+current="$(basename "$(readlink "$LINK" 2>/dev/null || true)")"
+if [ -z "$current" ] || [ ! -d "$VDIR/$current" ]; then
+  echo "claude-prune: cannot resolve the active version from $LINK; refusing to guess" >&2
+  exit 1
+fi
+
+keep="$(printf '%s\n%s\n' "$current" "$(ls -1 "$VDIR" | sort -V | tail -n "$KEEP")" | sort -u)"
+
+removed=0
+for v in $(ls -1 "$VDIR" | sort -V); do
+  printf '%s\n' "$keep" | grep -qx "$v" && continue
+  rm -rf "$VDIR/$v"
+  echo "  removed $v"
+  removed=$((removed + 1))
+done
+
+echo "claude-prune: removed $removed; kept $(printf '%s' "$keep" | tr '\n' ' ')($(du -sh "$VDIR" | cut -f1) remaining)"
+"""
+
 [tasks.upgrade]
 # Replaces the old `upgrade-apps`, which hardcoded four cask names.
 # `packages upgrade` refreshes Homebrew's own metadata, so no separate
 # `brew update` is needed.
+# Covers formulae AND casks now that casks are mise-owned. Self-updating apps
+# that are running are skipped ("installed app is running and updates itself"),
+# so this will not replace a live browser out from under you.
+# For one package: `mise bootstrap packages upgrade brew-cask:codex`
 description = "Upgrade declared packages and pinned [tools]"
 run = ["mise bootstrap packages upgrade --yes", "mise upgrade"]
 

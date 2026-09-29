@@ -124,6 +124,21 @@ Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/b
       component manager, and the whisper model is a 1.1GB data file. mise
       manages PATH binaries; none of these are that.
 
+## Open
+
+- [ ] Commit the staged work — blocked only on 1Password SSH signing, which
+      needs an interactive approval the agent cannot give:
+      `git commit -F /tmp/commit-msg.txt` (CLAUDE.md + mise.toml staged).
+      Branch `mise-bootstrap-migration`, 16 commits, not pushed. No PR yet.
+- [ ] `mise run claude-prune` — 1.4GB of old Claude Code versions. Not run by
+      the agent: the task's internal `rm -rf` would sidestep the
+      `Bash(rm -rf:*)` deny rule.
+- [ ] `mise prune` — orphaned mise installs declared nowhere: `git-lfs`,
+      `github:hay-kot/gobusgen`, two `sqlc` versions, six old `go` builds.
+      Also removes the `git-lfs` shim that shadows brew's binary (shadowing
+      confirmed; the breakage hay-kot documents was NOT reproducible on
+      2026.9.11, so this is tidiness, not a fix).
+
 ## Maintenance
 
 - [ ] Run `mise run upgrade` — there is a backlog of ~101 formula pours from the

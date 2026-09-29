@@ -273,7 +273,9 @@ mise run dotfiles     # Deploy config symlinks from [dotfiles]
 mise run packages     # Install taps/formulae/casks from [bootstrap.packages]
 mise run fonts        # Install fonts to ~/Library/Fonts
 mise run apply        # Run all setup tasks (packages + dotfiles + fonts + neovim + osx-settings)
-mise run upgrade      # Upgrade declared packages and pinned [tools]
+mise update           # Upgrade everything (packages + tools)
+mise update codex     # ...or just one package/tool, by name
+mise run claude-prune # Reclaim disk from old Claude Code versions
 mise run packages-prune  # Dry-run: installed but no longer declared
 mise run macos-defaults  # Converge just the declarative macOS defaults (drift-checked)
 mise run check        # Read-only: report drift between config and machine
@@ -331,6 +333,45 @@ so a name Homebrew accepts locally can still 404:
 *machine* rather than a curated list — on this repo it proposed 99 entries against
 the Brewfile's 58, mostly transitive libs Homebrew had flagged
 "installed on request". The declared list is hand-curated from the Brewfile.
+
+### Upgrading
+
+mise splits upgrades across two commands — `mise bootstrap packages upgrade` for
+brew formulae and casks, `mise upgrade` for `[tools]`. **`mise update`** wraps
+both and dispatches on where a name is declared, so one command covers either:
+
+```bash
+mise update              # everything
+mise update codex        # a cask
+mise update jq           # a formula
+mise update hive         # a tool (resolves github:colonyops/hive)
+```
+
+It is named `update` because `up` and `upgrade` are both mise builtins (`up`
+aliases `mise upgrade`) and a task cannot shadow a builtin.
+
+Casks are included now that they are mise-owned, and a self-updating app that is
+*running* is skipped ("installed app is running and updates itself") rather than
+replaced under a live process. Exactly-pinned `[tools]` never move here — those
+only change via a Renovate PR.
+
+**`codex update` does not work here, by choice.** Codex has no real
+self-updater — the subcommand shells out to whichever package manager installed
+it, and since mise holds the cask receipt (`.mise-cask.toml`) rather than
+Homebrew, it fails with a misleading `Cask 'codex' is not installed`. mise owns
+codex deliberately: handing it back to brew would fix that subcommand but drop
+codex out of the declarative set, and a fresh machine has no Homebrew to install
+it with. Use `mise update codex`.
+
+Contrast `claude`, which self-updates *natively* into its own versions
+directory with a moving symlink — that is why it is not declared here at all.
+Codex only looks like that case.
+
+Claude Code self-updates and keeps every version it installs (~205MB each,
+1.2GB after six releases) with no automatic pruning. `mise run claude-prune`
+keeps the running version plus one rollback; it reads the active version from
+the `~/.local/bin/claude` symlink rather than assuming the highest number is
+live, so a rollback stays safe.
 
 **Never bulk-apply `prune`.** It is not dependency-aware for install-on-request
 formulae — on this machine it proposed 103 removals including `cairo`, which
