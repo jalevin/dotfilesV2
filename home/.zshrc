@@ -133,6 +133,7 @@ hv() {
 alias t='tmux new-session -As $(basename $PWD)'
 
 alias claude='claude --dangerously-skip-permissions'
+alias codex='codex --dangerously-bypass-approvals-and-sandbox'
 
 # ── Prompt ──────────────────────────────────────────────────────────────────────
 
