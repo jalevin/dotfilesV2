@@ -41,7 +41,6 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="${BREW_PATH}/opt/libpq/bin:$PATH"
-export PATH="$HOME/.local/share/google-cloud-sdk/bin:$PATH"
 #export PATH="/Users/jeff/projects/g/deployment_tools/scripts/gcom/:$PATH"
 
 # General
@@ -82,13 +81,12 @@ argo-auth() {
 export DOCKER_ID_USER="levinology"
 alias cleandocker="docker system prune -f"
 
-# gcloud
-if [ -f "$HOME/.local/share/google-cloud-sdk/path.zsh.inc" ]; then
-  . "$HOME/.local/share/google-cloud-sdk/path.zsh.inc"
-fi
-if [ -f "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc" ]; then
-  . "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc"
-fi
+# gcloud. path.zsh.inc prepends its own bin/ to PATH, which is what puts
+# gcloud-installed components (gke-gcloud-auth-plugin) where kubectl can find
+# them — the cask only links gcloud/gsutil/bq and the credential helpers.
+GCLOUD_SDK="${BREW_PATH}/share/google-cloud-sdk"
+[ -f "$GCLOUD_SDK/path.zsh.inc" ] && . "$GCLOUD_SDK/path.zsh.inc"
+[ -f "$GCLOUD_SDK/completion.zsh.inc" ] && . "$GCLOUD_SDK/completion.zsh.inc"
 
 # ripgrep
 export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/rg.conf"
@@ -126,7 +124,6 @@ alias gm="git commit"
 alias gdiff="git --no-pager diff"
 
 # Tmux
-# Open/attach a tmux session named "hive" running hive.
 hv() {
   tmux new-session -As hive hive
 }

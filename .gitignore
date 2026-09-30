@@ -26,9 +26,6 @@ home/.config/git/gitk
 # the repo. These two are machine-local/generated; mise.lock itself IS tracked.
 home/.config/mise/locks/
 home/.config/mise/miserc.toml
-# Hive Desktop rewrites this when preferences change (font size, theme, ports) —
-# machine-local state, not config worth tracking.
-home/.config/hive/desktop/settings.yaml
 home/.config/.semgrep/
 
 # Tool runtime data (credentials, caches)

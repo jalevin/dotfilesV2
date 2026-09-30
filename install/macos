@@ -56,16 +56,13 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings \
 # Show the /Volumes folder
 sudo chflags nohidden /Volumes
 
-# Show the ~/Library folder
-#chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
-
 ###############################################################################
 # Keyboard Shortcuts                                                          #
 ###############################################################################
 
-# Spotlight hotkey (Cmd+Space) — ENABLED. This used to be disabled to free
-# Cmd+Space for Alfred; Alfred is gone and native Spotlight is the launcher, so
-# the key has to be handed back or Cmd+Space does nothing.
+# Spotlight hotkey (Cmd+Space) — written back explicitly because an earlier
+# setup disabled 64 to free Cmd+Space for another launcher; a machine carrying
+# that state needs it re-enabled or Cmd+Space does nothing.
 # 64 = Spotlight search field; params = (ASCII space 32, keycode 49, Cmd 1048576).
 # Written with `defaults -dict-add` like the shortcuts below, not PlistBuddy:
 # direct plist edits race cfprefsd's cache and get silently dropped.
@@ -106,7 +103,6 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 175 "
 # Touch ID for sudo                                                           #
 ###############################################################################
 
-# Enable Touch ID for sudo authentication
 if [[ -f /etc/pam.d/sudo_local.template ]]; then
   sudo cp /etc/pam.d/sudo_local.template /etc/pam.d/sudo_local
   sudo sed -i '' 's/^#auth/auth/' /etc/pam.d/sudo_local

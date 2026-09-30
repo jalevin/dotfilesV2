@@ -21,8 +21,6 @@ dotfiles/
 │   │   │   └── tmux.conf # Tmux config
 │   │   ├── nvim/         # Neovim config (init.lua, lua/, etc.)
 │   │   ├── agent-deck/   # Agent Deck config
-│   │   ├── hive/
-│   │   │   └── config.yaml  # Hive workspace config (workspace: ~/projects)
 │   │   ├── k9s/          # k9s config, aliases, plugins
 │   │   ├── ripgrep/      # ripgrep config
 │   │   └── ghostty/      # Ghostty terminal config
@@ -37,9 +35,6 @@ dotfiles/
 │       ├── agents -> ../.ai/agents
 │       ├── skills -> ../.ai/skills
 │       └── commands/     # Slash command prompts
-├── machines/             # Per-machine config, selected by MISE_ENV
-│   ├── grafana/          # work laptop
-│   └── personal/         # personal laptop
 ├── mise.grafana.toml     # work overlay
 ├── mise.personal.toml    # personal overlay
 ├── install/
@@ -186,6 +181,25 @@ Renovate manager at all.
 - **mise, pinned exactly** — version matters, and you want to see each bump
 - **brew, `"latest"`** — want it present and current, version irrelevant
 
+**Version pinning is a `[tools]`-only feature.** `[bootstrap.packages]` cannot
+pin a brew version: the Homebrew API publishes only the current one, so mise
+warns `cannot install pinned version 'jq@1.7.1', skipping` and leaves the
+package uninstalled. A version value there is worse than `"latest"` — `status`
+reports `version mismatch` forever while nothing installs. Declare brew packages
+as `"latest"` and pin in `[tools]` when the version matters.
+
+**gcloud is the worked example of choosing between the two.** It keeps add-on
+components *inside* the SDK directory — `gke-gcloud-auth-plugin`, which
+`kubectl` resolves by name off PATH — so a `[tools]` entry would discard them on
+every bump into a fresh versioned directory, even though it is the only option
+that could lock the version. `brew-cask:gcloud-cli` keeps them: the prefix is
+unversioned (`$HOMEBREW_PREFIX/share/google-cloud-sdk`) and the installer runs
+with `--update-installed-components`. mise handles the cask fully, including its
+`run installer` step, so it needs no Homebrew CLI and stays in the declared set.
+Declared in `mise.grafana.toml` only — the personal machine has no GKE clusters.
+Components are not reinstalled automatically, though: after a fresh install run
+`gcloud components install gke-gcloud-auth-plugin`.
+
 On mise: the Kubernetes/Jsonnet toolchain (work-only), plus `sops`, `age`,
 `shellcheck`, and the CLIs that replaced installer scripts.
 On brew: anything that isn't one self-contained binary (shared libraries,
@@ -216,45 +230,55 @@ by hand. That file is **machine-local and never committed** — it works because
 `~/.config/mise` is deployed with `symlink-each`, so only `config.toml` is
 linked and a real `miserc.toml` sits beside it.
 
-Overlay `[dotfiles]` entries **merge** with the base and **override** a matching
-target key. Per-machine files live in `machines/<env>/`.
+Overlay entries **merge** with the base and **override** a matching key — both
+`[dotfiles]` and `[bootstrap.packages]`. Today the only overlay content is
+`brew-cask:gcloud-cli` in `mise.grafana.toml`; the `machines/` directory is gone,
+because hive was its only occupant.
 
-Why whole-file selection instead of templating: mise has a `mode = "template"`,
-but hive's configs are full of hive's *own* `{{ }}` syntax (`{{ .Slug }}`,
-`{{ agentWindow }}`, `{{ .URI | shq }}`) that must survive verbatim. Templating
-them would mean escaping every one.
+### Hive — configs live in iCloud, not this repo
 
-### Hive (`machines/<env>/hive-config.yaml`)
+hive is the one tool whose config is **not** in this repo. Its configs can carry
+private roadmap detail and this repo is public, so they live in iCloud:
 
-Single workspace configured: `/Users/jeff/projects`
+```
+~/Library/Mobile Documents/com~apple~CloudDocs/hive/
+├── grafana/     # config.yaml + desktop/{actions.yml,flows,settings.yaml,workspaces}
+└── personal/    # same shape, its own config.yaml, no flows or ai-platform workspace
+```
 
-`~/.config/hive` is a **real directory**, not one whole-directory link, because
-the two halves come from different places:
+`mise run hive-link` points `~/.config/hive` at the folder matching `$MISE_ENV`
+as **one whole-directory symlink**, and runs as part of `[tasks.bootstrap]`.
 
-| Path | Source | Scope |
-|------|--------|-------|
-| `~/.config/hive/config.yaml` | `machines/<env>/hive-config.yaml` | per-machine (overlay) |
-| `~/.config/hive/desktop/flows/` | `machines/<env>/hive-desktop/flows/` | per-machine (overlay) |
-| `~/.config/hive/desktop/workspaces/ai-gateway` | `machines/grafana/hive-desktop/workspaces/` | work only (overlay) |
-| `~/.config/hive/desktop/actions.yml` | `home/.config/hive/desktop/actions.yml` | shared |
-| `~/.config/hive/desktop/workspaces/{hive,mcps.yaml,skills.yml}` | `home/.config/hive/desktop/workspaces/` | shared |
+Three things make that the right shape:
 
-`~/.config/hive` and `~/.config/hive/desktop` are both real directories, so an
-overlay can add files *inside* an otherwise-shared tree. Verified: an overlay
-entry inside a `symlink-each` directory applies and is not pruned on re-apply.
-`symlink-each` is **recursive** — it mirrors subdirectories as real dirs and
-links each leaf file, which is what lets the app write alongside our config.
+- **Whole-directory, never per-file.** Hive Desktop saves by
+  temp-file-plus-`rename()`, which replaces a per-file symlink with a real file
+  and silently detaches it — the same hazard documented for `~/.config/mise`. A
+  link at the directory level gets written *through*. This repo watched it
+  happen: app-rewritten `SKILL.md` files kept showing up as repo modifications.
+- **No env-var plumbing.** Both halves *can* be redirected — `HIVE_CONFIG` for
+  the CLI, `HIVE_DESKTOP_CONFIG_DIR` / `_FLOWS_DIR` / `_ACTIONS_PATH` /
+  `_AGENT_WORKSPACES_DIR` for the app — but Hive.app launches from the Dock and
+  inherits launchd's environment, not `.zshrc`'s. Routing by env would need a
+  login agent calling `launchctl setenv`. Both read `~/.config/hive` by default,
+  so the symlink covers them with nothing extra.
+- **One folder per machine, so iCloud never merges.** No file is written by two
+  machines, so there are no conflict copies, and `settings.yaml` stays
+  machine-local by construction.
+
+The cost to know about: iCloud Drive evicts file *contents* under disk pressure,
+leaving dataless placeholders that download on access. There is no reliable
+"keep downloaded" pin for an arbitrary folder, so a launch while offline
+mid-eviction can read as a missing config. A private git repo would trade that
+risk for manual sync and give version history, which iCloud does not.
 
 hive has no include/layering mechanism (one `--config` path), so each machine
 carries a whole `config.yaml` and the shared bulk is duplicated. Keep divergence
 in the `rules:` section so the two stay easy to diff:
 
 ```bash
-diff machines/grafana/hive-config.yaml machines/personal/hive-config.yaml
+cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/hive && diff grafana/config.yaml personal/config.yaml
 ```
-
-`desktop/settings.yaml` is gitignored — Hive Desktop rewrites it whenever
-preferences change.
 
 ### Agent Deck (`home/.config/agent-deck/config.toml`)
 
@@ -301,6 +325,19 @@ linking — verified: installing `tldr` pulled in `libzip` unprompted with zero
 `/Applications` with versions recorded under `Caskroom`. `bootstrap.sh` no
 longer installs Homebrew.
 
+**Not required is not absent.** This machine has a real Homebrew install at
+`/opt/homebrew` (Homebrew 7.0.6, a git checkout predating the migration), and
+the `brew` CLI still works. It sees the whole prefix including what mise poured
+— 230 formulae and 20 casks here — because `brew list` just enumerates
+`Cellar/` and `Caskroom/` without caring who wrote the receipt.
+
+Use `brew` to **look**, not to change: `brew list`, `brew info`, `brew --prefix`
+are all fine. A `brew install` or `brew upgrade` writes brew's own receipt, and
+mise then defers to it permanently (`installed and managed by Homebrew; leaving
+unchanged`) until the receipt is dropped by hand. Today nothing is brew-owned —
+all 20 casks report to mise. Change packages through `mise update` /
+`mise bootstrap packages`, and the ownership split stays clean.
+
 **`[bootstrap.brew] adopt = true`** lets mise take over an app already at the
 cask's destination instead of reinstalling it. It downloads the artifact to
 verify, then adopts the existing bundle in place — so no bundle replacement and
@@ -317,8 +354,10 @@ self-updating cannot adopt — content differs — and needs a real install.
 `obsidian` is pinned to `adopt = false`: the installed 1.11.x bundle had no
 `obsidian-cli`, which the current cask declares as a binary artifact, so
 adoption fails. Self-updating apps whose bundle lacks a newly-declared artifact
-are the case to watch for. Both machines get the same packages — the overlays are
-dotfiles-only. (Overlay `[bootstrap.packages]` would merge if that ever changed.)
+are the case to watch for. `mise.toml` holds the shared set; overlay
+`[bootstrap.packages]` merges with it, so machine-specific packages live in
+`mise.<env>.toml` — `gcloud-cli` is grafana-only, `discord`/`signal` are
+personal-only.
 
 Naming gotchas found during the migration — mise resolves via the Homebrew API,
 so a name Homebrew accepts locally can still 404:
@@ -363,9 +402,10 @@ codex deliberately: handing it back to brew would fix that subcommand but drop
 codex out of the declarative set, and a fresh machine has no Homebrew to install
 it with. Use `mise update codex`.
 
-Contrast `claude`, which self-updates *natively* into its own versions
+Contrast **Claude Code**, which self-updates *natively* into its own versions
 directory with a moving symlink — that is why it is not declared here at all.
-Codex only looks like that case.
+Codex only looks like that case. (`brew-cask:claude` in `[bootstrap.packages]`
+is the unrelated Claude *desktop* app, which shares the name.)
 
 Claude Code self-updates and keeps every version it installs (~205MB each,
 1.2GB after six releases) with no automatic pruning. `mise run claude-prune`

@@ -8,13 +8,14 @@
 #
 # Overlay [dotfiles] entries merge with the base and override a matching key.
 
-[dotfiles]
-"~/.config/hive/config.yaml" = "machines/grafana/hive-config.yaml"
+# No [dotfiles] here: hive was the only per-machine config, and it now lives in
+# iCloud under hive/grafana/ (see [tasks.hive-link] in mise.toml).
 
-# Work-only Hive Desktop config. `flows/` is entirely Grafana-specific, so the
-# overlay owns the whole directory (symlink-each, so the app can still write new
-# flows into a real dir). `ai-gateway` slots into the otherwise-shared
-# workspaces/ directory — an overlay entry inside a symlink-each dir is
-# supported and survives re-apply without being pruned.
-"~/.config/hive/desktop/flows" = { source = "machines/grafana/hive-desktop/flows", mode = "symlink-each" }
-"~/.config/hive/desktop/workspaces/ai-gateway" = "machines/grafana/hive-desktop/workspaces/ai-gateway"
+# Work-only packages. gcloud is here rather than in the shared set because the
+# personal machine has no GKE clusters to authenticate against; it also drags in
+# openssl@3/ca-certificates/python@3.14 as dependencies.
+#
+# After a fresh install the add-on components are NOT restored automatically:
+#   gcloud components install gke-gcloud-auth-plugin
+[bootstrap.packages]
+"brew-cask:gcloud-cli" = "latest"

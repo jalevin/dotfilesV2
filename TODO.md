@@ -124,6 +124,51 @@ Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/b
       component manager, and the whisper model is a 1.1GB data file. mise
       manages PATH binaries; none of these are that.
 
+- [x] Moved gcloud from `install/scripts/gcloud.sh` to
+      `brew-cask:gcloud-cli`, superseding the "staying imperative" note above.
+      Two earlier conclusions were wrong: mise's brew-cask *does* run
+      script-based installers (the docs section listing them reads as a
+      limitations list), and a cask upgrade does *not* drop gcloud components —
+      the prefix is unversioned and the installer gets
+      `--update-installed-components`. A mise `[tools]` entry would still drop
+      them, which is why the plugin backend stayed rejected.
+      Also established that `[bootstrap.packages]` cannot pin a version at all:
+      `mise WARN brew: cannot install pinned version 'jq@1.7.1', skipping`.
+      `.zshrc` now derives `GCLOUD_SDK` from `$BREW_PATH`, and the duplicate
+      PATH export is gone (`path.zsh.inc` is self-locating and did the same
+      prepend). `SCRIPT_MANAGED` in `[tasks.update]` was added for gcloud and
+      removed with it — no other install script is brew-installable.
+      **Components are not restored by the cask install:**
+      `gcloud components install gke-gcloud-auth-plugin gcloud-crc32c`.
+
+- [x] Moved hive's configs out of this repo into iCloud
+      (`~/Library/Mobile Documents/com~apple~CloudDocs/hive/{grafana,personal}/`),
+      reached by one whole-directory symlink from `mise run hive-link`, which
+      picks the folder matching `$MISE_ENV` and runs as part of
+      `[tasks.bootstrap]`. Reason: hive configs can carry private roadmap
+      detail and this repo is public. Nothing sensitive was in the committed
+      versions — checked before removing, so no history rewrite was needed.
+      Whole-directory rather than per-file because Hive Desktop saves by
+      temp-file-plus-`rename()`; that is what kept rewriting the repo's
+      `SKILL.md` files through the old per-file links. Both halves *can* be
+      redirected by env var (`HIVE_CONFIG`, `HIVE_DESKTOP_CONFIG_DIR` and
+      friends) but Hive.app inherits launchd's environment, not `.zshrc`'s, so
+      that would need a `launchctl setenv` login agent — the symlink needs none.
+      One folder per machine means iCloud never merges a file, so no conflict
+      copies and `settings.yaml` stays machine-local.
+      `machines/` is now gone entirely — hive was its only occupant.
+      Known cost: iCloud evicts file contents under disk pressure and there is
+      no "keep downloaded" pin for an arbitrary folder, so a launch while
+      offline mid-eviction can read as a missing config.
+      Rescued three gitignored files the old layout would have dropped: two
+      `.mcp.json` and `ai-platform/{CLAUDE.md,.codex/config.toml}`, which the
+      broken `ai-gateway` dotfiles key had never deployed.
+- [ ] Personal machine: after iCloud syncs, run `mise run hive-link`. Its folder
+      is seeded from the old repo sources, so check `config.yaml` still matches
+      what that machine wants before opening Hive Desktop.
+- [ ] Delete `~/.config/hive.pre-icloud` once Hive Desktop has been reopened and
+      verified against the iCloud copy.
+
 ## Open
 
 - [ ] Commit the staged work — blocked only on 1Password SSH signing, which

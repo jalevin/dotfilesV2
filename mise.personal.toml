@@ -8,9 +8,6 @@
 #
 # Overlay [dotfiles] entries merge with the base and override a matching key.
 
-[dotfiles]
-"~/.config/hive/config.yaml" = "machines/personal/hive-config.yaml"
-
 # Personal-machine apps. Both self-update (auto_updates: true), so mise installs
 # the current version once and then leaves them to their own updaters.
 # They are not on the work machine, which is why brew's receipts for them

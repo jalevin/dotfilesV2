@@ -7,7 +7,7 @@ if ! op account list &>/dev/null; then
 fi
 
 TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+trap 'rm -rf "$TMPDIR"' EXIT
 
 push_file() {
   local name="$1"

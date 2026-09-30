@@ -4,6 +4,11 @@ set -euo pipefail
 # Ice menu bar manager — install pre-release from GitHub for macOS Tahoe support
 # Homebrew cask only tracks stable releases, so we pull from GitHub directly.
 
+# Sparkle auto-update must stay off or it moves Ice off this pin. That is
+# enforced declaratively in mise.toml's [bootstrap.macos.defaults], which
+# converges on every run — this script exits early once Ice is current, so it
+# is the wrong place to assert an invariant from.
+
 REPO="jordanbaird/Ice"
 TAG="0.11.13-dev.2"
 APP_NAME="Ice.app"
@@ -35,7 +40,7 @@ fi
 echo "Installing Ice $TAG (current: $current_version)..."
 
 TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+trap 'rm -rf "$TMPDIR"' EXIT
 
 gh release download "$TAG" --repo "$REPO" --pattern "Ice.zip" --dir "$TMPDIR"
 unzip -q "$TMPDIR/Ice.zip" -d "$TMPDIR"
@@ -57,7 +62,3 @@ fi
 
 cp -R "$TMPDIR/$APP_NAME" "$INSTALL_DIR/"
 echo "Ice $TAG installed to $INSTALL_DIR/$APP_NAME"
-
-# Disable Sparkle auto-update (we manage updates via this script)
-defaults write com.jordanbaird.Ice SUEnableAutomaticChecks -bool false
-defaults write com.jordanbaird.Ice SUAutomaticallyUpdate -bool false

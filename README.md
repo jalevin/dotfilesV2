@@ -28,7 +28,6 @@ dotfiles/
 │   │   ├── nvim/
 │   │   ├── ghostty/
 │   │   ├── k9s/
-│   │   ├── hive/
 │   │   ├── lazygit/
 │   │   ├── ripgrep/
 │   │   ├── mise/
@@ -37,7 +36,6 @@ dotfiles/
 │   ├── .ai/            # Editor-agnostic skills, commands, agents (Claude, Cursor, Codex)
 │   └── .claude/        # Claude Code: settings, statusline, symlinks to .ai/
 ├── install/
-│   ├── Brewfile
 │   ├── macos           # macOS system defaults
 │   └── scripts/
 ├── tasks/              # mise task scripts

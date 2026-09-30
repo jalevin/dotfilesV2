@@ -26,11 +26,9 @@ node = "24"
 ruby = "3"
 "npm:typescript" = "latest"
 
-# ── CLI tools that replaced installer scripts ────────────────────────────────
-# Each of these previously came from a bespoke script in install/scripts/ with
-# its own "check for a newer tag and sed the pin" logic. hive was the cautionary
-# case: `go install @latest` had resolved to a local pseudo-version
-# (v0.37.3-0.2026...) and sat 22 minor releases behind for six months.
+# ── Third-party CLIs ────────────────────────────────────────────────────────
+# Pinned exactly rather than floating: a `latest`/`@latest` spec can resolve to
+# a prerelease or a local pseudo-version and silently stop tracking releases.
 
 # Plannotator — browser-based plan/diff review. Pinned release asset rather than
 # `curl | bash` from plannotator.ai: the vendor installer also writes agent
@@ -47,11 +45,10 @@ ruby = "3"
 # version either way.
 "npm:heroku" = "11.10.0"
 
-# ── Moved off Homebrew ───────────────────────────────────────────────────────
-# Pinned to the versions Homebrew had, so Renovate proposes each bump rather
-# than a bulk upgrade doing it silently. sops/age back the secrets tasks
-# (SOPS_AGE_KEY_FILE in .zshrc); shellcheck lints the ~96 shell scripts here.
-# The Kubernetes/Jsonnet toolchain is work-only and lives in mise.grafana.toml.
+# ── Secrets and linting ──────────────────────────────────────────────────────
+# sops/age back the secrets tasks (SOPS_AGE_KEY_FILE in .zshrc); shellcheck
+# lints the shell scripts here. The Kubernetes/Jsonnet toolchain is work-only
+# and lives in mise.grafana.toml.
 "sops" = "3.12.2"
 "age" = "1.3.1"
 "shellcheck" = "0.11.0"

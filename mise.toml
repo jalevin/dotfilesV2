@@ -4,12 +4,12 @@
 # Globally-available CLIs live in home/.config/mise/config.toml instead.
 
 # ---------------------------------------------------------
-# Dotfiles (replaces GNU Stow) — opt-in: only what's listed deploys.
+# Dotfiles — opt-in: only what's listed deploys.
 #
-# Granularity is deliberate and mirrors what stow produced. A whole-directory
-# link is only safe when nothing else lives at that path; anywhere the tool
-# writes its own state next to our config, the entry must be `symlink-each` so
-# a link is made per file instead of shadowing the directory.
+# Granularity is deliberate. A whole-directory link is only safe when nothing
+# else lives at that path; anywhere the tool writes its own state next to our
+# config, the entry must be `symlink-each` so a link is made per file instead of
+# shadowing the directory.
 #
 # Verify with `mise bootstrap dotfiles diff` / `status` before applying.
 
@@ -50,15 +50,8 @@
 # actually gets committed (mise.lock yes; miserc.toml and locks/ no).
 "~/.config/mise" = "home/.config/mise"
 
-# Hive is split per-machine. `config.yaml`, the desktop flows, and the
-# work-only agent workspace come from an overlay (mise.grafana.toml /
-# mise.personal.toml); only the entries below are shared. That means
-# ~/.config/hive and ~/.config/hive/desktop are real directories rather than
-# whole-directory links — which is also what lets Hive Desktop keep its
-# app-written settings.yaml outside the repo.
-# Pin this machine's overlay once with `MISE_ENV=<env> mise run stamp`.
-"~/.config/hive/desktop/actions.yml" = "home/.config/hive/desktop/actions.yml"
-"~/.config/hive/desktop/workspaces" = { source = "home/.config/hive/desktop/workspaces", mode = "symlink-each" }
+# No hive entries on purpose — its configs live in iCloud, not this repo. See
+# [tasks.hive-link].
 
 # ~/.local/bin holds plenty we don't manage, so each binary is listed
 # explicitly rather than linking the directory. The telegram commands link
@@ -72,11 +65,11 @@
 "~/.local/bin/tg-setup" = "telegram/tg-setup"
 
 # ---------------------------------------------------------
-# System packages (was install/Brewfile)
+# System packages
 #
-# Both machines get the same packages — deliberately not split across the
-# overlays. If that ever changes, overlay [bootstrap.packages] merges with this
-# section the same way [dotfiles] does.
+# This is the shared set. Overlay [bootstrap.packages] merges with it the same
+# way [dotfiles] does, so a machine-specific package goes in mise.<env>.toml:
+# gcloud-cli is grafana-only, discord/signal are personal-only.
 #
 # WARNING: `mise bootstrap packages prune` is NOT dependency-aware for formulae
 # Homebrew marks "installed on request". Such a formula looks undeclared even
@@ -150,11 +143,13 @@ adopt = true
 
 # Casks — `packages import` does not handle these, so they are hand-written.
 # Personal-machine apps (discord, signal) live in mise.personal.toml.
-# sequel-ace was dropped: uninstalled from both machines, DBeaver covers it.
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
 "brew-cask:1password" = "latest"
 "brew-cask:1password-cli" = "latest"
 "brew-cask:brave-browser" = "latest"
+# The desktop app (/Applications/Claude.app). Claude Code is a different
+# product with the same name — it self-updates into ~/.local/share/claude and
+# is deliberately NOT declared here; see `mise run claude-prune`.
 "brew-cask:claude" = "latest"
 "brew-cask:cleanshot" = "latest"
 "brew-cask:codex" = "latest"
@@ -176,7 +171,7 @@ adopt = true
 "brew-cask:whatsapp" = "latest"
 
 # ---------------------------------------------------------
-# macOS system defaults (was install/macos)
+# macOS system defaults
 #
 # Declarative half: `mise bootstrap macos defaults status` reports drift per key
 # and `apply` converges it. The imperative remainder — anything needing sudo, a
@@ -198,7 +193,6 @@ orientation = "left"
 tilesize = 36
 autohide = true
 magnification = false
-# show app switcher on all displays
 appswitcher-all-displays = true
 
 [bootstrap.macos.defaults."com.apple.finder"]
@@ -233,6 +227,15 @@ NSAutomaticDashSubstitutionEnabled = false
 InitialKeyRepeat = 10
 KeyRepeat = 1
 
+# Ice is pinned to a prerelease by `install/scripts/ice.sh` — the cask tracks
+# jordanbaird/ice-releases, whose newest release is 0.11.12 (Oct 2024), older
+# than the Tahoe-compatible dev build. Sparkle self-updating would move Ice off
+# that pin. Declared here rather than in the script because the script exits
+# early once Ice is current, so writes there would not converge.
+[bootstrap.macos.defaults."com.jordanbaird.Ice"]
+SUEnableAutomaticChecks = false
+SUAutomaticallyUpdate = false
+
 [bootstrap.hooks]
 # Close System Settings first so it can't overwrite what we're about to write.
 pre-defaults = "osascript -e 'tell application \"System Settings\" to quit' || true"
@@ -249,10 +252,8 @@ description = "Install declared [bootstrap.packages] (taps, formulae, casks)"
 run = "mise bootstrap --yes --only packages"
 
 [tasks.packages-prune]
-# Dry-run only: the output needs human triage. Prune lists transitive deps that
-# Homebrew flagged "installed on request", so applying it in bulk breaks
-# declared packages (103 proposed removals here, including cairo — which ffmpeg
-# and six other installed formulae depend on).
+# Dry-run only: the output needs human triage — see the prune warning on
+# [bootstrap.packages] above.
 # Both overlays are loaded as a guard rather than a present need — no packages
 # live in an overlay today, but `prune` only ever sees the ACTIVE config, so a
 # single-env run would target anything that later did.
@@ -360,6 +361,65 @@ fi
 ln -sfn "$HOME/projects/go" "$HOME/go"
 echo "linked ~/go -> ~/projects/go"
 """
+
+[tasks.hive-link]
+# hive's configs are NOT in this repo. They can carry private roadmap detail and
+# this repo is public, so they live in iCloud under hive/<env>/ and reach the
+# machine as one whole-directory symlink.
+#
+# Whole-directory, not per-file: Hive Desktop saves by temp-file-plus-rename,
+# which replaces a per-file symlink with a real file — rename() swaps the
+# directory entry rather than following it — and nothing errors, so the link
+# just silently detaches. A link at the directory level is written *through*.
+#
+# Both the CLI and the app read ~/.config/hive by default, so no HIVE_CONFIG or
+# HIVE_DESKTOP_CONFIG_DIR plumbing is needed. That matters for the app: it is
+# launched from the Dock and would never see a .zshrc export.
+description = "Point ~/.config/hive at this machine's iCloud hive config"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+ICLOUD="$HOME/Library/Mobile Documents/com~apple~CloudDocs/hive"
+LINK="$HOME/.config/hive"
+
+if [ -z "${MISE_ENV:-}" ]; then
+  echo "hive-link: MISE_ENV is not set; run \`mise run stamp\` first" >&2
+  exit 1
+fi
+
+# MISE_ENV may be a comma-separated list; take the first that has a folder
+target=""
+for e in ${MISE_ENV//,/ }; do
+  if [ -d "$ICLOUD/$e" ]; then target="$ICLOUD/$e"; break; fi
+done
+
+if [ -z "$target" ]; then
+  echo "hive-link: no iCloud config for MISE_ENV=$MISE_ENV under $ICLOUD" >&2
+  echo "  expected one of: $(printf '%s ' ${MISE_ENV//,/ })" >&2
+  echo "  create it (or wait for iCloud to sync) before linking" >&2
+  exit 1
+fi
+
+if [ -L "$LINK" ]; then
+  current="$(readlink "$LINK")"
+  [ "$current" = "$target" ] && { echo "hive-link: already -> $target"; exit 0; }
+  ln -sfn "$target" "$LINK"
+  echo "hive-link: repointed $LINK -> $target (was $current)"
+  exit 0
+fi
+
+# A real directory here holds live config we must not clobber.
+if [ -e "$LINK" ]; then
+  echo "hive-link: $LINK exists and is not a symlink; refusing to replace it" >&2
+  echo "  move it aside, then re-run:  mv \"$LINK\" \"$LINK.bak\"" >&2
+  exit 1
+fi
+
+mkdir -p "$(dirname "$LINK")"
+ln -s "$target" "$LINK"
+echo "hive-link: linked $LINK -> $target"
+'''
 
 [tasks.first-run]
 description = "One-time fresh-machine steps (clear Dock, iCloud reminder)"
@@ -474,10 +534,9 @@ echo "claude-prune: removed $removed; kept $(printf '%s' "$keep" | tr '\n' ' ')(
 """
 
 [tasks.upgrade]
-# Replaces the old `upgrade-apps`, which hardcoded four cask names.
 # `packages upgrade` refreshes Homebrew's own metadata, so no separate
 # `brew update` is needed.
-# Covers formulae AND casks now that casks are mise-owned. Self-updating apps
+# Covers formulae and casks, which are mise-owned. Self-updating apps
 # that are running are skipped ("installed app is running and updates itself"),
 # so this will not replace a live browser out from under you.
 # For one package: `mise bootstrap packages upgrade brew-cask:codex`
@@ -494,7 +553,7 @@ run = "mise self-update"
 # imperative remainder — everything that cannot be declared.
 # Must stay idempotent: mise re-runs it on every converge.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+depends = ["fonts", "go-link", "hive-link", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
 
 [tasks.apply]
 # Kept as the documented entry point; `mise bootstrap` does the real work and

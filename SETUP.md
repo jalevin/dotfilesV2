@@ -12,8 +12,10 @@
       (or `personal` — this pins the machine's overlay)
   - Installs Xcode CLI tools
   - Creates a bare, user-owned `/opt/homebrew` (the only step needing sudo).
-    **Homebrew itself is never installed** — mise pours brew bottles into that
-    prefix itself and creates `Cellar/`, `Caskroom/`, `bin/` and the rest.
+    **Bootstrap never installs Homebrew** — mise pours brew bottles into that
+    prefix itself and creates `Cellar/`, `Caskroom/`, `bin/` and the rest. A
+    machine that already has Homebrew keeps it; see "not required is not
+    absent" in CLAUDE.md.
   - Installs mise (mise.run installer; upgrade via `mise self-update`)
   - Pins `MISE_ENV` for this machine (`mise run stamp`)
   - Runs `mise bootstrap --yes` (packages, `[dotfiles]` symlinks, macOS defaults,

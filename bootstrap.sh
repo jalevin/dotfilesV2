@@ -9,7 +9,7 @@ set -euo pipefail
 #   [bootstrap.packages]      formulae and casks — mise pours Homebrew bottles
 #                             into /opt/homebrew itself; Homebrew is NOT needed
 #   [bootstrap.directories]   directories we own
-#   [dotfiles]                config symlinks (replaced GNU Stow)
+#   [dotfiles]                config symlinks
 #   [bootstrap.macos.defaults] system defaults, with pre/post-defaults hooks
 #   [tools]                   pinned CLIs (from ~/.config/mise, once linked)
 #   [tasks.bootstrap]         the imperative remainder — fonts, neovim, tmux,
@@ -33,7 +33,7 @@ case "$MACHINE_ENV" in
   *) usage ;;
 esac
 
-# ── 1. Xcode command line tools — Homebrew needs them ───────────────────────
+# ── 1. Xcode command line tools ─────────────────────────────────────────────
 xcode-select --install 2>/dev/null || true
 
 # ── 2. Homebrew prefix ──────────────────────────────────────────────────────

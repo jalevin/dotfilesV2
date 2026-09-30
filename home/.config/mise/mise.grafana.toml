@@ -10,10 +10,8 @@
 #   <repo>/mise.<env>.toml          -> [dotfiles], tasks  (project)
 
 # Kubernetes / Jsonnet toolchain — work only, and pinned to the versions this
-# machine already had on Homebrew rather than to latest. Renovate's mise manager
-# opens one PR per bump, so moving forward is a per-tool decision: k6 in
-# particular sat on 1.6.1 while upstream is 2.x, because the old brew task ran
-# `brew bundle --no-upgrade` and nothing ever upgraded formulae.
+# machine already had rather than to latest. Renovate's mise manager opens one
+# PR per bump, so moving forward is a per-tool decision.
 [tools]
 "tanka" = "0.36.3"
 "jsonnet-bundler" = "0.6.0"
