@@ -21,6 +21,20 @@ home/.claude/telemetry/
 home/.claude/mcp-needs-auth-cache.json
 home/.claude/paste-cache/
 home/.config/git/gitk
+# gh writes auth into this directory: `hosts.yml` holds `oauth_token` whenever
+# the token goes to the file instead of the login keyring (`--insecure-storage`,
+# or any host where the keyring is unavailable). This repo is public and gh's
+# file set is not fixed across versions — 2.92 also references aliases.yml and
+# triage.yml — so allowlist rather than blocklist: nothing here is tracked
+# unless named, and only config.yml is non-secret.
+home/.config/gh/*
+!home/.config/gh/config.yml
+# Machine-local Claude Code settings, layered over the tracked settings.json.
+# `model` lives here because Claude Code rewrites it often enough that it was
+# usually the only line changing in the tracked file. Also covered by a global
+# rule in home/.config/git/ignore; repeated here so the repo is self-contained
+# before that file is deployed.
+home/.claude/settings.local.json
 # ~/.config/mise is linked as a whole directory (so mise.lock survives an
 # atomic temp-file-rename), which means everything mise writes there lands in
 # the repo. These two are machine-local/generated; mise.lock itself IS tracked.
