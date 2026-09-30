@@ -91,6 +91,7 @@ url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841752"
 
 [tools.jsonnet-bundler."platforms.macos-arm64"]
+checksum = "blake3:be9c0b933eb52fabb969e4b581e96a87cbd2075b053b953c469508308cd06f7e"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-darwin-arm64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841749"
 

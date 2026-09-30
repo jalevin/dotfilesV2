@@ -127,6 +127,13 @@ Rule of thumb: **every session → `AGENTS.md`; on demand → a skill; delegated
 task → `agents/`.** Anything long or situational belongs in a skill so it isn't
 in every context (the Telegram details are a skill for exactly this reason).
 
+`model` is deliberately **not** in the tracked `settings.json`. Claude Code
+renames models often enough that it was usually the only line changing, so it
+lives in `~/.claude/settings.local.json` — a real file beside the linked
+`settings.json` (which `mode = "symlink-each"` allows), already gitignored by
+`**/.claude/settings.local.json`. Cost: a new machine starts on the default
+model until you set it there once.
+
 **settings.json** defines:
 - Pre-allowed Bash commands: `go get/run/test`, `git checkout/tag`, `ls`, `find`, `grep`, `jq`, `gh api/run/repo`
 - Status line: runs `~/.claude/statusline.sh` (3-line display: model/cost/duration, context bar + git info, token breakdown)
