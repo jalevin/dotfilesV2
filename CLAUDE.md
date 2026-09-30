@@ -154,13 +154,24 @@ symlinks in the repo must stay **inside** it — a link out to `~/.agents` or
 `~/.local` dangles on a fresh clone.
 
 **Codex needs separate wiring.** It reads `~/.codex/skills`, which that symlink
-does not reach, so `[dotfiles]` carries one entry per skill. Per-entry rather
-than one directory link for two reasons: `~/.codex/skills` holds live state
-(`.system`) and hand-made links into other repos (`paperclip`), and
-`home/.ai/skills/synced/` is the org/account skill sync — gitignored,
-re-fetchable, keyed by a `<org>_<user>` UUID, and not ours to deploy. Adding a
-skill therefore takes two edits: a `!` line in `.gitignore` and a `[dotfiles]`
-entry.
+does not reach, so `mise run codex-skills` links each skill there. It derives
+the list from `git ls-files`, not from a list in `mise.toml`: `.gitignore`'s
+allowlist is already the opt-in gate for a skill, and a second registration
+would only be another place to forget — the kind of silent miss that hid the
+Telegram instructions. Adding a skill is therefore still one edit, a `!` line
+in `.gitignore`.
+
+`[dotfiles]` cannot express this: its keys are literal target paths with no
+glob, and `symlink-each` on the whole directory would mirror
+`home/.ai/skills/synced/` — the untracked org/account sync, keyed by an
+`<org>_<user>` UUID, which is Claude's to manage and not ours to deploy. Being
+untracked is also what keeps it out of `git ls-files`, so the task excludes it
+for free.
+
+The task links whole skill directories and only ever prunes links pointing
+*into* `home/.ai/skills`, so `~/.codex/skills` keeps its live state (`.system`)
+and hand-made links into other repos (`paperclip`). It refuses to replace a real
+directory, and bails rather than pruning if the tracked list comes back empty.
 
 This is the trade from dropping plannotator's installer: it used to wire skills
 across 13 harnesses including Codex hooks, so installing the pinned CLI alone

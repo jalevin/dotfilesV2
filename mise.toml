@@ -64,24 +64,6 @@
 "~/.local/bin/tg-notify" = "telegram/tg-notify"
 "~/.local/bin/tg-setup" = "telegram/tg-setup"
 
-# Codex reads skills from ~/.codex/skills, so the home/.claude/skills symlink
-# does not reach it. One entry per skill rather than linking the directory:
-# ~/.codex/skills holds live state (.system) and hand-made links into other
-# repos (paperclip), and home/.ai/skills/ also contains `synced/` — the
-# org/account skill sync, which is gitignored, re-fetchable, and not ours to
-# deploy. Adding a skill means an entry here plus a `!` line in .gitignore.
-"~/.codex/skills/cleanup-comments" = "home/.ai/skills/cleanup-comments"
-"~/.codex/skills/collab-plan" = "home/.ai/skills/collab-plan"
-"~/.codex/skills/daily-prep" = "home/.ai/skills/daily-prep"
-"~/.codex/skills/diff-review" = "home/.ai/skills/diff-review"
-"~/.codex/skills/doc-review" = "home/.ai/skills/doc-review"
-"~/.codex/skills/meeting-notes" = "home/.ai/skills/meeting-notes"
-"~/.codex/skills/meeting-segment-editor" = "home/.ai/skills/meeting-segment-editor"
-"~/.codex/skills/msg-review" = "home/.ai/skills/msg-review"
-"~/.codex/skills/obsidian" = "home/.ai/skills/obsidian"
-"~/.codex/skills/obsidian-cli" = "home/.ai/skills/obsidian-cli"
-"~/.codex/skills/telegram" = "home/.ai/skills/telegram"
-
 # ---------------------------------------------------------
 # System packages
 #
@@ -444,6 +426,59 @@ ln -s "$target" "$LINK"
 echo "hive-link: linked $LINK -> $target"
 '''
 
+[tasks.codex-skills]
+# Codex reads skills from ~/.codex/skills; the in-repo home/.claude/skills
+# symlink only serves Claude Code. Derived from `git ls-files` rather than a
+# list here, because .gitignore's allowlist is already the opt-in gate for a
+# skill — a second registration would just be another place to forget, and
+# forgetting it fails silently. It also excludes home/.ai/skills/synced/ for
+# free: that is the untracked org/account sync, which is Claude's to manage.
+#
+# Links whole skill directories, not files. ~/.codex/skills must stay a real
+# directory: it holds live state (.system) and hand-made links into other repos
+# (paperclip), both of which this leaves alone.
+description = "Link repo-tracked skills into ~/.codex/skills"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+SRC="$(git rev-parse --show-toplevel)/home/.ai/skills"
+DEST="$HOME/.codex/skills"
+mkdir -p "$DEST"
+
+want="$(git ls-files 'home/.ai/skills/*/SKILL.md' | cut -d/ -f4 | sort -u)"
+[ -n "$want" ] || { echo "codex-skills: no tracked skills found; refusing to prune" >&2; exit 0; }
+
+linked=0
+for name in $want; do
+  target="$SRC/$name"
+  link="$DEST/$name"
+  [ -d "$target" ] || { echo "codex-skills: tracked but missing on disk: $name" >&2; continue; }
+  if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then continue; fi
+  if [ -e "$link" ] && [ ! -L "$link" ]; then
+    echo "codex-skills: $link exists and is not a symlink; leaving it" >&2; continue
+  fi
+  ln -sfn "$target" "$link"
+  echo "  linked $name"
+  linked=$((linked + 1))
+done
+
+# Prune only links we own: ones pointing into SRC whose skill is no longer
+# tracked. Anything pointing elsewhere (paperclip) or not a symlink is left.
+pruned=0
+for link in "$DEST"/*; do
+  [ -L "$link" ] || continue
+  tgt="$(readlink "$link")"
+  case "$tgt" in "$SRC"/*) ;; *) continue ;; esac
+  name="$(basename "$link")"
+  printf '%s\n' $want | grep -qx "$name" && continue
+  rm "$link"; echo "  pruned $name (no longer tracked)"
+  pruned=$((pruned + 1))
+done
+
+echo "codex-skills: $(printf '%s\n' $want | wc -l | tr -d ' ') tracked, $linked linked, $pruned pruned"
+'''
+
 [tasks.first-run]
 description = "One-time fresh-machine steps (clear Dock, iCloud reminder)"
 run = "./tasks/first-run.sh"
@@ -576,7 +611,7 @@ run = "mise self-update"
 # imperative remainder — everything that cannot be declared.
 # Must stay idempotent: mise re-runs it on every converge.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "hive-link", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+depends = ["fonts", "go-link", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
 
 [tasks.apply]
 # Kept as the documented entry point; `mise bootstrap` does the real work and
