@@ -106,6 +106,48 @@ Notable aliases:
 
 ### Claude Code (`home/.claude/`)
 
+### How `home/.ai/` reaches each tool
+
+`home/.ai/` is the one source for everything agent-facing. Nothing reads it
+there — it fans out three different ways, and the mechanism differs per
+destination. This table is the map:
+
+| Source | Destination | Mechanism | Consumer |
+|--------|-------------|-----------|----------|
+| `.ai/AGENTS.md` | `~/.claude/CLAUDE.md` | in-repo symlink, then `[dotfiles]` | Claude Code, every session |
+| `.ai/AGENTS.md` | `~/AGENTS.md` | `[dotfiles]` | Codex, Cursor, Amp |
+| `.ai/agents/` | `~/.claude/agents` | in-repo symlink | Claude Code subagents |
+| `.ai/commands/` | `~/.claude/commands` | in-repo symlink | Claude Code slash commands |
+| `.ai/skills/` | `~/.claude/skills` | in-repo symlink (whole dir) | Claude Code |
+| `.ai/skills/<tracked>` | `~/.codex/skills/<name>` | `mise run codex-skills` | Codex |
+| `.ai/` | `~/.ai` | `[dotfiles]` | canonical path; nothing reads it today |
+
+Three things about this that are easy to get wrong:
+
+**The in-repo symlinks do the fan-out, not `~/.ai`.** `home/.claude/skills` is a
+*relative* link to `../.ai/skills` committed in the repo, so once `~/.claude` is
+deployed with `symlink-each`, `~/.claude/skills` resolves back through the repo.
+The `~/.ai` entry is not what makes Claude Code work; it only guarantees a
+stable canonical path. Every symlink committed here must stay **inside** the
+repo — a link out to `~/.agents` or `~/.local` dangles on a fresh clone.
+
+**Claude Code and Codex see different skill sets, deliberately.** Claude gets
+the whole directory, including `skills/synced/` — the org/account sync, keyed by
+an `<org>_<user>` UUID, gitignored and re-fetchable, which Claude Code manages
+itself. Codex gets only the skills this repo *tracks*, because
+`mise run codex-skills` derives its list from `git ls-files`.
+
+**Adding a skill is one edit:** a `!` line in `.gitignore`. That allowlist is the
+opt-in gate; nothing else needs updating, and `[tasks.bootstrap]` runs
+`codex-skills` on every converge. Drift in those links is invisible to
+`mise bootstrap dotfiles status` because they are not `[dotfiles]` entries, so
+`mise run check` calls `CHECK=1 mise run codex-skills`, which reports what it
+would link or prune and changes nothing.
+
+Skill *frontmatter* is not portable. `allowed-tools`, `disable-model-invocation`
+and similar keys are Claude Code's; Codex reads the body and ignores them, so a
+skill relying on those for safety is unguarded there.
+
 ### Where instructions live
 
 Standing instructions go in `home/.ai/AGENTS.md`, which reaches every harness
