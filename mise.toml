@@ -64,6 +64,24 @@
 "~/.local/bin/tg-notify" = "telegram/tg-notify"
 "~/.local/bin/tg-setup" = "telegram/tg-setup"
 
+# Codex reads skills from ~/.codex/skills, so the home/.claude/skills symlink
+# does not reach it. One entry per skill rather than linking the directory:
+# ~/.codex/skills holds live state (.system) and hand-made links into other
+# repos (paperclip), and home/.ai/skills/ also contains `synced/` — the
+# org/account skill sync, which is gitignored, re-fetchable, and not ours to
+# deploy. Adding a skill means an entry here plus a `!` line in .gitignore.
+"~/.codex/skills/cleanup-comments" = "home/.ai/skills/cleanup-comments"
+"~/.codex/skills/collab-plan" = "home/.ai/skills/collab-plan"
+"~/.codex/skills/daily-prep" = "home/.ai/skills/daily-prep"
+"~/.codex/skills/diff-review" = "home/.ai/skills/diff-review"
+"~/.codex/skills/doc-review" = "home/.ai/skills/doc-review"
+"~/.codex/skills/meeting-notes" = "home/.ai/skills/meeting-notes"
+"~/.codex/skills/meeting-segment-editor" = "home/.ai/skills/meeting-segment-editor"
+"~/.codex/skills/msg-review" = "home/.ai/skills/msg-review"
+"~/.codex/skills/obsidian" = "home/.ai/skills/obsidian"
+"~/.codex/skills/obsidian-cli" = "home/.ai/skills/obsidian-cli"
+"~/.codex/skills/telegram" = "home/.ai/skills/telegram"
+
 # ---------------------------------------------------------
 # System packages
 #

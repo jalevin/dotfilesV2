@@ -148,9 +148,23 @@ model until you set it there once.
 
 ### Agent skills (`home/.ai/skills/`)
 
-Canonical location for agent skills; `home/.claude/skills` is a relative symlink
-to it so every harness reads one directory. All symlinks must stay **inside the
-repo** — a link out to `~/.agents` or `~/.local` dangles on a fresh clone.
+Canonical location for agent skills. `home/.claude/skills` is a relative symlink
+to it, so Claude Code reads the whole directory from one in-repo link. All
+symlinks in the repo must stay **inside** it — a link out to `~/.agents` or
+`~/.local` dangles on a fresh clone.
+
+**Codex needs separate wiring.** It reads `~/.codex/skills`, which that symlink
+does not reach, so `[dotfiles]` carries one entry per skill. Per-entry rather
+than one directory link for two reasons: `~/.codex/skills` holds live state
+(`.system`) and hand-made links into other repos (`paperclip`), and
+`home/.ai/skills/synced/` is the org/account skill sync — gitignored,
+re-fetchable, keyed by a `<org>_<user>` UUID, and not ours to deploy. Adding a
+skill therefore takes two edits: a `!` line in `.gitignore` and a `[dotfiles]`
+entry.
+
+This is the trade from dropping plannotator's installer: it used to wire skills
+across 13 harnesses including Codex hooks, so installing the pinned CLI alone
+registers skills nowhere.
 
 **Skills here are hand-written.** Vendor-installed skills are deliberately not
 used: the plannotator installer previously wrote eight of them (plus Codex hooks
