@@ -19,7 +19,7 @@ Let local agents (and any script) message my phone via Telegram.
 ## Layout
 
 ```
-telegram/                        <- this package (top-level repo dir, NOT stowed)
+telegram/                        <- this package (top-level repo dir, NOT deployed)
 ├── tg-setup                     <- one-time per-machine credential setup
 ├── tg-notify                    <- send a message (agents/scripts -> my phone)
 ├── tg-listen                    <- receive messages (my phone -> agents/scripts)
@@ -28,11 +28,13 @@ telegram/                        <- this package (top-level repo dir, NOT stowed
 ├── bot-profile-640x640.png      <- bot avatar   (BotFather /setuserpic)
 ├── bot-description-640x360.png  <- intro banner  (BotFather description photo)
 └── README.md
-home/.local/bin/tg-{setup,notify,listen,brokerd,await} -> ../../../telegram/tg-*
+~/.local/bin/tg-{setup,notify,listen,brokerd,await} -> telegram/tg-*   (via [dotfiles])
 ```
 
-Only the commands are deployed into `$HOME`: stow links all five onto PATH from
-`~/.local/bin`; the scripts, docs, and assets stay in the repo.
+Only the commands are deployed into `$HOME`. Each has its own `[dotfiles]`
+entry in `mise.toml` pointing straight at this directory, so a deployed link is
+a single hop (`~/.local/bin/tg-notify` -> `telegram/tg-notify`). The scripts,
+docs, and bot assets stay here as one package.
 
 ## Per-machine setup
 

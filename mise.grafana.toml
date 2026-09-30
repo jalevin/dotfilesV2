@@ -1,0 +1,23 @@
+# Grafana work machine overlay.
+#
+# Active when MISE_ENV includes `grafana` — pinned per machine in
+# ~/.config/mise/miserc.toml by `MISE_ENV=grafana mise run stamp`. That file is
+# deliberately machine-local and never committed; it works because
+# ~/.config/mise is deployed with `symlink-each`, so only config.toml is linked
+# and a real miserc.toml can sit beside it.
+#
+# Overlay [bootstrap.packages] entries merge with the base. hive was this
+# file's only [dotfiles] entry; its configs now live in iCloud, reached by
+# [tasks.hive-link] rather than a symlink from this repo.
+
+# No [dotfiles] here: hive was the only per-machine config, and it now lives in
+# iCloud under hive/grafana/ (see [tasks.hive-link] in mise.toml).
+
+# Work-only packages. gcloud is here rather than in the shared set because the
+# personal machine has no GKE clusters to authenticate against; it also drags in
+# openssl@3/ca-certificates/python@3.14 as dependencies.
+#
+# After a fresh install the add-on components are NOT restored automatically:
+#   gcloud components install gke-gcloud-auth-plugin
+[bootstrap.packages]
+"brew-cask:gcloud-cli" = "latest"

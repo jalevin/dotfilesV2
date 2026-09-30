@@ -41,4 +41,4 @@ This uploads:
 - [ ] Time Machine backup completed successfully
 - [ ] `projects.tar.gz` copied to safe location
 - [ ] `mise run secrets-check` shows all secrets in sync
-- [ ] Any app-specific exports (Alfred preferences, etc.)
+- [ ] Any app-specific exports

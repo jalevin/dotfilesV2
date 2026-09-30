@@ -1,0 +1,19 @@
+# Personal machine overlay.
+#
+# Active when MISE_ENV includes `personal` — pinned per machine in
+# ~/.config/mise/miserc.toml by `MISE_ENV=personal mise run stamp`. That file is
+# deliberately machine-local and never committed; it works because
+# ~/.config/mise is deployed with `symlink-each`, so only config.toml is linked
+# and a real miserc.toml can sit beside it.
+#
+# Overlay [bootstrap.packages] entries merge with the base. hive was this
+# file's only [dotfiles] entry; its configs now live in iCloud, reached by
+# [tasks.hive-link] rather than a symlink from this repo.
+
+# Personal-machine apps. Both self-update (auto_updates: true), so mise installs
+# the current version once and then leaves them to their own updaters.
+# They are not on the work machine, which is why brew's receipts for them
+# dangled here — declared and "installed" per the receipt, but no app on disk.
+[bootstrap.packages]
+"brew-cask:discord" = "latest"
+"brew-cask:signal" = "latest"

@@ -1,153 +1,73 @@
 #!/usr/bin/env bash
-
+#
+# Imperative macOS setup — the part `mise bootstrap` can't express declaratively.
+#
+# Everything that is a plain `defaults write <domain> <key> <value>` now lives in
+# `[bootstrap.macos.defaults]` in mise.toml, where `mise bootstrap macos defaults
+# status` reports per-key drift. What's left here needs one of:
+#   - sudo (chflags, PAM)
+#   - a composite `-dict-add` value (symbolic hotkeys, message settings)
+#   - PlistBuddy
+#
+# Run via: mise run macos-imperative
+#
 # resources to find defaults
+#   https://wilsonmar.github.io/dotfiles/
+#   ~/.macos — https://mths.be/macos
+#   https://macos-defaults.com/
 
-# https://wilsonmar.github.io/dotfiles/
-# ~/.macos — https://mths.be/macos
-# https://macos-defaults.com/
+set -euo pipefail
 
-# set capslock to ctrl
-# https://stackoverflow.com/questions/127591/using-caps-lock-as-esc-in-mac-os-x/46460200#46460200
-
-# Close any open System Preferences panes, to prevent them from overriding
-# settings we’re about to change
-osascript -e 'tell application "System Settings" to quit'
+# Close any open System Settings panes, to prevent them from overriding
+# settings we're about to change
+osascript -e 'tell application "System Settings" to quit' || true
 
 # Ask for the administrator password upfront
 sudo -v
 
-# Keep-alive: update existing `sudo` time stamp until `.macos` has finished
+# Keep-alive: update existing `sudo` time stamp until this script has finished
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
-mkdir -p "${HOME}/Downloads/Screenshots"
-defaults write com.apple.screencapture location -string "${HOME}/Downloads/Screenshots"
-defaults write com.apple.screencapture style -string "selection"
-
-# Disable smart quotes as it’s annoying for messages that contain code
-defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false
-
 ###############################################################################
-# Screen                                                                      #
+# Manual steps (cannot be automated)                                          #
 ###############################################################################
 
 # MANUAL: Require password immediately after sleep / screen saver
 # The com.apple.screensaver askForPassword keys have been ignored since macOS 10.13.
 # Set this in System Settings > Lock Screen > "Require password after screen saver
-# begins or display is turned off" — it cannot be reliably automated via defaults.
-
-###############################################################################
-# Dock                                                                        #
-###############################################################################
-# put the dock on the left
-defaults write com.apple.dock "orientation" -string "left"
-
-# Set the icon size of Dock items to 36 pixels
-defaults write com.apple.dock tilesize -int 36
-
-# Auto-hide the dock
-defaults write com.apple.dock autohide -bool true
-
-# Disable dock magnification
-defaults write com.apple.dock magnification -bool false
-
-###############################################################################
-# iCloud                                                                      #
-###############################################################################
-
+# begins or display is turned off".
+#
 # MANUAL: Enable iCloud Desktop & Documents sync
-# System Settings > Apple ID > iCloud > iCloud Drive > Options > "Desktop & Documents Folders"
-# This cannot be reliably automated — macOS requires the UI toggle to activate sync plumbing.
+# System Settings > Apple ID > iCloud > iCloud Drive > Options > "Desktop & Documents
+# Folders". macOS requires the UI toggle to activate the sync plumbing.
 
 ###############################################################################
-# Finder                                                                      #
+# Composite values (-dict-add)                                                #
 ###############################################################################
 
-# Finder: show path bar
-defaults write com.apple.finder ShowPathbar -bool true
+# Disable smart quotes in Messages — annoying for messages that contain code
+defaults write com.apple.messageshelper.MessageController SOInputLineSettings \
+  -dict-add "automaticQuoteSubstitutionEnabled" -bool false
 
-# Finder: show all filename extensions
-defaults write NSGlobalDomain AppleShowAllExtensions -bool true
-
-# Display full POSIX path as Finder window title
-defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
-
-# When performing a search, search the current folder by default
-defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
-
-# Avoid creating .DS_Store files on network or USB volumes
-defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
-defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
-
-# Use list view in all Finder windows by default
-# Four-letter codes for the other view modes: `icnv`, `clmv`, `glyv`
-defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
-
-# Show the ~/Library folder
-#chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
+###############################################################################
+# Privileged                                                                  #
+###############################################################################
 
 # Show the /Volumes folder
 sudo chflags nohidden /Volumes
-
-# Don't warn when changing file extensions
-defaults write com.apple.finder "FXEnableExtensionChangeWarning" -bool false
-
-###############################################################################
-# General UI/UX                                                               #
-###############################################################################
-
-
-# Prevent Time Machine from prompting to use new hard drives as backup volume
-defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
-
-# Fast window resize animation
-defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
-
-# Auto dark/light mode
-defaults write NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically -bool true
-
-# Disable swipe to navigate back/forward in browsers
-defaults write NSGlobalDomain AppleEnableSwipeNavigateWithScrolls -bool false
-
-# Don't minimize/zoom window on title bar double-click
-# (AppleMiniaturizeOnDoubleClick is a legacy key ignored on modern macOS;
-#  AppleActionOnDoubleClick is the current one — "None"/"Minimize"/"Maximize"/"Fill")
-defaults write NSGlobalDomain AppleActionOnDoubleClick -string "None"
-
-# Disable smart dashes
-defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
-
-# Mouse tracking speed
-defaults write NSGlobalDomain com.apple.mouse.scaling -float 2
-
-# Force Touch enabled
-defaults write NSGlobalDomain com.apple.trackpad.forceClick -bool true
-
-# Automatically quit printer app once the print jobs complete
-##defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
-
-# Disable the crash reporter
-#defaults write com.apple.CrashReporter DialogType -string "none"
-
-# Reveal IP address, hostname, OS version, etc. when clicking the clock
-# in the login window
-#sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName
-
-# Set a blazingly fast keyboard repeat rate
-defaults write NSGlobalDomain InitialKeyRepeat -int 10
-defaults write NSGlobalDomain KeyRepeat -int 1
-
-
-# show app switcher on all displays
-# https://gist.github.com/jthodge/c4ba15a78fb29671dfa072fe279355f0
-defaults write com.apple.dock appswitcher-all-displays -bool true
 
 ###############################################################################
 # Keyboard Shortcuts                                                          #
 ###############################################################################
 
-# Disable Spotlight hotkey (Cmd+Space) - frees it for Alfred
-/usr/libexec/PlistBuddy -c "Delete :AppleSymbolicHotKeys:64" ~/Library/Preferences/com.apple.symbolichotkeys.plist 2>/dev/null || true
-/usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:64:enabled bool false" ~/Library/Preferences/com.apple.symbolichotkeys.plist
+# Spotlight hotkey (Cmd+Space) — written back explicitly because an earlier
+# setup disabled 64 to free Cmd+Space for another launcher; a machine carrying
+# that state needs it re-enabled or Cmd+Space does nothing.
+# 64 = Spotlight search field; params = (ASCII space 32, keycode 49, Cmd 1048576).
+# Written with `defaults -dict-add` like the shortcuts below, not PlistBuddy:
+# direct plist edits race cfprefsd's cache and get silently dropped.
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 \
+  '{enabled=1;value={type=standard;parameters=(32,49,1048576);};}'
 
 # Native macOS area screenshots — keep the two selection-capture shortcuts enabled.
 # 30 = Cmd+Shift+4 (selection → file, ~/Downloads/Screenshots)
@@ -183,7 +103,6 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 175 "
 # Touch ID for sudo                                                           #
 ###############################################################################
 
-# Enable Touch ID for sudo authentication
 if [[ -f /etc/pam.d/sudo_local.template ]]; then
   sudo cp /etc/pam.d/sudo_local.template /etc/pam.d/sudo_local
   sudo sed -i '' 's/^#auth/auth/' /etc/pam.d/sudo_local
@@ -194,9 +113,7 @@ fi
 # Apply Changes                                                               #
 ###############################################################################
 
-# Restart Dock and SystemUIServer to apply the settings above.
-# `launchctl kickstart -k` kills-if-running and (re)starts atomically, so it works even
-# when the process is already down — unlike `killall`, which does nothing to a dead Dock
-# and can leave it down if a kill races launchd's relaunch.
+# The declarative pass restarts these too (post-defaults hook), but the hotkey
+# writes above need it as well when this script runs on its own.
 launchctl kickstart -k "gui/$(id -u)/com.apple.Dock.agent" 2>/dev/null || killall Dock 2>/dev/null || true
 launchctl kickstart -k "gui/$(id -u)/com.apple.SystemUIServer.agent" 2>/dev/null || killall SystemUIServer 2>/dev/null || true
