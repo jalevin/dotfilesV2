@@ -6,7 +6,9 @@
 # ~/.config/mise is deployed with `symlink-each`, so only config.toml is linked
 # and a real miserc.toml can sit beside it.
 #
-# Overlay [dotfiles] entries merge with the base and override a matching key.
+# Overlay [bootstrap.packages] entries merge with the base. hive was this
+# file's only [dotfiles] entry; its configs now live in iCloud, reached by
+# [tasks.hive-link] rather than a symlink from this repo.
 
 # No [dotfiles] here: hive was the only per-machine config, and it now lives in
 # iCloud under hive/grafana/ (see [tasks.hive-link] in mise.toml).

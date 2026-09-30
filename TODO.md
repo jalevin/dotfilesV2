@@ -171,10 +171,6 @@ Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/b
 
 ## Open
 
-- [ ] Commit the staged work — blocked only on 1Password SSH signing, which
-      needs an interactive approval the agent cannot give:
-      `git commit -F /tmp/commit-msg.txt` (CLAUDE.md + mise.toml staged).
-      Branch `mise-bootstrap-migration`, 16 commits, not pushed. No PR yet.
 - [ ] `mise run claude-prune` — 1.4GB of old Claude Code versions. Not run by
       the agent: the task's internal `rm -rf` would sidestep the
       `Bash(rm -rf:*)` deny rule.

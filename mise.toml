@@ -375,6 +375,11 @@ echo "linked ~/go -> ~/projects/go"
 # Both the CLI and the app read ~/.config/hive by default, so no HIVE_CONFIG or
 # HIVE_DESKTOP_CONFIG_DIR plumbing is needed. That matters for the app: it is
 # launched from the Dock and would never see a .zshrc export.
+#
+# Every failure path exits 0 on purpose: this runs inside [tasks.bootstrap], and
+# a hard failure would abort the whole converge — fonts, neovim, macOS defaults —
+# because iCloud had not finished syncing. It reports loudly and moves on; run
+# `mise run hive-link` again once the folder is there.
 description = "Point ~/.config/hive at this machine's iCloud hive config"
 run = '''
 #!/usr/bin/env bash
@@ -385,7 +390,7 @@ LINK="$HOME/.config/hive"
 
 if [ -z "${MISE_ENV:-}" ]; then
   echo "hive-link: MISE_ENV is not set; run \`mise run stamp\` first" >&2
-  exit 1
+  exit 0
 fi
 
 # MISE_ENV may be a comma-separated list; take the first that has a folder
@@ -397,8 +402,8 @@ done
 if [ -z "$target" ]; then
   echo "hive-link: no iCloud config for MISE_ENV=$MISE_ENV under $ICLOUD" >&2
   echo "  expected one of: $(printf '%s ' ${MISE_ENV//,/ })" >&2
-  echo "  create it (or wait for iCloud to sync) before linking" >&2
-  exit 1
+  echo "  create it (or wait for iCloud to sync), then: mise run hive-link" >&2
+  exit 0
 fi
 
 if [ -L "$LINK" ]; then
@@ -413,7 +418,7 @@ fi
 if [ -e "$LINK" ]; then
   echo "hive-link: $LINK exists and is not a symlink; refusing to replace it" >&2
   echo "  move it aside, then re-run:  mv \"$LINK\" \"$LINK.bak\"" >&2
-  exit 1
+  exit 0
 fi
 
 mkdir -p "$(dirname "$LINK")"

@@ -19,7 +19,11 @@
   - Installs mise (mise.run installer; upgrade via `mise self-update`)
   - Pins `MISE_ENV` for this machine (`mise run stamp`)
   - Runs `mise bootstrap --yes` (packages, `[dotfiles]` symlinks, macOS defaults,
-    pinned tools, then the `bootstrap` task: fonts, neovim, tmux, install scripts)
+    pinned tools, then the `bootstrap` task: fonts, neovim, tmux, install
+    scripts, and `hive-link`)
+  - **hive's configs are not in this repo** — they live in iCloud (see below),
+    so `hive-link` reports and moves on if iCloud has not synced yet. It never
+    fails the converge; re-run `mise run hive-link` once the folder appears.
   - Idempotent — safe to re-run on a configured machine
   - **Not headless**: `install/macos` needs Touch ID / a password for its sudo
     calls, so expect to authenticate a few times.
@@ -259,8 +263,38 @@ for d in /opt/homebrew/Caskroom/*/; do
 done
 ```
 
+### hive: wait for iCloud, then link
+
+hive's configs are the one thing not in this repo — they can carry private
+roadmap detail and this repo is public. They live in
+`~/Library/Mobile Documents/com~apple~CloudDocs/hive/<env>/` and reach the
+machine as one whole-directory symlink.
+
+**Quit Hive Desktop first.** It writes into its config directory, and replacing
+that directory under a running app is how you lose settings.
+
+```bash
+# 1. confirm the folder has actually synced down to this machine
+ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/hive/personal
+
+# 2. if ~/.config/hive already exists as a real directory, move it aside —
+#    hive-link refuses to replace one rather than clobber live config
+mv ~/.config/hive ~/.config/hive.pre-icloud
+
+# 3. link it
+mise run hive-link
+```
+
+The `personal/` folder was seeded from this repo's old `machines/personal/`
+sources, so check `config.yaml` matches what this machine actually wants before
+reopening Hive Desktop — it may be staler than the machine's live state.
+
 - [ ] Finally, run `./bootstrap.sh personal` to converge everything else
 - [ ] Work through Phase 4 onward for anything app-specific
+- [ ] `gcloud` is **not** installed on the personal machine (declared in
+      `mise.grafana.toml` only — no GKE clusters here). If an old
+      `~/.local/share/google-cloud-sdk` from the retired install script is
+      present, it is now orphaned and can be removed.
 
 ---
 
