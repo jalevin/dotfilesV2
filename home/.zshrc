@@ -115,6 +115,8 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias projects="cd ~/projects"
+# pull the latest dotfiles, then converge this machine (`mise run sync`)
+alias dotsync='mise -C "$HOME/projects/dotfiles" run sync'
 alias cpu_usage="watch \"ps -Ao user,uid,comm,pid,pcpu,tty -r | head -n 6\""
 
 # Git
