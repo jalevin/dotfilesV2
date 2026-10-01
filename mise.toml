@@ -153,7 +153,6 @@ adopt = true
 "brew-cask:claude" = "latest"
 "brew-cask:cleanshot" = "latest"
 "brew-cask:codex" = "latest"
-"brew-cask:dbeaver-community" = "latest"
 "brew-cask:ghostty" = "latest"
 "brew-cask:google-chrome" = "latest"
 "brew-cask:handy" = "latest"
@@ -166,6 +165,7 @@ adopt = true
 "brew-cask:rectangle" = "latest"
 "brew-cask:slack" = "latest"
 "brew-cask:spotify" = "latest"
+"brew-cask:tailscale-app" = "latest"
 "brew-cask:tuple" = "latest"
 "brew-cask:visual-studio-code" = "latest"
 "brew-cask:whatsapp" = "latest"
@@ -265,6 +265,74 @@ echo "Dry-run only. To act on the list above:"
 echo "  MISE_ENV=grafana,personal mise bootstrap packages prune   # remove them"
 echo "  mise bootstrap packages import --dry-run                  # or declare them"
 """
+
+[tasks.casks-prune]
+# `mise bootstrap packages prune --manager brew-cask` finds undeclared casks but
+# skips any whose cask declares `uninstall` lifecycle actions — nearly all apps
+# (Slack, DBeaver, Discord, ...). This removes exactly what mise's own receipt
+# (.mise-cask.toml) recorded for the install, and nothing it didn't: no `zap`,
+# so prefs and data under ~/Library survive a mistaken removal.
+#
+# Casks are safe to prune where formulae are not: nothing depends on them.
+# Both overlays are loaded so a cask belonging to the other machine is never a
+# target here. Report-only unless APPLY=1.
+description = "Remove casks no longer declared in any config (APPLY=1 to act)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+APPLY="${APPLY:-}"
+CASKROOM=/opt/homebrew/Caskroom
+declared="$(MISE_ENV=grafana,personal mise bootstrap packages status --json 2>/dev/null \
+  | jq -r '.["brew-cask"].packages[].package')"
+[ -n "$declared" ] || { echo "casks-prune: no declared casks found; refusing to prune" >&2; exit 1; }
+
+receipt_paths() { mise config get -f "$1" "$2" | { grep -o '"[^"]*"' || true; } | tr -d '"'; }
+
+found=0
+for dir in "$CASKROOM"/*/; do
+  cask="$(basename "$dir")"
+  printf '%s\n' "$declared" | grep -qx "$cask" && continue
+  found=$((found + 1))
+
+  receipt="$(ls "$dir"*/.mise-cask.toml 2>/dev/null | head -1 || true)"
+  if [ -z "$receipt" ]; then
+    echo "  $cask: Homebrew-owned (no mise receipt) — remove its app by hand, then: rm -rf $dir"
+    continue
+  fi
+  if [ -n "$(receipt_paths "$receipt" pkg_ids)" ]; then
+    echo "  $cask: installed from a .pkg — needs its own uninstaller; skipping"
+    continue
+  fi
+
+  paths="$(for key in apps binaries completions fonts; do receipt_paths "$receipt" "$key"; done)"
+  running=""
+  while IFS= read -r p; do
+    case "$p" in *.app) pgrep -qf "$p/Contents/MacOS/" && running="$p" ;; esac
+  done <<< "$paths"
+  if [ -n "$running" ]; then
+    echo "  $cask: $running is running; quit it and re-run"
+    continue
+  fi
+
+  if [ -z "$APPLY" ]; then
+    echo "  would remove $cask:"
+    printf '%s\n' "$paths" "$dir" | sed '/^$/d; s/^/      /'
+    continue
+  fi
+  while IFS= read -r p; do
+    [ -n "$p" ] && rm -rf "$p"
+  done <<< "$paths"
+  rm -rf "$dir"
+  echo "  removed $cask"
+done
+
+if [ "$found" -eq 0 ]; then
+  echo "casks-prune: every installed cask is declared"
+elif [ -z "$APPLY" ]; then
+  echo "casks-prune: report only. To act: APPLY=1 mise run casks-prune"
+fi
+'''
 
 [tasks.dotfiles]
 description = "Deploy config symlinks from [dotfiles] (replaces GNU Stow)"
