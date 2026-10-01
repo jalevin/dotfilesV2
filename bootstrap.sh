@@ -71,6 +71,9 @@ mise trust
 # per-machine hive config and the work-only tools are silently skipped.
 MISE_ENV="$MACHINE_ENV" mise run stamp
 
+# Before anything is installed: a converge without iCloud leaves hive unlinked.
+mise run icloud-check
+
 # Ignore global git config for the converge: once ~/.config/git/config is linked,
 # its https->ssh URL rewrites break setup-time clones (brew taps, TPM, lazy.nvim)
 # because the 1Password SSH agent is not configured yet.
@@ -78,10 +81,7 @@ GIT_CONFIG_GLOBAL=/dev/null mise bootstrap --yes
 
 cat <<'EOF'
 
-Bootstrap complete. On a brand-new machine, also run:
-  mise run first-run   # one-time steps (clear Dock, iCloud reminder)
-
-Then follow SETUP.md for 1Password, secrets, and app setup.
+Bootstrap complete. Follow SETUP.md for 1Password, secrets, and app setup.
 
 Later:
   mise run apply       # re-converge this machine

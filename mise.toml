@@ -291,9 +291,11 @@ description = "Install fonts to ~/Library/Fonts"
 run = "find fonts -name '*.ttf' -exec cp {} ~/Library/Fonts/ \\;"
 
 [tasks.neovim-setup]
-description = "Sync Neovim plugins via lazy.nvim"
+# `restore`, not `sync`: sync also updates every plugin and rewrites
+# lazy-lock.json on each converge. Bump plugins deliberately with `:Lazy update`.
+description = "Install Neovim plugins at the commits pinned in lazy-lock.json"
 depends = ["dotfiles"]
-run = "nvim --headless \"+Lazy! sync\" +qa"
+run = "nvim --headless \"+Lazy! restore\" +qa"
 
 [tasks.neovim-reset]
 description = "Remove Neovim lazy.nvim data"
@@ -357,7 +359,8 @@ depends = ["macos-defaults", "macos-imperative"]
 description = "Symlink ~/go -> ~/projects/go (GOPATH) so default ~/go/pkg/mod resolves"
 run = """
 if [ -e "$HOME/go" ] && [ ! -L "$HOME/go" ]; then
-  echo "~/go exists and is not a symlink; leaving it alone" >&2
+  echo "go-link: ~/go exists and is not a symlink; leaving it alone" >&2
+  echo "  if it only holds a module cache: chmod -R u+w ~/go && rm -rf ~/go, then: mise run go-link" >&2
   exit 1
 fi
 ln -sfn "$HOME/projects/go" "$HOME/go"
@@ -493,9 +496,26 @@ else
 fi
 '''
 
-[tasks.first-run]
-description = "One-time fresh-machine steps (clear Dock, iCloud reminder)"
-run = "./tasks/first-run.sh"
+[tasks.icloud-check]
+# Fails hard: hive's config and the Obsidian vault live in iCloud, so a machine
+# without it converges into a half-working state. Apple exposes no supported
+# way to enable it from a script, so this can only stop and say how.
+description = "Require iCloud Desktop & Documents sync (fails if off)"
+run = '''
+#!/usr/bin/env bash
+desktop="$(defaults read com.apple.finder FXICloudDriveDesktop 2>/dev/null || echo 0)"
+documents="$(defaults read com.apple.finder FXICloudDriveDocuments 2>/dev/null || echo 0)"
+
+if [ "$desktop" = 1 ] && [ "$documents" = 1 ]; then
+  echo "icloud-check: Desktop & Documents sync is on"
+  exit 0
+fi
+
+echo "icloud-check: iCloud Desktop & Documents sync is OFF; set it up before converging" >&2
+echo "  System Settings > Apple ID > iCloud > iCloud Drive > Options" >&2
+echo "  -> enable 'Desktop & Documents Folders', wait for it to sync, then re-run" >&2
+exit 1
+'''
 
 [tasks.install-scripts]
 description = "Run install scripts for tools not managed by Homebrew"
@@ -625,7 +645,7 @@ run = "mise self-update"
 # imperative remainder — everything that cannot be declared.
 # Must stay idempotent: mise re-runs it on every converge.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+depends = ["fonts", "go-link", "icloud-check", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
 
 [tasks.apply]
 # Kept as the documented entry point; `mise bootstrap` does the real work and
