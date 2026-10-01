@@ -186,6 +186,46 @@ url = "https://github.com/googleworkspace/cli/releases/download/v0.22.5/google-w
 url_api = "https://api.github.com/repos/googleworkspace/cli/releases/assets/385726984"
 provenance = "github-attestations"
 
+[[tools."github:hay-kot/mi"]]
+version = "0.4.0"
+backend = "github:hay-kot/mi"
+specifiers = ["0.4.0"]
+
+[tools."github:hay-kot/mi"."platforms.linux-arm64"]
+checksum = "sha256:f2c7b2536d499dcb734ae54e4d68d4d490d33f85eb85a12bcec40e02bd9bcdbe"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979812"
+
+[tools."github:hay-kot/mi"."platforms.linux-arm64-musl"]
+checksum = "sha256:f2c7b2536d499dcb734ae54e4d68d4d490d33f85eb85a12bcec40e02bd9bcdbe"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979812"
+
+[tools."github:hay-kot/mi"."platforms.linux-x64"]
+checksum = "sha256:f669687ed73b2e23a15486a5dec55e7ecf3782755299cd6256694c583ef33586"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979815"
+
+[tools."github:hay-kot/mi"."platforms.linux-x64-musl"]
+checksum = "sha256:f669687ed73b2e23a15486a5dec55e7ecf3782755299cd6256694c583ef33586"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979815"
+
+[tools."github:hay-kot/mi"."platforms.macos-arm64"]
+checksum = "sha256:6c32ab32ed24ec8a05651c0974c2b1e492bbc58e00fd9c3711aae42dddc8606e"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979825"
+
+[tools."github:hay-kot/mi"."platforms.macos-x64"]
+checksum = "sha256:d5bf40368dda44ed2475c80c6675fc966825a0ad61ef7c9b19cc4e9e601800bf"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979826"
+
+[tools."github:hay-kot/mi"."platforms.windows-x64"]
+checksum = "sha256:6a802fd2cdd9155ffcd7335dcca47d802cd8b5ceb68c751dd718e396272aaa0a"
+url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979816"
+
 [[tools.go]]
 version = "1.27.1"
 backend = "core:go"

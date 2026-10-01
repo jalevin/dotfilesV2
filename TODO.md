@@ -181,10 +181,15 @@ check (`icloud-check`); the old `first-run` task is gone.
       has been reopened and verified against the iCloud copy.
 - [ ] Personal machine: import `iCloud Drive/jump/JumpDesktopServers.jdz` into
       Jump Desktop; set `model` in `~/.claude/settings.local.json`.
-- [ ] hive orchestrator workspace (`hive/grafana/desktop/workspaces/orchestrator`
-      in iCloud) is a verbatim copy of Hayden's: escalates to "Hayden", assumes
-      `~/code/repos`, `hay-kot/` branches and a `hivemind` context store. Adapt
-      `AGENTS.md` to this setup, then copy it into `hive/personal/`.
+- [x] hive orchestrator workspace adapted from Hayden's (2026-09-30) and synced
+      to both `hive/{grafana,personal}/desktop/workspaces/orchestrator` in iCloud.
+      Per-person details now live in one "This setup" section of its AGENTS.md;
+      its `PORTABILITY.md` lists every Hayden-specific assumption found and what
+      is still open. Dependencies added here: the workflow skills and agents it
+      drives sessions with, plus `mi` and `uv` in the global mise config.
+- [ ] Work machine: after `dotsync`, `mise trust` the orchestrator workspace's
+      `mise.toml` (`~/.config/hive/desktop/workspaces/orchestrator/`), or
+      `mi peek` refuses to run there.
 - [ ] iCloud `hive/{grafana,personal}/config.yaml` header comment still points
       at the retired `machines/<env>/hive-config.yaml` paths.
 

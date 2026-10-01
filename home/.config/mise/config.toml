@@ -36,6 +36,9 @@ ruby = "3"
 # the only part we want; the review skills in home/.ai/skills are hand-written.
 "github:backnotprop/plannotator" = { version = "0.27.15", matching = "plannotator-" }
 "github:colonyops/hive" = "0.59.0"
+# Task-runner proxy (Makefile/Taskfile/mise) that the adopted hive workflow
+# skills and the orchestrator workspace call as `mi`.
+"github:hay-kot/mi" = "0.4.0"
 "github:googleworkspace/cli" = "0.22.5"
 # `latest` resolves to prereleases here (0.27.0.beta5), so pin the stable line.
 "gem:ruby-lsp" = "0.26.11"

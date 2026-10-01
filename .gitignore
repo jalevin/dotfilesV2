@@ -59,3 +59,13 @@ home/.ai/skills/*
 !home/.ai/skills/obsidian/
 !home/.ai/skills/obsidian-cli/
 !home/.ai/skills/telegram/
+# Hive session workflow, adopted from hay-kot/dotfiles (2026-09-30) so the hive
+# orchestrator can drive sessions through research -> plan -> hc -> review.
+!home/.ai/skills/hc-loop/
+!home/.ai/skills/hc-next/
+!home/.ai/skills/plan-mini/
+!home/.ai/skills/plan-to-hc/
+!home/.ai/skills/plan-write/
+!home/.ai/skills/research/
+!home/.ai/skills/review/
+!home/.ai/skills/wrap/
