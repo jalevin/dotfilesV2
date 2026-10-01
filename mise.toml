@@ -719,8 +719,15 @@ run = "mise self-update"
 # packages, dotfiles, macOS defaults and tools are all in place. This is the
 # imperative remainder — everything that cannot be declared.
 # Must stay idempotent: mise re-runs it on every converge.
+#
+# install/macos runs here, after the dependencies rather than among them: it
+# prompts for sudo, and mise runs dependencies in parallel, so the prompt was
+# buried under other output and the converge hung waiting on an invisible
+# password. `raw` hands it the terminal directly.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts"]
+run = "./install/macos"
+raw = true
 
 [tasks.apply]
 # Kept as the documented entry point; `mise bootstrap` does the real work and
