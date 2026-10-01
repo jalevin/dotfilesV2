@@ -39,6 +39,9 @@ ruby = "3"
 # Task-runner proxy (Makefile/Taskfile/mise) that the adopted hive workflow
 # skills and the orchestrator workspace call as `mi`.
 "github:hay-kot/mi" = "0.4.0"
+# Watches ~/Downloads and converts HEIC to JPEG; runs as a LaunchAgent via
+# `mise run dirwatch-service`. Config: home/.config/dirwatch/dirwatch.yml.
+"github:hay-kot/dirwatch" = "0.1.1"
 "github:googleworkspace/cli" = "0.22.5"
 # `latest` resolves to prereleases here (0.27.0.beta5), so pin the stable line.
 "gem:ruby-lsp" = "0.26.11"

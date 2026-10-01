@@ -26,6 +26,7 @@
 # Whole-directory links — we own these paths outright.
 "~/.ai" = "home/.ai"
 "~/.config/agent-deck" = "home/.config/agent-deck"
+"~/.config/dirwatch" = "home/.config/dirwatch"
 "~/.config/ghostty" = "home/.config/ghostty"
 "~/.config/k9s" = "home/.config/k9s"
 "~/.config/nvim" = "home/.config/nvim"
@@ -58,6 +59,7 @@
 # straight out of `telegram/` — the scripts, docs, and bot assets stay there as
 # one package, and only the five commands reach PATH.
 "~/.local/bin/find-env" = "home/.local/bin/find-env"
+"~/.local/bin/heic2jpeg" = "home/.local/bin/heic2jpeg"
 "~/.local/bin/tg-await" = "telegram/tg-await"
 "~/.local/bin/tg-brokerd" = "telegram/tg-brokerd"
 "~/.local/bin/tg-listen" = "telegram/tg-listen"
@@ -564,6 +566,13 @@ else
 fi
 '''
 
+[tasks.dirwatch-service]
+# `dirwatch install` copies the running binary to ~/.local/share/dirwatch/bin and
+# points the LaunchAgent there, so a mise version bump does not reach the agent
+# until this runs again. Running it on every converge keeps them in step.
+description = "Install/refresh the dirwatch LaunchAgent (HEIC -> JPEG in ~/Downloads)"
+run = "dirwatch install"
+
 [tasks.icloud-check]
 # Fails hard: hive's config and the Obsidian vault live in iCloud, so a machine
 # without it converges into a half-working state. Apple exposes no supported
@@ -713,7 +722,7 @@ run = "mise self-update"
 # imperative remainder — everything that cannot be declared.
 # Must stay idempotent: mise re-runs it on every converge.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "icloud-check", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
+depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts", "macos-imperative"]
 
 [tasks.apply]
 # Kept as the documented entry point; `mise bootstrap` does the real work and

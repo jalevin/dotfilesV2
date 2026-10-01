@@ -1,0 +1,46 @@
+#!/bin/bash
+# Convert HEIC images to JPEG alongside the original. Called by dirwatch for new
+# files in ~/Downloads (see ~/.config/dirwatch/dirwatch.yml); also usable by hand.
+
+if ! command -v magick &> /dev/null; then
+    echo "ImageMagick is not installed. Please install it and try again."
+    exit 1
+fi
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <heic_file> [<heic_file> ...]"
+    exit 1
+fi
+
+for file in "$@"; do
+    # Wait for file to exist (handles watcher race conditions)
+    for _ in $(seq 1 10); do
+        [ -f "$file" ] && break
+        sleep 0.5
+    done
+
+    if [ ! -f "$file" ]; then
+        echo "File '$file' not found."
+        continue
+    fi
+
+    extension=$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')
+
+    if [ "$extension" != "heic" ]; then
+        echo "Skipping '$file': Not a HEIC file."
+        continue
+    fi
+
+    filename="${file%.*}"
+
+    # The watcher fires on every write of a download, so skip work already done.
+    if [ "${filename}.jpg" -nt "$file" ]; then
+        continue
+    fi
+
+    if magick "$file" "${filename}.jpg"; then
+        echo "Conversion successful: '$file' -> '${filename}.jpg'"
+    else
+        echo "Conversion failed: '$file'"
+    fi
+done

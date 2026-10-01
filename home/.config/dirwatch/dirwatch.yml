@@ -1,0 +1,20 @@
+# Runs as a LaunchAgent (`mise run dirwatch-service`); logs go to
+# ~/Library/Logs/dirwatch.log. Adapted from hay-kot/dotfiles.
+shell: /bin/zsh
+shell_cmd: -c
+log:
+  level: info
+watchers:
+  # iPhone photos arrive as HEIC, which most uploads reject. A download fires
+  # create, several writes, and (Safari) a rename from .download, so heic2jpeg
+  # must tolerate being called more than once per file.
+  - dirs:
+      - ~/Downloads
+    events:
+      - create
+      - write
+      - rename
+    matches:
+      - "*.HEIC"
+      - "*.heic"
+    exec: "$HOME/.local/bin/heic2jpeg '{{ .Path }}'"

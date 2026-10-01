@@ -186,6 +186,41 @@ url = "https://github.com/googleworkspace/cli/releases/download/v0.22.5/google-w
 url_api = "https://api.github.com/repos/googleworkspace/cli/releases/assets/385726984"
 provenance = "github-attestations"
 
+[[tools."github:hay-kot/dirwatch"]]
+version = "0.1.1"
+backend = "github:hay-kot/dirwatch"
+specifiers = ["0.1.1"]
+
+[tools."github:hay-kot/dirwatch"."platforms.linux-arm64"]
+checksum = "sha256:6563dfc46830c937dacd88eb4a845733cfcac070e47a0eea642fe71ef96f6f5b"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701394"
+
+[tools."github:hay-kot/dirwatch"."platforms.linux-arm64-musl"]
+checksum = "sha256:6563dfc46830c937dacd88eb4a845733cfcac070e47a0eea642fe71ef96f6f5b"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701394"
+
+[tools."github:hay-kot/dirwatch"."platforms.linux-x64"]
+checksum = "sha256:d478bc70522f702166a1f4e37c679347a1f5861511181b0f8621c62319c96793"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701393"
+
+[tools."github:hay-kot/dirwatch"."platforms.linux-x64-musl"]
+checksum = "sha256:d478bc70522f702166a1f4e37c679347a1f5861511181b0f8621c62319c96793"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701393"
+
+[tools."github:hay-kot/dirwatch"."platforms.macos-arm64"]
+checksum = "sha256:d6b7cf13f555ae7d5348398fea27e797a4b1dcd9542d946b3aa193c2285ab48a"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701396"
+
+[tools."github:hay-kot/dirwatch"."platforms.macos-x64"]
+checksum = "sha256:4b9d1f64f51174dee18b8aeb6edc71e91fe13ae316200bff17aa2a00cdd88aab"
+url = "https://github.com/hay-kot/dirwatch/releases/download/v0.1.1/dirwatch_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/dirwatch/releases/assets/389701397"
+
 [[tools."github:hay-kot/mi"]]
 version = "0.4.0"
 backend = "github:hay-kot/mi"
