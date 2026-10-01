@@ -35,10 +35,6 @@ home/.config/gh/*
 # rule in home/.config/git/ignore; repeated here so the repo is self-contained
 # before that file is deployed.
 home/.claude/settings.local.json
-# ~/.config/mise is linked as a whole directory (so mise.lock survives an
-# atomic temp-file-rename), which means everything mise writes there lands in
-# the repo. These two are machine-local/generated; mise.lock itself IS tracked.
-home/.config/mise/locks/
 home/.config/mise/miserc.toml
 home/.config/.semgrep/
 
