@@ -1,309 +1,162 @@
 # New Machine Setup Checklist
 
-## Phase 1: Bootstrap (Terminal)
+The order matters: bootstrap refuses to run without iCloud, and SSH, commit
+signing and secrets all wait on 1Password.
 
-- [ ] Open Terminal.app
-- [ ] Clone dotfiles (use HTTPS since SSH not configured yet):
-  ```bash
-  mkdir -p ~/projects
-  git clone https://github.com/jalevin/dotfilesV2.git ~/projects/dotfiles
-  ```
-- [ ] Run bootstrap: `cd ~/projects/dotfiles && ./bootstrap.sh grafana`
-      (or `personal` — this pins the machine's overlay)
-  - Installs Xcode CLI tools
-  - Creates a bare, user-owned `/opt/homebrew` (the only step needing sudo).
-    **Bootstrap never installs Homebrew** — mise pours brew bottles into that
-    prefix itself and creates `Cellar/`, `Caskroom/`, `bin/` and the rest. A
-    machine that already has Homebrew keeps it; see "not required is not
-    absent" in CLAUDE.md.
-  - Installs mise (mise.run installer; upgrade via `mise self-update`)
-  - Pins `MISE_ENV` for this machine (`mise run stamp`)
-  - Runs `mise bootstrap --yes` (packages, `[dotfiles]` symlinks, macOS defaults,
-    pinned tools, then the `bootstrap` task: fonts, neovim, tmux, install
-    scripts, and `hive-link`)
-  - **hive's configs are not in this repo** — they live in iCloud (see below),
-    so `hive-link` reports and moves on if iCloud has not synced yet. It never
-    fails the converge; re-run `mise run hive-link` once the folder appears.
-  - Idempotent — safe to re-run on a configured machine
-  - **Not headless**: `install/macos` needs Touch ID / a password for its sudo
-    calls, so expect to authenticate a few times.
-- [ ] Run one-time steps: `mise run first-run` (clears Dock, iCloud reminder)
+## Phase 1: Apple ID & iCloud (System Settings) — before anything else
 
-## Phase 2: Apple ID & iCloud (System Settings)
+`./bootstrap.sh` stops at `icloud-check` until this is done: hive's config and
+the Obsidian vault live in iCloud.
 
 - [ ] Sign in to Apple ID (if not done during macOS setup)
 - [ ] **iCloud Drive - Desktop & Documents**
   - System Settings > Apple ID > iCloud > iCloud Drive > Options
   - Enable "Desktop & Documents Folders"
-  - Wait for sync to complete
+  - Wait for sync — in particular `~/Library/Mobile Documents/com~apple~CloudDocs/hive/<env>/`
 - [ ] iCloud Keychain: System Settings > Apple ID > iCloud > Passwords & Keychain
 - [ ] Find My Mac: System Settings > Apple ID > iCloud > Find My Mac
 
-## Phase 3: Security & Privacy
+## Phase 2: Bootstrap (Terminal)
+
+- [ ] Open Terminal.app
+- [ ] Clone dotfiles over HTTPS (SSH comes later, via 1Password). `git` prompts
+      to install the Xcode command line tools the first time:
+  ```bash
+  mkdir -p ~/projects
+  git clone https://github.com/jalevin/dotfilesV2.git ~/projects/dotfiles
+  ```
+- [ ] `cd ~/projects/dotfiles && ./bootstrap.sh grafana` (or `personal`)
+  - Creates a bare, user-owned `/opt/homebrew`. **Homebrew itself is never
+    installed** — mise pours bottles into that prefix on its own.
+  - Installs mise, pins `MISE_ENV` (`mise run stamp`), checks iCloud
+  - Runs `mise bootstrap --yes`: packages and casks, `[dotfiles]` symlinks,
+    macOS defaults, pinned `[tools]` (Go, Node, Ruby, …), then the `bootstrap`
+    task — fonts, neovim plugins at their locked commits, tmux, install scripts,
+    `go-link`, `hive-link`, and `install/macos` (hotkeys, Touch ID for sudo)
+  - **Not headless**: `install/macos` uses sudo, so expect password/Touch ID prompts
+  - Safe to re-run. If a step fails it prints how to fix it; fix and re-run.
+- [ ] Optional, brand-new machine only — clear the stock Dock apps:
+      `defaults write com.apple.dock persistent-apps -array && killall Dock`
+
+## Phase 3: 1Password, SSH, secrets
+
+Everything authenticated hangs off 1Password: the SSH agent backs `git` over
+SSH and commit signing, and secrets are stored there as documents.
+
+- [ ] Open 1Password, sign in to account(s)
+- [ ] System Settings > Privacy & Security > Accessibility > 1Password (autofill)
+- [ ] 1Password > Settings > Developer > **SSH Agent** — enable
+- [ ] 1Password > Settings > Developer > **Integrate with 1Password CLI**
+- [ ] Test: `op account list`
+- [ ] Pull secrets (`~/.ssh/config`, `/etc/hosts`, sops age key):
+  ```bash
+  eval $(op signin)
+  mise run secrets-pull
+  ```
+- [ ] Test SSH: `ssh -T git@github.com`
+- [ ] Switch the dotfiles remote to SSH:
+  ```bash
+  git -C ~/projects/dotfiles remote set-url origin git@github.com:jalevin/dotfilesV2.git
+  ```
+- [ ] `gh auth login` (mise also borrows this token for GitHub API lookups)
+
+## Phase 4: Security
 
 - [ ] **Touch ID**: System Settings > Touch ID & Password > Add fingerprints
-- [ ] **Touch ID for sudo**: Already configured by `install/macos` script
+      (Touch ID for sudo is already configured by bootstrap)
 - [ ] FileVault: System Settings > Privacy & Security > FileVault (likely already on)
 
-## Phase 4: App-Specific Setup
+## Phase 5: Apps — sign-ins and permissions
 
-### 1Password
-- [ ] Open 1Password, sign in to account(s)
-- [ ] Enable Safari extension
-- [ ] System Settings > Privacy & Security > Accessibility > 1Password (for autofill)
-- [ ] Configure SSH Agent: 1Password > Settings > Developer > SSH Agent
-- [ ] Enable CLI integration: 1Password > Settings > Developer > "Integrate with 1Password CLI"
-- [ ] Test CLI: `op account list`
+All of these are installed by bootstrap; this is only what can't be automated.
 
-### CleanShot X
-- [ ] Open CleanShot, enter license key (stored in 1Password)
-- [ ] System Settings > Privacy & Security > Screen Recording > CleanShot X
-- [ ] System Settings > Privacy & Security > Accessibility > CleanShot X
-- [ ] Configure hotkeys in CleanShot preferences (system shortcuts already disabled by macos script)
-
-### Rectangle
-- [ ] Open Rectangle, grant accessibility permissions
-- [ ] Import settings if backed up, or configure shortcuts
-
-### Ghostty
-- [ ] Config already symlinked via `[dotfiles]`
-- [ ] Set as default terminal if desired
-
-### Docker / OrbStack
-- [ ] Open OrbStack (or Docker Desktop), complete setup
-- [ ] Sign in to Docker Hub if needed
-
-### Slack / Discord / Signal
-- [ ] Sign in to each app
+- [ ] **CleanShot X**: license key (1Password); grant Screen Recording and
+      Accessibility. macOS's own Cmd+Shift+4 shortcuts stay **enabled** (set by
+      `install/macos`) — pick CleanShot hotkeys that don't collide.
+- [ ] **Rectangle**: grant Accessibility; import settings or configure shortcuts
+- [ ] **Ghostty**: config already linked; set as default terminal if desired
+- [ ] **OrbStack**: open and complete setup; Docker Hub sign-in if needed
+- [ ] **Slack** (and on `personal`: **Discord**, **Signal**): sign in
+- [ ] **Tuple**: sign in; grant Screen Recording and Microphone
+- [ ] **Obsidian**: open the vault from iCloud Drive
+- [ ] **Visual Studio Code**: sign in for Settings Sync
+- [ ] **Brave / Chrome**: sign in to sync bookmarks and extensions
+- [ ] **Tailscale**: open, approve the system extension/VPN prompt, sign in
+- [ ] **Hive Desktop**: open only after `ls -la ~/.config/hive` shows the iCloud
+      link — launched earlier, it creates a real directory that `hive-link`
+      then refuses to replace
 
 ### Telegram agent notifications (per-machine bot)
 
 Local agents message my phone via Telegram. **Each machine has its own bot** so
 the sender identity tells me which computer is talking. Full details in
-`~/projects/dotfiles/telegram/README.md`. Setup per machine:
+`~/projects/dotfiles/telegram/README.md`. The `tg-*` commands are already on
+PATH via `[dotfiles]`.
 
 - [ ] In Telegram, create a bot for this machine via `@BotFather` → `/newbot`
   (unique, non-descriptive username ending in `bot`, e.g. `jl_relay_bot`).
   Optional: `/setjoingroups` → Disable, keep `/setprivacy` on.
 - [ ] Get my numeric user id from `@userinfobot` (same on every machine).
 - [ ] Message the new bot once (bots can't DM you until you've talked to them).
-- [ ] Store creds in the login Keychain: `tg-setup`
-  (prompts for the bot token + chat_id; validates the token; sends a test).
+- [ ] `tg-setup` — stores the bot token + chat_id in the login Keychain,
+  validates the token, sends a test.
 - [ ] Send from anywhere: `tg-notify "message"` or `cmd 2>&1 | tg-notify`.
 
-Notes:
-- Creds live in the **local login Keychain** (items `telegram-bot-token`,
-  `telegram-chat-id`), never in this repo and not iCloud-synced. `tg-setup` and
-  `tg-notify` are identical across machines; only the Keychain contents differ.
-- Agents run as my user, so they can call `tg-notify` directly — no extra
-  grants needed.
-- Two-way bots must allowlist my `from.id` in their handler — anyone can *send*
-  to a bot; the code decides what to act on.
+Creds live in the **local login Keychain** (`telegram-bot-token`,
+`telegram-chat-id`), never in this repo and not iCloud-synced. Two-way bots
+must allowlist my `from.id` — anyone can *send* to a bot.
 
-### Tuple
-- [ ] Sign in, grant screen recording & microphone permissions
+## Phase 6: Development environment
 
-### Obsidian
-- [ ] Open vault from iCloud Drive (should sync automatically once iCloud Desktop & Documents is enabled)
+### Restore projects
 
-### Visual Studio Code
-- [ ] Sign in with GitHub/Microsoft for Settings Sync
-- [ ] Or manually install extensions
-
-### Brave / Chrome
-- [ ] Sign in to sync bookmarks and extensions
-
-## Phase 5: Development Environment
-
-### Restore Projects
+From the backup made with [BACKUP.md](BACKUP.md) (dotfiles are excluded — already cloned):
 
 ```bash
-# Copy projects.tar.gz from backup drive to home directory
 cp /Volumes/BACKUP_DRIVE/projects.tar.gz ~/
-
-# Extract (dotfiles excluded from tar, already cloned in Phase 1)
 tar -xzvf ~/projects.tar.gz -C ~
-
-# Clean up
 rm ~/projects.tar.gz
-```
 
-### Validate .env Files
-
-Check that .env files restored from backup have correct values:
-
-```bash
+# check restored .env files still have correct values
 find ~/projects -maxdepth 2 -name ".env*" -type f
 ```
 
-### Secrets from 1Password
-- [ ] Sign in to 1Password CLI: `eval $(op signin)`
-- [ ] Fetch secrets: `mise run secrets-pull`
-  - Pulls `~/.ssh/config` from 1Password document "ssh-config"
-  - Pulls `/etc/hosts` from 1Password document "hosts-file"
+### CLI logins
 
-### Git & GitHub
-- [ ] Verify git config: `git config --list`
-- [ ] SSH key via 1Password should work automatically after 1Password SSH Agent setup
-- [ ] Test: `ssh -T git@github.com`
-- [ ] Switch dotfiles remote to SSH:
+- [ ] Heroku: `heroku login`
+- [ ] AWS: `aws configure`, or set up SSO
+- [ ] Claude Code: set `model` in `~/.claude/settings.local.json` (deliberately
+      not in the tracked `settings.json`)
+
+### Work machine only (`grafana`)
+
+- [ ] gcloud components are not restored by the cask install:
   ```bash
-  cd ~/projects/dotfiles
-  git remote set-url origin git@github.com:jalevin/dotfilesV2.git
+  gcloud components install gke-gcloud-auth-plugin gcloud-crc32c
   ```
-- [ ] Authenticate GitHub CLI: `gh auth login`
+- [ ] Restore kubeconfig, or re-authenticate with each cloud provider
 
-### Heroku
-- [ ] Authenticate: `heroku login`
+## Phase 7: By hand
 
-### AWS
-- [ ] Configure credentials: `aws configure` or set up SSO
-
-### Kubernetes
-- [ ] Copy/restore kubeconfig if needed
-- [ ] Or re-authenticate with cloud providers
-
-### Language Runtimes (managed by mise)
-- [ ] Node: `mise install node`
-- [ ] Python: `mise install python`
-- [ ] Go: `mise install go`
-- [ ] Ruby: `mise install ruby`
-
-## Phase 6: Optional / As Needed
-
-### Tailscale
-- [ ] Open Tailscale, sign in
-
-### Jump Desktop
-- [ ] Install from iCloud (license stored there) or re-download
-- [ ] Import connection configs
-
-### Fonts (if not installed via mise run fonts)
-- [ ] Copy any additional fonts to ~/Library/Fonts
-
-### Time Machine
-- [ ] Connect backup drive
-- [ ] System Settings > General > Time Machine > Add Backup Disk
-
----
-
-## Adopting a machine that already has apps and configs
-
-Use this instead of Phase 1 when the machine is already set up by hand (e.g.
-migrating the personal laptop). The goal is to hand existing packages and apps
-to mise **without** reinstalling them.
-
-- [ ] Clone the repo and install mise (Phase 1 steps, but **stop before**
-      `./bootstrap.sh`)
-- [ ] Ensure `/opt/homebrew` is user-owned. If Homebrew is already installed it
-      will be; otherwise:
-      ```bash
-      sudo mkdir -p /opt/homebrew && sudo chown "$(id -un):admin" /opt/homebrew
-      ```
-- [ ] Pin the machine's overlay: `MISE_ENV=personal mise run stamp`
-- [ ] `mise trust`
-
-### Reconcile the config symlinks
-
-`[dotfiles]` will not overwrite a real file that already exists at a target
-path. Preview first, then move anything you want replaced out of the way:
-
-```bash
-mise bootstrap dotfiles diff      # shows every conflict before touching anything
-mise run dotfiles                 # apply
-```
-
-### Formulae adopt themselves
-
-mise reads Homebrew's `Cellar` and receipts directly, so anything already
-installed reports `installed` with no re-download. Check for genuine gaps:
-
-```bash
-mise bootstrap packages status | grep -v installed
-mise bootstrap packages apply --manager brew
-```
-
-### Casks need their Homebrew receipt dropped
-
-While a cask carries brew's receipt, mise defers to it
-(`installed and managed by Homebrew; leaving unchanged`). Dropping the receipt
-lets `[bootstrap.brew] adopt = true` take the app **in place** — mise downloads
-the artifact only to verify, then keeps the existing bundle, so macOS
-permission grants survive.
-
-An app cask's Caskroom entry is only a symlink marker, so this never touches the
-app. Verify that before deleting:
-
-```bash
-# confirm it is a symlink, not a real bundle
-find /opt/homebrew/Caskroom/<cask> -mindepth 2 -maxdepth 2
-
-rm -rf /opt/homebrew/Caskroom/<cask>
-mise bootstrap packages apply --manager brew-cask
-```
-
-Two cases cannot adopt and need a real install (which replaces the bundle):
-
-- the app is **outdated and not self-updating** — content differs, so adoption
-  fails. The real install brings it current, which it needed anyway.
-- the cask declares an artifact the installed bundle lacks. `obsidian` is pinned
-  `adopt = false` for exactly this reason.
-
-### Reconcile drift
-
-Brew's receipts drift. On the work machine, four were wrong: one pointed at an
-app version no longer installed, and three claimed apps that weren't on disk at
-all. Check every declared cask actually exists, and fix the declaration rather
-than the symptom:
-
-```bash
-for d in /opt/homebrew/Caskroom/*/; do
-  l=$(find "$d" -mindepth 2 -type l | head -1)
-  [ -n "$l" ] && [ ! -e "$(readlink "$l")" ] && echo "DANGLING: $(basename "$d")"
-done
-```
-
-### hive: wait for iCloud, then link
-
-hive's configs are the one thing not in this repo — they can carry private
-roadmap detail and this repo is public. They live in
-`~/Library/Mobile Documents/com~apple~CloudDocs/hive/<env>/` and reach the
-machine as one whole-directory symlink.
-
-**Quit Hive Desktop first.** It writes into its config directory, and replacing
-that directory under a running app is how you lose settings.
-
-```bash
-# 1. confirm the folder has actually synced down to this machine
-ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/hive/personal
-
-# 2. if ~/.config/hive already exists as a real directory, move it aside —
-#    hive-link refuses to replace one rather than clobber live config
-mv ~/.config/hive ~/.config/hive.pre-icloud
-
-# 3. link it
-mise run hive-link
-```
-
-The `personal/` folder was seeded from this repo's old `machines/personal/`
-sources, so check `config.yaml` matches what this machine actually wants before
-reopening Hive Desktop — it may be staler than the machine's live state.
-
-- [ ] Finally, run `./bootstrap.sh personal` to converge everything else
-- [ ] Work through Phase 4 onward for anything app-specific
-- [ ] `gcloud` is **not** installed on the personal machine (declared in
-      `mise.grafana.toml` only — no GKE clusters here). If an old
-      `~/.local/share/google-cloud-sdk` from the retired install script is
-      present, it is now orphaned and can be removed.
+- [ ] **Jump Desktop** (copied from `iCloud Drive/jump/` by bootstrap): import
+      `iCloud Drive/jump/JumpDesktopServers.jdz` via File > Import
+- [ ] **Time Machine**: plug in the backup drive, then
+  ```bash
+  sudo tmutil setdestination -a /Volumes/<drive>   # -a adds alongside any existing destination
+  sudo tmutil enable
+  tmutil destinationinfo                           # confirm
+  ```
+  If `setdestination` is refused, grant the terminal Full Disk Access
+  (System Settings > Privacy & Security) or use System Settings > General >
+  Time Machine instead.
 
 ---
 
 ## Verification
 
-After setup, verify:
-- [ ] `mise bootstrap packages status` shows everything `installed`
+- [ ] `mise run check` — packages, dotfiles, macOS defaults and codex-skills, all read-only
 - [ ] `mise bootstrap dotfiles diff` reports "all files are applied"
-- [ ] `ls -la ~/.config` shows symlinks pointing to dotfiles
+- [ ] `ls -la ~/.config/hive` points into iCloud `hive/<env>`
 - [ ] `git commit --amend --no-edit` works (SSH signing via 1Password)
-- [ ] Desktop/Documents folders show iCloud sync icon
+- [ ] Desktop/Documents folders show the iCloud sync icon
 - [ ] Neovim plugins loaded: open nvim, run `:Lazy`

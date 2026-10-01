@@ -6,7 +6,7 @@ Jeff Levin's macOS dotfiles.
 
 ```bash
 # Fresh machine
-./bootstrap.sh grafana   # or 'personal' — Xcode CLI tools + Homebrew + mise, then converge
+./bootstrap.sh grafana   # or 'personal' — Xcode CLI tools + mise, then converge (iCloud first; see SETUP.md)
 
 # Already bootstrapped
 mise run apply        # re-converge this machine (= mise bootstrap --yes)

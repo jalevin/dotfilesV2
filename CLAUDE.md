@@ -375,6 +375,7 @@ mise update           # Upgrade everything (packages + tools)
 mise update codex     # ...or just one package/tool, by name
 mise run claude-prune # Reclaim disk from old Claude Code versions
 mise run packages-prune  # Dry-run: installed but no longer declared
+mise run casks-prune     # Report casks no longer declared; APPLY=1 removes them
 mise run macos-defaults  # Converge just the declarative macOS defaults (drift-checked)
 mise run check        # Read-only: report drift between config and machine
 mise install          # Install/update pinned [tools] (plannotator, hive, gws, ruby-lsp)

@@ -4,8 +4,8 @@
 
 Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/bootstrap.html)
 (stable since v2026.7.4). Done so far: mise self-managed via mise.run
-(`mise self-update` to upgrade), `bootstrap.sh` idempotent, one-time steps in
-`mise run first-run`.
+(`mise self-update` to upgrade), `bootstrap.sh` idempotent, and the iCloud reminder is a converge-time
+check (`icloud-check`); the old `first-run` task is gone.
 
 - [x] Convert `install/macos` → `[bootstrap.macos.*]` sections in `mise.toml`.
       25 keys across 6 domains are now declarative and drift-checked via
@@ -163,11 +163,30 @@ Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/b
       Rescued three gitignored files the old layout would have dropped: two
       `.mcp.json` and `ai-platform/{CLAUDE.md,.codex/config.toml}`, which the
       broken `ai-gateway` dotfiles key had never deployed.
-- [ ] Personal machine: after iCloud syncs, run `mise run hive-link`. Its folder
-      is seeded from the old repo sources, so check `config.yaml` still matches
-      what that machine wants before opening Hive Desktop.
-- [ ] Delete `~/.config/hive.pre-icloud` once Hive Desktop has been reopened and
-      verified against the iCloud copy.
+- [x] Personal machine migrated 2026-09-30. It was still on GNU Stow's
+      *folded* links — `~/.config` and `~/.claude` were whole-directory symlinks
+      into the repo, so gh/op/sops/gcloud state and all of Claude Code's
+      sessions had been living inside `home/`. Unfolded by hand (real dirs,
+      untracked state moved out), then `./bootstrap.sh personal`. All 22 casks
+      were still brew-owned; receipts dropped and adopted (codex needed its
+      orphaned brew completions removed first). Hive desktop config restarted
+      from the iCloud copy rather than merged.
+
+## Cleanup after the personal-machine migration
+
+- [ ] Work machine: `dotsync`, then `mise run casks-prune` and
+      `APPLY=1 mise run casks-prune` to remove DBeaver (dropped from the
+      declared set). `apply` also installs Tailscale and Jump Desktop there.
+- [ ] Personal machine: delete `~/.config/hive.pre-icloud` once Hive Desktop
+      has been reopened and verified against the iCloud copy.
+- [ ] Personal machine: import `iCloud Drive/jump/JumpDesktopServers.jdz` into
+      Jump Desktop; set `model` in `~/.claude/settings.local.json`.
+- [ ] hive orchestrator workspace (`hive/grafana/desktop/workspaces/orchestrator`
+      in iCloud) is a verbatim copy of Hayden's: escalates to "Hayden", assumes
+      `~/code/repos`, `hay-kot/` branches and a `hivemind` context store. Adapt
+      `AGENTS.md` to this setup, then copy it into `hive/personal/`.
+- [ ] iCloud `hive/{grafana,personal}/config.yaml` header comment still points
+      at the retired `machines/<env>/hive-config.yaml` paths.
 
 ## Open
 
