@@ -71,7 +71,8 @@ mise trust
 # per-machine hive config and the work-only tools are silently skipped.
 MISE_ENV="$MACHINE_ENV" mise run stamp
 
-# Before anything is installed: a converge without iCloud leaves hive unlinked.
+# Before anything is installed: without iCloud Drive, hive stays unlinked and
+# Jump Desktop has nothing to copy from.
 mise run icloud-check
 
 # Ignore global git config for the converge: once ~/.config/git/config is linked,

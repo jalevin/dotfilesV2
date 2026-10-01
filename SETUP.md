@@ -5,14 +5,15 @@ signing and secrets all wait on 1Password.
 
 ## Phase 1: Apple ID & iCloud (System Settings) — before anything else
 
-`./bootstrap.sh` stops at `icloud-check` until this is done: hive's config and
-the Obsidian vault live in iCloud.
+`./bootstrap.sh` stops at `icloud-check` until iCloud Drive is on: hive's config
+and Jump Desktop are read from it, and the Obsidian vault syncs through it.
 
 - [ ] Sign in to Apple ID (if not done during macOS setup)
-- [ ] **iCloud Drive - Desktop & Documents**
-  - System Settings > Apple ID > iCloud > iCloud Drive > Options
-  - Enable "Desktop & Documents Folders"
+- [ ] **iCloud Drive**: System Settings > Apple ID > iCloud > iCloud Drive -> on
   - Wait for sync — in particular `~/Library/Mobile Documents/com~apple~CloudDocs/hive/<env>/`
+- [ ] Optional, per machine — **Desktop & Documents sync** (on for `personal`, off
+      for `grafana`): iCloud Drive > Options > "Desktop & Documents Folders".
+      Nothing in this repo depends on it.
 - [ ] iCloud Keychain: System Settings > Apple ID > iCloud > Passwords & Keychain
 - [ ] Find My Mac: System Settings > Apple ID > iCloud > Find My Mac
 
@@ -158,5 +159,4 @@ find ~/projects -maxdepth 2 -name ".env*" -type f
 - [ ] `mise bootstrap dotfiles diff` reports "all files are applied"
 - [ ] `ls -la ~/.config/hive` points into iCloud `hive/<env>`
 - [ ] `git commit --amend --no-edit` works (SSH signing via 1Password)
-- [ ] Desktop/Documents folders show the iCloud sync icon
 - [ ] Neovim plugins loaded: open nvim, run `:Lazy`

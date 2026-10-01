@@ -574,23 +574,21 @@ description = "Install/refresh the dirwatch LaunchAgent (HEIC -> JPEG in ~/Downl
 run = "dirwatch install"
 
 [tasks.icloud-check]
-# Fails hard: hive's config and the Obsidian vault live in iCloud, so a machine
-# without it converges into a half-working state. Apple exposes no supported
-# way to enable it from a script, so this can only stop and say how.
-description = "Require iCloud Desktop & Documents sync (fails if off)"
+# Fails hard: hive's config and Jump Desktop are read from iCloud Drive, so a
+# machine without it converges into a half-working state. This checks iCloud
+# Drive only, not Desktop & Documents sync — nothing here depends on that, and
+# the work machine keeps it off. Apple exposes no supported way to enable iCloud
+# Drive from a script, so this can only stop and say how.
+description = "Require iCloud Drive (fails if off)"
 run = '''
 #!/usr/bin/env bash
-desktop="$(defaults read com.apple.finder FXICloudDriveDesktop 2>/dev/null || echo 0)"
-documents="$(defaults read com.apple.finder FXICloudDriveDocuments 2>/dev/null || echo 0)"
-
-if [ "$desktop" = 1 ] && [ "$documents" = 1 ]; then
-  echo "icloud-check: Desktop & Documents sync is on"
+if [ -d "$HOME/Library/Mobile Documents/com~apple~CloudDocs" ]; then
+  echo "icloud-check: iCloud Drive is on"
   exit 0
 fi
 
-echo "icloud-check: iCloud Desktop & Documents sync is OFF; set it up before converging" >&2
-echo "  System Settings > Apple ID > iCloud > iCloud Drive > Options" >&2
-echo "  -> enable 'Desktop & Documents Folders', wait for it to sync, then re-run" >&2
+echo "icloud-check: iCloud Drive is OFF; set it up before converging" >&2
+echo "  System Settings > Apple ID > iCloud > iCloud Drive -> turn on, wait for it to sync, then re-run" >&2
 exit 1
 '''
 
