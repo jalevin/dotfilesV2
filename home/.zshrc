@@ -41,7 +41,8 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="${BREW_PATH}/opt/libpq/bin:$PATH"
-#export PATH="/Users/jeff/projects/g/deployment_tools/scripts/gcom/:$PATH"
+export PATH="$PATH":"$HOME/.pub-cache/bin" # grafana
+#export PATH="/Users/jeff/projects/g/deployment_tools/scripts/gcom/:$PATH" #grafana
 
 # General
 export EDITOR="nvim"
@@ -103,8 +104,16 @@ export OBSIDIAN_NOTEBOOK_DIR="$HOME/Library/Mobile Documents/iCloud~md~obsidian/
 obs() { open "obsidian://open?path=$OBSIDIAN_NOTEBOOK_DIR"; }
 
 # ── Aliases ─────────────────────────────────────────────────────────────────────
+# directories
+hash -d icloud="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+hash -d obsidian="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"
+hash -d projects="$HOME/projects"
+hash -d dotfiles="$HOME/projects/dotfiles"
 
-# System
+alias projects="cd ~projects"
+alias dotfiles="cd ~dotfiles"
+
+# commands
 alias rl="source ~/.zshrc"
 alias nv="neovim"
 alias v="neovim"
@@ -119,18 +128,19 @@ alias projects="cd ~/projects"
 alias dotsync='mise -C "$HOME/projects/dotfiles" run sync'
 alias cpu_usage="watch \"ps -Ao user,uid,comm,pid,pcpu,tty -r | head -n 6\""
 
-# Git
+# git
 alias g="git"
 alias lg="lazygit"
 alias gm="git commit"
 alias gdiff="git --no-pager diff"
 
-# Tmux
+# tmux
 hv() {
   tmux new-session -As hive hive
 }
 alias t='tmux new-session -As $(basename $PWD)'
 
+# agents
 alias claude='claude --dangerously-skip-permissions'
 alias codex='codex --dangerously-bypass-approvals-and-sandbox'
 
