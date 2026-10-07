@@ -20,6 +20,9 @@ lockfile = true
   # install of a dozen tools with "API rate limit exceeded".
   gh_cli_tokens = true
 
+[tool_alias]
+hive = "github:colonyops/hive"
+
 [tools]
 go = "latest"
 node = "24"
@@ -35,7 +38,7 @@ ruby = "3"
 # skills, Codex hooks, and pulls third-party skills via `npx skills`. The CLI is
 # the only part we want; the review skills in home/.ai/skills are hand-written.
 "github:backnotprop/plannotator" = { version = "0.27.15", matching = "plannotator-" }
-"github:colonyops/hive" = "0.59.0"
+hive = { version = "0.61.0", minimum_release_age = "0s" }
 # Task-runner proxy (Makefile/Taskfile/mise) that the adopted hive workflow
 # skills and the orchestrator workspace call as `mi`.
 "github:hay-kot/mi" = "0.4.0"
