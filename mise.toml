@@ -149,6 +149,7 @@ adopt = true
 "brew-cask:1password" = "latest"
 "brew-cask:1password-cli" = "latest"
 "brew-cask:brave-browser" = "latest"
+"brew-cask:chatgpt" = "latest"
 # The desktop app (/Applications/Claude.app). Claude Code is a different
 # product with the same name — it self-updates into ~/.local/share/claude and
 # is deliberately NOT declared here; see `mise run claude-prune`.
