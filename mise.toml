@@ -22,6 +22,7 @@
 "~/.zshrc" = "home/.zshrc"
 "~/.gemrc" = "home/.gemrc"
 "~/.sqliterc" = "home/.sqliterc"
+"~/icloud" = "~/Library/Mobile Documents/com~apple~CloudDocs"
 
 # Whole-directory links — we own these paths outright.
 "~/.ai" = "home/.ai"
@@ -37,6 +38,7 @@
 # shadow: Claude Code's sessions/cache/history, git's local `gitk`, gh's auth in
 # hosts.yml, mise's own miserc.toml, and ~/.local/bin's other binaries.
 "~/.claude" = { source = "home/.claude", mode = "symlink-each" }
+"~/.codex/config.toml" = "home/.codex/config.toml"
 "~/.config/gh" = { source = "home/.config/gh", mode = "symlink-each" }
 "~/.config/git" = { source = "home/.config/git", mode = "symlink-each" }
 "~/.config/glow" = { source = "home/.config/glow", mode = "symlink-each" }

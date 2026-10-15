@@ -1,7 +1,42 @@
-# New Machine Setup Checklist
+# MacBook Migration & New Machine Setup Checklist
 
 The order matters: bootstrap refuses to run without iCloud, and SSH, commit
 signing and secrets all wait on 1Password.
+
+## Phase 0: Before transferring from the old Mac
+
+The October 2026 migration worked well, but Docker and OrbStack data added
+roughly 200 GB to the transfer. Clear disposable container and VM data on the
+old Mac before starting the next transfer.
+
+- [ ] Complete [BACKUP.md](BACKUP.md) before removing anything. Export any local
+      databases, named volumes, or Linux machine files that need to survive;
+      check that those exports are readable outside Docker and OrbStack.
+- [ ] **Docker Desktop**, if installed: use Troubleshoot > Uninstall, following
+      the [official uninstall instructions](https://docs.docker.com/desktop/uninstall/).
+      This deletes local containers, images, volumes, and other Docker data.
+      Check the documented residual data locations afterward; moving only the
+      app to Trash is not the cleanup step.
+- [ ] **OrbStack**: after saving anything needed, use `orb reset` to remove all
+      Docker data and Linux machines. If keeping Linux machines, use
+      `orb delete docker` to clear only Docker data. See the
+      [documented storage reset commands](https://docs.orbstack.dev/settings#storage).
+- [ ] Quit the container apps and verify the large data stores are gone or
+      reduced before transferring. OrbStack's disk image is sparse: check actual
+      disk usage with `du -h`, rather than its apparent maximum size in Finder
+      ([storage FAQ](https://docs.orbstack.dev/faq)):
+  ```bash
+  du -sh "$HOME/Library/Containers/com.docker.docker"
+  du -sh "$HOME/Library/Group Containers/HUAQ24HBR6.dev.orbstack/data"
+  ```
+  Missing directories are expected after removal. If migrating from a backup,
+  use a backup taken after cleanup for the transfer; keep the earlier backup
+  separately for recovery.
+- [ ] Transfer to the new Mac, then work through the phases below, checking
+      anything already migrated before repeating it. Restore the projects
+      archive only if the projects were not transferred.
+- [ ] Keep the old Mac intact until the verification checklist passes on the
+      new Mac and required project and app data has been checked.
 
 ## Phase 1: Apple ID & iCloud (System Settings) — before anything else
 
@@ -131,6 +166,7 @@ find ~/projects -maxdepth 2 -name ".env*" -type f
 
 ### Work machine only (`grafana`)
 
+- [ ] **Okta Verify**: open the app and complete sign-in/enrollment for the work account
 - [ ] gcloud components are not restored by the cask install:
   ```bash
   gcloud components install gke-gcloud-auth-plugin gcloud-crc32c

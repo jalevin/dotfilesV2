@@ -69,6 +69,6 @@ mise run secrets-push    # upload local to 1Password
 
 ## Other Docs
 
-- [SETUP.md](SETUP.md) — new machine setup guide
+- [SETUP.md](SETUP.md) — MacBook migration and new machine setup checklist
 - [BACKUP.md](BACKUP.md) — pre-wipe checklist
 - [hotkeys.md](hotkeys.md) — keyboard shortcuts reference
