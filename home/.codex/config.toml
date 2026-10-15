@@ -88,6 +88,7 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [tui]
+status_line = ["model", "context-remaining", "git-branch", "estimated-thread-cost"]
 screen_reader_detection_done = true
 
 [tui.model_availability_nux]
