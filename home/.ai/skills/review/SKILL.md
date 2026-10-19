@@ -348,13 +348,23 @@ review canvas, then call `open_canvas` with its name explicitly so Hive selects 
 review rather than an older canvas.
 
 - Discover the available `mcp__hive_drive__put_blocks` and `open_canvas` tool schemas.
-  Use `HIVE_AGENT_SESSION` for a Hive chat, or the absolute working directory for a
-  Hive code session, following the tools' session rules. Never reuse another workspace's
-  session identifier.
+  Choose the session from the current UI context, not merely from the presence of an
+  environment variable. For a Hive Code session, use the original workspace's absolute
+  working directory, even when `HIVE_AGENT_SESSION` is set; an inherited value can point
+  to a different chat. Do not use a temporary review checkout's path. Use
+  `HIVE_AGENT_SESSION` only when running in a Hive chat. Keep the same session value
+  for both `put_blocks` and `open_canvas`.
 - Read the finished review file and mirror its body into ordered Markdown blocks with
   stable IDs, preserving the section order and standalone fenced Mermaid diagrams.
   Name the canvas from the review slug/date and identify the source file in its content.
   Do not write a separate abbreviated walkthrough that can diverge from the review.
+- Check the destination metadata returned by `put_blocks` before calling `open_canvas`.
+  For a Code session, verify that `workspace` matches the reviewed repository and that
+  `hiveSession` is populated. For a chat, verify that `session` matches the current
+  chat identifier. A successful write to a different destination is not success:
+  correct the session, mirror the saved file there, and open that named canvas. If the
+  intended destination cannot be established, link the saved file and report the
+  routing problem instead of claiming it opened.
 - When revising the review, update the file first and refresh its canvas blocks,
   removing obsolete blocks if necessary. Keep the proposed comments in both views
   consistent with what the user is approving.

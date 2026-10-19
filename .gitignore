@@ -58,6 +58,7 @@ home/.ai/skills/*
 !home/.ai/skills/msg-review/
 !home/.ai/skills/obsidian/
 !home/.ai/skills/obsidian-cli/
+!home/.ai/skills/summarize/
 !home/.ai/skills/telegram/
 # Hive session workflow, adopted from hay-kot/dotfiles (2026-09-30) so the hive
 # orchestrator can drive sessions through research -> plan -> hc -> review.
