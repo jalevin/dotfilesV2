@@ -8,6 +8,7 @@
 #   - sudo (chflags, PAM)
 #   - a composite `-dict-add` value (symbolic hotkeys, message settings)
 #   - PlistBuddy
+#   - host-specific defaults (`-currentHost`)
 #
 # Run via: mise run macos-imperative
 #
@@ -40,6 +41,11 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 # MANUAL: Enable iCloud Desktop & Documents sync
 # System Settings > Apple ID > iCloud > iCloud Drive > Options > "Desktop & Documents
 # Folders". macOS requires the UI toggle to activate the sync plumbing.
+
+# Control Center uses host-specific visibility modes: 18 means always show.
+for item in WiFi Bluetooth Sound; do
+  defaults -currentHost write com.apple.controlcenter "$item" -int 18
+done
 
 ###############################################################################
 # Composite values (-dict-add)                                                #
@@ -117,3 +123,4 @@ fi
 # writes above need it as well when this script runs on its own.
 launchctl kickstart -k "gui/$(id -u)/com.apple.Dock.agent" 2>/dev/null || killall Dock 2>/dev/null || true
 launchctl kickstart -k "gui/$(id -u)/com.apple.SystemUIServer.agent" 2>/dev/null || killall SystemUIServer 2>/dev/null || true
+killall ControlCenter 2>/dev/null || true

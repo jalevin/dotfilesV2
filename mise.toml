@@ -217,6 +217,19 @@ DSDontWriteUSBStores = true
 [bootstrap.macos.defaults."com.apple.TimeMachine"]
 DoNotOfferNewDisksForBackup = true
 
+[bootstrap.macos.defaults."com.apple.controlcenter"]
+"NSStatusItem Visible WiFi" = true
+"NSStatusItem Visible Bluetooth" = true
+"NSStatusItem Visible Sound" = true
+# Ice's collapsed section uses large offsets; keep these inside its hidden bar.
+"NSStatusItem Preferred Position Bluetooth" = 5329.0
+"NSStatusItem Preferred Position WiFi" = 5361.0
+"NSStatusItem Preferred Position Sound" = 5399.0
+"NSStatusItem Preferred Position NowPlaying" = 247.0
+"NSStatusItem Preferred Position Battery" = 205.0
+"NSStatusItem Preferred Position BentoBox-0" = 163.0
+"NSStatusItem Preferred Position Clock" = 108.0
+
 [bootstrap.macos.defaults.NSGlobalDomain]
 AppleShowAllExtensions = true
 NSWindowResizeTime = 0.001
@@ -240,6 +253,19 @@ KeyRepeat = 1
 [bootstrap.macos.defaults."com.jordanbaird.Ice"]
 SUEnableAutomaticChecks = false
 SUAutomaticallyUpdate = false
+UseIceBar = true
+IceBarLocation = 0
+AutoRehide = true
+RehideStrategy = 0
+RehideInterval = 15.0
+ShowOnClick = true
+ShowOnHover = false
+ShowOnScroll = true
+ShowIceIcon = true
+HideApplicationMenus = true
+EnableAlwaysHiddenSection = false
+"NSStatusItem Preferred Position Ice.ControlItem.Hidden" = 313.0
+"NSStatusItem Preferred Position Ice.ControlItem.Visible" = 280.0
 
 [bootstrap.hooks]
 # Close System Settings first so it can't overwrite what we're about to write.
@@ -250,6 +276,7 @@ pre-defaults = "osascript -e 'tell application \"System Settings\" to quit' || t
 post-defaults = """
 launchctl kickstart -k "gui/$(id -u)/com.apple.Dock.agent" 2>/dev/null || killall Dock 2>/dev/null || true
 launchctl kickstart -k "gui/$(id -u)/com.apple.SystemUIServer.agent" 2>/dev/null || killall SystemUIServer 2>/dev/null || true
+killall ControlCenter 2>/dev/null || true
 """
 
 [tasks.packages]
