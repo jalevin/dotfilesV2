@@ -3,9 +3,10 @@ name: review
 description: >
   Single-pass code review of the current branch (or a diff) that routes the changes
   to relevant concerns, dispatches fresh-context reviewer sub-agents, verifies findings
-  to strip false positives, and reports a ranked, evidence-backed review. Use when the
+  to strip false positives, and saves a beginner-friendly design walkthrough,
+  ranked findings, and draft PR comments in a review file displayed in Hive canvas. Use when the
   user asks to review local changes, a branch, or a PR before it goes to humans.
-argument-hint: "[base-branch]"
+argument-hint: "[PR URL or base-branch]"
 ---
 
 # Code Review
@@ -14,7 +15,10 @@ One orchestrated review that favors **signal over volume**. The goal is a short 
 findings a human reviewer will trust — not an exhaustive dump. A review that flags thirty
 things trains the author to ignore all thirty.
 
-**Default base branch:** `main`. If an argument is given, use it instead.
+**Default base branch:** `main`. If a base-branch argument is given, use it instead.
+For a PR URL, resolve its actual base and head with `gh`; review that diff rather than
+assuming the PR targets `main`. Record the reviewed revisions so the walkthrough and
+comment anchors describe the same version.
 
 ## Operating principles
 
@@ -201,13 +205,58 @@ problem, why it matters, concrete fix.
 Default to the lower severity when uncertain. A misclassified Critical erodes trust.
 
 ### Output template
-```markdown
+Write for someone new to the project. Keep the following section order in one review
+file; the walkthrough is part of the review, not a separate document. Scale its length
+to the change, while retaining both diagrams and the glossary.
+
+Ground the before diagram in the reviewed base and the after diagram in the reviewed
+head. Use consistent node names and scope so the change is easy to compare. For a new
+feature, show the existing path or explicitly absent capability before it. For a
+docs-only or behavior-preserving change, say what remains unchanged instead of
+inventing a runtime difference. Use plain-language labels and define unavoidable terms
+briefly on first use, then collect them in the glossary.
+
+````markdown
 # Code Review: <branch> → <base>
+
+## Overall design
+[Explain the problem, the existing behavior, and the PR's approach in plain English.
+Identify the main components, their responsibilities, and important boundaries.]
+
+### Before
+[Brief explanation of the behavior at the reviewed base.]
+```mermaid
+flowchart LR
+    A[Existing input] --> B[Existing behavior]
+```
+
+### After
+[Brief explanation of the behavior at the reviewed head and why it changes.]
+```mermaid
+flowchart LR
+    A[Existing input] --> B[Changed behavior] --> C[Result]
+```
+
+### Concrete example
+[Walk the same realistic input through before and after. Include a failure case when
+it helps explain the change. Link to the code supporting the explanation.]
+
+## Jargon
+| Term | Plain-English meaning | Role in this PR |
+|------|-----------------------|-----------------|
+| [term/acronym] | [definition without circular jargon] | [concrete use] |
+
+## PR review
 
 _Concerns: [activated concerns + one-line reason each]_
 _Reviewers dispatched: [each `diff-reviewer` sub-agent + its concern(s) + result, e.g. `Correctness → findings`, `Design → no_findings`]_
+_Scope: [PR URL if applicable, base and head revisions, any local changes included]_
 
 [2-3 sentence overview: what the branch does, overall quality, merge readiness.]
+
+### Implementation and tradeoffs
+[Explain how the important changes work together, why the approach fits, and remaining
+limitations. Organize by behavior or subsystem rather than narrating every file.]
 
 ---
 
@@ -228,7 +277,8 @@ _Reviewers dispatched: [each `diff-reviewer` sub-agent + its concern(s) + result
 ---
 
 ### Test Coverage
-[Are new code paths covered? Gaps or redundant tests?]
+[Are new code paths covered? Gaps or redundant tests? State checks actually run, their
+results, and any validation limitations; distinguish environment failures from defects.]
 
 ### Dropped in verification
 [Findings a skeptic refuted, with reason — omit the section if none.]
@@ -239,7 +289,37 @@ _Reviewers dispatched: [each `diff-reviewer` sub-agent + its concern(s) + result
 **[APPROVE / REQUEST CHANGES / NEEDS DISCUSSION]** — [one sentence]
 
 Critical: N | Major: N | Minor: N | Nits: N
+
+## Proposed PR comments — not posted
+[For each verified, actionable finding worth posting:]
+
+### [Short issue title]
+- Anchor: [file, diff side, exact line or range, reviewed head SHA]
+- Finding: [reference to the finding above]
+
+> [Exact proposed comment text: concise, collegial, and grounded in observed behavior.]
+
+[When a precise replacement is safe, include the literal GitHub suggestion block:]
+```suggestion
+[Complete replacement for the anchored lines, ready for the author to accept.]
 ```
+
+[If a fix spans multiple sites, provide separately anchored suggestions or explain why
+a single suggestion is insufficient. If there are no actionable findings, say no
+comments are proposed.]
+````
+
+Recheck every proposed comment against the code and available test evidence, including
+lower-severity findings that did not need a skeptic. Exclude refuted or speculative
+findings from comment drafts. Validate suggestion scope and syntax; do not invent a
+replacement when the correct fix is uncertain. For local reviews without a PR, retain
+file/line anchors and label suggestions as drafts pending a PR.
+
+Show the exact drafts in the saved review before posting anything. Wait for the user's
+explicit approval of the text before submitting GitHub comments or a review; a review
+request by itself does not authorize posting. If only some drafts are approved, post
+only those. Recheck anchors against the current PR head before posting, and show any
+materially revised text for review again.
 
 ## Step 6 — Save the review
 
@@ -259,6 +339,28 @@ base_branch: main
 tags: [component, topic]
 ---
 ```
+
+## Step 7 — Open the review in Hive canvas
+
+The saved Markdown file is the source of truth for the whole review, including diagrams
+and comment drafts. Use the Hive Drive tools to display that same content in a named
+review canvas, then call `open_canvas` with its name explicitly so Hive selects this
+review rather than an older canvas.
+
+- Discover the available `mcp__hive_drive__put_blocks` and `open_canvas` tool schemas.
+  Use `HIVE_AGENT_SESSION` for a Hive chat, or the absolute working directory for a
+  Hive code session, following the tools' session rules. Never reuse another workspace's
+  session identifier.
+- Read the finished review file and mirror its body into ordered Markdown blocks with
+  stable IDs, preserving the section order and standalone fenced Mermaid diagrams.
+  Name the canvas from the review slug/date and identify the source file in its content.
+  Do not write a separate abbreviated walkthrough that can diverge from the review.
+- When revising the review, update the file first and refresh its canvas blocks,
+  removing obsolete blocks if necessary. Keep the proposed comments in both views
+  consistent with what the user is approving.
+- If Hive tools or a session pane are unavailable, still save and link the completed
+  review and state that it could not be opened. Do not claim the canvas is visible:
+  `open_canvas` confirms only that the UI open was requested.
 
 ## External reviewer (optional)
 
