@@ -51,6 +51,7 @@ home/.ai/skills/*
 !home/.ai/skills/cleanup-comments/
 !home/.ai/skills/collab-plan/
 !home/.ai/skills/daily-prep/
+!home/.ai/skills/design-review/
 !home/.ai/skills/diff-review/
 !home/.ai/skills/doc-review/
 !home/.ai/skills/meeting-notes/

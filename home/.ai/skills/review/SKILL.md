@@ -216,6 +216,29 @@ docs-only or behavior-preserving change, say what remains unchanged instead of
 inventing a runtime difference. Use plain-language labels and define unavoidable terms
 briefly on first use, then collect them in the glossary.
 
+Highlight the diff visually in both diagrams using Mermaid `classDef` and `class`
+assignments. Use the same palette throughout: gray for unchanged, amber for modified,
+green for added, and red with a dashed border for removed elements. Mark modified
+components in both views; show removed elements only in Before and additions only in
+After. Preserve node IDs, diagram direction, and relative ordering where possible.
+Add status words to changed node labels and a short legend so color is not the only
+signal. Label changed relationships as added/removed/modified too; if styling edges
+with `linkStyle`, verify the edge indexes after editing. Highlight only actual changes
+in the reviewed diff, not every component touched by a request.
+
+Use these flowchart styles (include the classes used in each standalone diagram):
+```mermaid
+flowchart LR
+    U[Unchanged]:::unchanged
+    M[Modified]:::modified
+    A[Added]:::added
+    R[Removed]:::removed
+    classDef unchanged fill:#F3F4F6,stroke:#6B7280,color:#111827
+    classDef modified fill:#FEF3C7,stroke:#B45309,color:#78350F,stroke-width:2px
+    classDef added fill:#DCFCE7,stroke:#15803D,color:#14532D,stroke-width:2px
+    classDef removed fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D,stroke-width:2px,stroke-dasharray:5 5
+```
+
 ````markdown
 # Code Review: <branch> → <base>
 
@@ -227,15 +250,22 @@ Identify the main components, their responsibilities, and important boundaries.]
 [Brief explanation of the behavior at the reviewed base.]
 ```mermaid
 flowchart LR
-    A[Existing input] --> B[Existing behavior]
+    A[Existing input]:::unchanged --> B["Existing behavior (modified by PR)"]:::modified
+    classDef unchanged fill:#F3F4F6,stroke:#6B7280,color:#111827
+    classDef modified fill:#FEF3C7,stroke:#B45309,color:#78350F,stroke-width:2px
 ```
 
 ### After
 [Brief explanation of the behavior at the reviewed head and why it changes.]
 ```mermaid
 flowchart LR
-    A[Existing input] --> B[Changed behavior] --> C[Result]
+    A[Existing input]:::unchanged --> B["Changed behavior (modified)"]:::modified --> C["New output (added)"]:::added
+    classDef unchanged fill:#F3F4F6,stroke:#6B7280,color:#111827
+    classDef modified fill:#FEF3C7,stroke:#B45309,color:#78350F,stroke-width:2px
+    classDef added fill:#DCFCE7,stroke:#15803D,color:#14532D,stroke-width:2px
 ```
+
+Legend: gray = unchanged; amber = modified; green = added; red/dashed = removed.
 
 ### Concrete example
 [Walk the same realistic input through before and after. Include a failure case when
@@ -354,17 +384,17 @@ review rather than an older canvas.
   to a different chat. Do not use a temporary review checkout's path. Use
   `HIVE_AGENT_SESSION` only when running in a Hive chat. Keep the same session value
   for both `put_blocks` and `open_canvas`.
+- Before writing canvas blocks, confirm that the chosen session identifies the
+  current Code workspace or chat using the session rules above. If the destination
+  is uncertain, stop before writing and immediately notify the user that the review
+  could not be displayed because its canvas destination could not be established.
+  Explain what is unresolved, link the saved review, and ask for any missing context
+  needed to resolve the destination. Do not silently skip the canvas step or report
+  the review workflow as complete.
 - Read the finished review file and mirror its body into ordered Markdown blocks with
   stable IDs, preserving the section order and standalone fenced Mermaid diagrams.
   Name the canvas from the review slug/date and identify the source file in its content.
   Do not write a separate abbreviated walkthrough that can diverge from the review.
-- Check the destination metadata returned by `put_blocks` before calling `open_canvas`.
-  For a Code session, verify that `workspace` matches the reviewed repository and that
-  `hiveSession` is populated. For a chat, verify that `session` matches the current
-  chat identifier. A successful write to a different destination is not success:
-  correct the session, mirror the saved file there, and open that named canvas. If the
-  intended destination cannot be established, link the saved file and report the
-  routing problem instead of claiming it opened.
 - When revising the review, update the file first and refresh its canvas blocks,
   removing obsolete blocks if necessary. Keep the proposed comments in both views
   consistent with what the user is approving.

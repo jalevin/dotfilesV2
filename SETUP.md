@@ -159,6 +159,9 @@ find ~/projects -maxdepth 2 -name ".env*" -type f
 
 ### CLI logins
 
+- [ ] Pi: run `pi`, then `/login` and `/model`. Bootstrap installs it through
+      the official installer; run `pi update` to upgrade. To install it alone,
+      run `bash install/scripts/pi.sh` from this repo.
 - [ ] Heroku: `heroku login`
 - [ ] AWS: `aws configure`, or set up SSO
 - [ ] Claude Code: set `model` in `~/.claude/settings.local.json` (deliberately

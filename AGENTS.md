@@ -2,10 +2,14 @@
 
 Jeff Levin's macOS dotfiles for a Staff Software Engineer at Grafana Labs.
 
+This file is the canonical repository guidance for coding agents. Shared personal
+instructions live in `home/.ai/AGENTS.md`.
+
 ## Repository Layout
 
 ```
 dotfiles/
+├── AGENTS.md             # Repository guidance shared across coding agents
 ├── bootstrap.sh          # Fresh machine: Xcode CLT + mise, then
 │                         #   `mise bootstrap --yes`. Takes <grafana|personal>.
 ├── mise.toml             # All setup tasks
@@ -458,11 +462,29 @@ both and dispatches on where a name is declared, so one command covers either:
 mise update              # everything
 mise update codex        # a cask
 mise update jq           # a formula
-mise update hive         # a tool (resolves github:colonyops/hive)
+mise update hive         # a tool, respecting its configured version
+mise update codex hive   # mix packages and tools
+mise update hive --bump  # upgrade a pinned tool and rewrite its pin
+mise update --dry-run   # preview routing without upgrading anything
 ```
 
+Names resolve from JSON status for declared packages and currently configured tools,
+including active machine overlays. Full names such as `brew-cask:codex` and
+`github:backnotprop/plannotator` also work. Ambiguous names fail with explicit choices;
+`tool:<configured-name>` selects a tool when it shares a name with a package.
+All names are resolved before any upgrade starts.
+
+The dispatcher is `tasks/update.go`, run with Go's standard library only. Run its
+tests with `go test tasks/update.go tasks/update_test.go`.
+
+Without `--bump`, tool upgrades respect configured pins/ranges. With it, mise updates
+tool pins to newer versions; package upgrades use the same package-manager path.
+The updater covers bootstrap packages and `[tools]`; custom install scripts remain
+under `mise bump` / `mise install-scripts`, and mise itself under `mise upgrade-mise`.
+
 It is named `update` because `up` and `upgrade` are both mise builtins (`up`
-aliases `mise upgrade`) and a task cannot shadow a builtin.
+aliases `mise upgrade`) and a task cannot shadow a builtin. There is no separate
+`upgrade` task; the builtin remains available for tools-only operations.
 
 Casks are included now that they are mise-owned, and a self-updating app that is
 *running* is skipped ("installed app is running and updates itself") rather than
