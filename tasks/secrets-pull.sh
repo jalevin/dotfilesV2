@@ -55,7 +55,7 @@ pull_file() {
 
 pull_file "ssh-config" ~/.ssh/config
 pull_file "hosts-file" /etc/hosts
-pull_file "sops-age-key" ~/.config/sops/age/keys.txt
+pull_file "sops-age-key" ~/.config/mise/age.txt
 
 echo ""
 echo "Done!"

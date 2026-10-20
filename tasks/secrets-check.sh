@@ -31,4 +31,4 @@ check_file() {
 
 check_file "ssh-config" ~/.ssh/config
 check_file "hosts-file" /etc/hosts
-check_file "sops-age-key" ~/.config/sops/age/keys.txt
+check_file "sops-age-key" ~/.config/mise/age.txt
