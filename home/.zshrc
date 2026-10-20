@@ -92,8 +92,8 @@ GCLOUD_SDK="${BREW_PATH}/share/google-cloud-sdk"
 # ripgrep
 export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/rg.conf"
 
-# sops (XDG-style key path; macOS default would be ~/Library/Application Support/sops)
-export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME/sops/age/keys.txt"
+# sops
+export SOPS_AGE_KEY_FILE="$HOME/.config/mise/age.txt"
 
 # OrbStack
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
