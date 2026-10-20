@@ -21,6 +21,10 @@ home/.claude/telemetry/
 home/.claude/mcp-needs-auth-cache.json
 home/.claude/paste-cache/
 home/.config/git/gitk
+
+# stored in 1password
+home/.config/mise/age.txt
+
 # gh writes auth into this directory: `hosts.yml` holds `oauth_token` whenever
 # the token goes to the file instead of the login keyring (`--insecure-storage`,
 # or any host where the keyring is unavailable). This repo is public and gh's
