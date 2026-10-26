@@ -3,6 +3,11 @@
 # outside it the shim errors with "No version is set for shim: <name>".
 # Globally-available CLIs live in home/.config/mise/config.toml instead.
 
+# Older mise poured brew bottles without running `post_install_steps`, which
+# left ca-certificates' cert.pem stale and still trusting roots the formula
+# excludes (emSign G3, AAA Certificate Services). See AGENTS.md → Packages.
+min_version = "2026.10.9"
+
 # ---------------------------------------------------------
 # Dotfiles — opt-in: only what's listed deploys.
 #
