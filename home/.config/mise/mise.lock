@@ -328,10 +328,9 @@ checksum = "sha256:cc5149eabd53779ce1e7bdc5401643622d0c7e6800ade18928a767e940bb0
 url = "https://nodejs.org/dist/v24.15.0/node-v24.15.0-win-x64.zip"
 
 [[tools."npm:heroku"]]
-version = "11.10.0"
-aube = { path = "locks/npm-heroku/11.10.0", digest = "sha256:535a586c779738d3ce0294a8929f710d644c67db54fd94c3a177a7021b086f57" }
+version = "11.12.1"
 backend = "npm:heroku"
-specifiers = ["11.10.0"]
+specifiers = ["11.12.1"]
 
 [[tools."npm:typescript"]]
 version = "7.0.2"
