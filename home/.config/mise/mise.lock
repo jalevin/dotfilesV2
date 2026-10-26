@@ -329,6 +329,7 @@ url = "https://nodejs.org/dist/v24.15.0/node-v24.15.0-win-x64.zip"
 
 [[tools."npm:heroku"]]
 version = "11.12.1"
+aube = { path = "locks/npm-heroku/11.12.1", digest = "sha256:480c2b204cde8fc6cdcbc8bafeec658c2498b62bfdb08f2f924fc96ec0fc4ad6" }
 backend = "npm:heroku"
 specifiers = ["11.12.1"]
 
@@ -337,15 +338,6 @@ version = "7.0.2"
 aube = { path = "locks/npm-typescript/7.0.2", digest = "sha256:3d06b3b23564c68cdad7815c356edb1506fab1c42bfb8c54234134fd9650ec17" }
 backend = "npm:typescript"
 specifiers = ["latest"]
-
-[[tools.ruby]]
-version = "3.4.9"
-backend = "core:ruby"
-specifiers = ["3"]
-
-[tools.ruby."platforms.windows-x64"]
-checksum = "sha256:4375268618b61dadf53bf8e54beaca74ea30580c90d3c47ea9f2a134bd3e494e"
-url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.9-1/rubyinstaller-3.4.9-1-x64.7z"
 
 [[tools.ruby]]
 version = "3.4.9"
@@ -384,6 +376,15 @@ provenance = "github-attestations"
 [tools.ruby."platforms.macos-x64"]
 checksum = "sha256:7bb4d4f5e807cc27251d14d9d6086d182c5b25875191e44ab15b709cd7a7dd9c"
 url = "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.9.tar.gz"
+
+[[tools.ruby]]
+version = "3.4.9"
+backend = "core:ruby"
+specifiers = ["3"]
+
+[tools.ruby."platforms.windows-x64"]
+checksum = "sha256:4375268618b61dadf53bf8e54beaca74ea30580c90d3c47ea9f2a134bd3e494e"
+url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-3.4.9-1/rubyinstaller-3.4.9-1-x64.7z"
 
 [[tools.shellcheck]]
 version = "0.11.0"
