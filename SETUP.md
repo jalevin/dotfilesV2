@@ -84,9 +84,8 @@ SSH and commit signing, and secrets are stored there as documents.
 - [ ] 1Password > Settings > Developer > **SSH Agent** — enable
 - [ ] 1Password > Settings > Developer > **Integrate with 1Password CLI**
 - [ ] Test: `op account list`
-- [ ] Pull secrets (`~/.ssh/config`, `/etc/hosts`, sops age key):
+- [ ] Pull secrets (`~/.ssh/config`, `/etc/hosts`; SOPS age key on personal only):
   ```bash
-  eval $(op signin)
   mise run secrets-pull
   ```
 - [ ] Test SSH: `ssh -T git@github.com`

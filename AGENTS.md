@@ -532,6 +532,10 @@ guard.
 
 Sensitive files (`~/.ssh/config`, `/etc/hosts`) are stored in 1Password and synced via mise tasks.
 They are NOT stored in this git repo.
+The tasks explicitly select **Jeff’s Family** using the account ID in
+`tasks/secrets-common.sh`, regardless of the active 1Password account or `OP_ACCOUNT`.
+If authentication has expired, they run `op signin` automatically and continue
+after approval in 1Password. Cancelled or failed authentication stops the sync.
 
 ```bash
 # Check sync status (runs automatically when entering this directory)
@@ -542,18 +546,34 @@ mise run secrets-push
 
 # Pull from 1Password to local
 mise run secrets-pull
+
+# Compare and choose a direction separately for each file
+mise secrets-resolve
 ```
+
+`secrets-resolve` copies local and remote versions into a private temporary
+directory and displays `git diff --no-index` (`-` is 1Password, `+` is local).
+Choose push, pull, edit, skip, or quit for each differing file. Editing opens a
+merged copy in `$VISUAL` / `$EDITOR` (default `vi`), then asks before applying it
+to both sides. Enter skips. Temporary copies are removed on exit; no git repo
+is created. Both sides are checked again before applying a decision.
+Changes to `/etc/hosts` use sudo.
 
 **1Password documents used:**
 | Document Name | Local Path | Contents |
 |---------------|------------|----------|
 | `ssh-config` | `~/.ssh/config` | SSH host aliases, 1Password agent config |
 | `hosts-file` | `/etc/hosts` | Custom host entries |
-| `sops-age-key` | `~/.config/mise/age.txt` | Age private key for sops decryption (loaded via `SOPS_AGE_KEY_FILE` in `.zshrc`) |
+| `sops-age-key` | `~/.config/mise/age.txt` | Personal machine only (`MISE_ENV` includes `personal`); age private key for SOPS |
+
+All four tasks use the same file list from `tasks/secrets-common.sh`. SSH config
+and hosts apply to both machines; the SOPS key is excluded on Grafana. Validate
+authentication and resolution with `node --test tasks/secrets*.test.mjs`.
 
 **First-time setup:** Run `mise run secrets-push` to upload local files to 1Password.
 
-**New machine:** Run `eval $(op signin)` then `mise run secrets-pull` to fetch secrets.
+**New machine:** Enable 1Password CLI integration, then run `mise run secrets-pull`
+to authenticate and fetch secrets.
 
 **Auto-check:** When you `cd` into this directory, mise automatically runs `secrets-check` to warn if local files differ from 1Password.
 

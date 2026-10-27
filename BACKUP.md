@@ -28,7 +28,6 @@ Copy `projects.tar.gz` to external drive or cloud storage.
 
 ```bash
 cd ~/projects/dotfiles
-eval $(op signin)
 mise run secrets-push
 ```
 

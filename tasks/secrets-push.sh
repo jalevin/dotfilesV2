@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
+source "$(dirname "${BASH_SOURCE[0]}")/secrets-common.sh"
 
-if ! op account list &>/dev/null; then
-  echo "Sign in to 1Password first: eval \$(op signin)"
-  exit 1
-fi
+secrets_signin
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -24,7 +22,7 @@ push_file() {
     return
   fi
 
-  if op document get "$name" > "$tmp_path" 2>/dev/null; then
+  if secrets_op document get "$name" > "$tmp_path" 2>/dev/null; then
     if diff -q "$local_path" "$tmp_path" &>/dev/null; then
       echo "✓ Already in sync. No changes needed."
       return
@@ -37,12 +35,12 @@ push_file() {
   fi
 
   echo ""
-  read -p "Upload this to 1Password? [y/N] " confirm
+  read -r -p "Upload this to 1Password? [y/N] " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    if op document get "$name" &>/dev/null; then
-      op document edit "$name" "$local_path"
+    if secrets_op document get "$name" &>/dev/null; then
+      secrets_op document edit "$name" "$local_path"
     else
-      op document create "$local_path" --title "$name"
+      secrets_op document create "$local_path" --title "$name"
     fi
     echo "✓ Uploaded to 1Password"
   else
@@ -50,9 +48,7 @@ push_file() {
   fi
 }
 
-push_file "ssh-config" ~/.ssh/config
-push_file "hosts-file" /etc/hosts
-push_file "sops-age-key" ~/.config/mise/age.txt
+secrets_each_file push_file
 
 echo ""
 echo "Done!"

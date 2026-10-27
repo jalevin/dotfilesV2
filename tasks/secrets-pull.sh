@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
+source "$(dirname "${BASH_SOURCE[0]}")/secrets-common.sh"
 
-if ! op account list &>/dev/null; then
-  echo "Sign in to 1Password first: eval \$(op signin)"
-  exit 1
-fi
+secrets_signin
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -19,7 +17,7 @@ pull_file() {
   echo "📄 $name → $local_path"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  if ! op document get "$name" > "$tmp_path" 2>/dev/null; then
+  if ! secrets_op document get "$name" > "$tmp_path" 2>/dev/null; then
     echo "⚠️  Document '$name' not found in 1Password. Skipping."
     return
   fi
@@ -38,7 +36,7 @@ pull_file() {
   fi
 
   echo ""
-  read -p "Apply this change? [y/N] " confirm
+  read -r -p "Apply this change? [y/N] " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     if [[ "$local_path" == /etc/* ]]; then
       sudo cp "$tmp_path" "$local_path"
@@ -53,9 +51,7 @@ pull_file() {
   fi
 }
 
-pull_file "ssh-config" ~/.ssh/config
-pull_file "hosts-file" /etc/hosts
-pull_file "sops-age-key" ~/.config/mise/age.txt
+secrets_each_file pull_file
 
 echo ""
 echo "Done!"

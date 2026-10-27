@@ -387,6 +387,10 @@ run = "./tasks/secrets-push.sh"
 description = "Check if local secrets match 1Password"
 run = "./tasks/secrets-check.sh"
 
+[tasks.secrets-resolve]
+description = "Compare secrets and choose push, pull, or merge for each file"
+run = "./tasks/secrets-resolve.sh"
+
 [tasks.backup-projects]
 description = "Create tar archive of ~/projects (excludes large dirs and dotfiles)"
 run = "./tasks/backup-projects.sh"
