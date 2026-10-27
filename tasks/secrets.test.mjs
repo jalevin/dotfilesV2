@@ -1,9 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { tmpdir, homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+test('both machine profiles sync every dependency of the included Hive SSH config', () => {
+  for (const environment of ['grafana', 'personal']) {
+    const result = spawnSync('bash', ['-c',
+      'source "$1"; show() { printf "%s\\t%s\\n" "$1" "$2"; }; secrets_each_file show',
+      'test', resolve('tasks/secrets-common.sh')], {
+      encoding: 'utf8', env: { ...process.env, MISE_ENV: environment },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const files = new Map(result.stdout.trim().split('\n').map(line => line.split('\t')));
+    for (const [document, file] of [
+      ['ssh-config', 'config'],
+      ['ssh-homesrv-hive-config', 'homesrv-hive.conf'],
+      ['ssh-homesrv-hive-known-hosts', 'homesrv-hive.known_hosts'],
+      ['ssh-homesrv-hive-key', 'homesrv-hive-key-0.pub'],
+    ]) {
+      assert.equal(files.get(document), join(homedir(), '.ssh', file));
+    }
+    assert.equal(files.has('sops-age-key'), environment === 'personal');
+  }
+});
 
 function run(mode) {
   const dir = mkdtempSync(join(tmpdir(), 'secrets-signin-'));

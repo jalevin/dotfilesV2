@@ -84,10 +84,13 @@ SSH and commit signing, and secrets are stored there as documents.
 - [ ] 1Password > Settings > Developer > **SSH Agent** — enable
 - [ ] 1Password > Settings > Developer > **Integrate with 1Password CLI**
 - [ ] Test: `op account list`
-- [ ] Pull secrets (`~/.ssh/config`, `/etc/hosts`; SOPS age key on personal only):
+- [ ] Pull secrets (`~/.ssh/config`, its Hive VM include/host pin/public key selector, `/etc/hosts`; SOPS age key on personal only):
   ```bash
   mise run secrets-pull
   ```
+- [ ] For Hive, accept the main SSH config plus all three `ssh-homesrv-hive-*`
+      documents. With the personal tailnet connected, test `ssh homesrv-hive-direct`.
+      The matching private key comes from 1Password's SSH agent.
 - [ ] Test SSH: `ssh -T git@github.com`
 - [ ] Switch the dotfiles remote to SSH:
   ```bash

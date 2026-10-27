@@ -592,12 +592,21 @@ Changes to `/etc/hosts` use sudo.
 | Document Name | Local Path | Contents |
 |---------------|------------|----------|
 | `ssh-config` | `~/.ssh/config` | SSH host aliases, 1Password agent config |
+| `ssh-homesrv-hive-config` | `~/.ssh/homesrv-hive.conf` | Hive VM SSH aliases included by the main config; use `~/.ssh/` paths |
+| `ssh-homesrv-hive-known-hosts` | `~/.ssh/homesrv-hive.known_hosts` | Pinned Hive VM SSH host key |
+| `ssh-homesrv-hive-key` | `~/.ssh/homesrv-hive-key-0.pub` | Public key selector for the private key held by the 1Password SSH agent |
 | `hosts-file` | `/etc/hosts` | Custom host entries |
 | `sops-age-key` | `~/.config/mise/age.txt` | Personal machine only (`MISE_ENV` includes `personal`); age private key for SOPS |
 
 All four tasks use the same file list from `tasks/secrets-common.sh`. SSH config
-and hosts apply to both machines; the SOPS key is excluded on Grafana. Validate
-authentication and resolution with `node --test tasks/secrets*.test.mjs`.
+and its Hive companion files and hosts apply to both machines; the SOPS key is
+excluded on Grafana. Validate authentication and resolution with `node --test tasks/secrets*.test.mjs`.
+
+Pull all four SSH documents on a new laptop: the include alone does not restore
+the Hive aliases, host trust, or public key selector. Hive API tokens remain on
+the VM and are fetched over SSH; neither they nor private SSH keys belong in
+these documents. The homesrv VM setup script regenerates the companion files;
+push their changes after reprovisioning or changing the VM's address.
 
 **First-time setup:** Run `mise run secrets-push` to upload local files to 1Password.
 

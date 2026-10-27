@@ -33,6 +33,9 @@ mise run secrets-push
 
 This uploads:
 - `~/.ssh/config` → 1Password document "ssh-config"
+- `~/.ssh/homesrv-hive.conf` → "ssh-homesrv-hive-config"
+- `~/.ssh/homesrv-hive.known_hosts` → "ssh-homesrv-hive-known-hosts"
+- `~/.ssh/homesrv-hive-key-0.pub` → "ssh-homesrv-hive-key" (public key only)
 - `/etc/hosts` → 1Password document "hosts-file"
 
 ## 4. Verify

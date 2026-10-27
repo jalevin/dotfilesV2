@@ -29,6 +29,9 @@ secrets_signin() {
 
 secrets_each_file() {
   "$@" "ssh-config" "$HOME/.ssh/config"
+  "$@" "ssh-homesrv-hive-config" "$HOME/.ssh/homesrv-hive.conf"
+  "$@" "ssh-homesrv-hive-known-hosts" "$HOME/.ssh/homesrv-hive.known_hosts"
+  "$@" "ssh-homesrv-hive-key" "$HOME/.ssh/homesrv-hive-key-0.pub"
   "$@" "hosts-file" "/etc/hosts"
   case ",${MISE_ENV:-}," in
     *,personal,*) "$@" "sops-age-key" "$HOME/.config/mise/age.txt" ;;
