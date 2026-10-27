@@ -1,0 +1,15 @@
+{
+  "claude": {
+    "enabledPlugins": {
+      "grafana-enghub@grafana-ai-kit": false,
+      "grafana-airbud@grafana-ai-kit": false,
+      "slack@claude-plugins-official": false
+    },
+    "extraKnownMarketplaces": {
+      "grafana-ai-kit": null
+    }
+  },
+  "codex": {
+    "mcp_servers.airbud": null
+  }
+}

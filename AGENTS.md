@@ -33,7 +33,6 @@ dotfiles/
 │   │   ├── agents/       # Subagent definitions (github.md)
 │   │   └── skills/       # Agent skills (shared across harnesses)
 │   └── .claude/          # Claude Code config
-│       ├── settings.json # Permissions, statusline, agent definitions
 │       ├── statusline.sh # Custom status line script
 │       ├── CLAUDE.md -> ../.ai/AGENTS.md
 │       ├── agents -> ../.ai/agents
@@ -49,8 +48,10 @@ dotfiles/
 
 ## Symlinks (`mise run dotfiles`)
 
-All configs live in `home/` and are symlinked into place from the `[dotfiles]`
-section of `mise.toml` — never edit files at their destination paths directly.
+Managed config sources live in `home/`. Most are symlinked into place from the
+`[dotfiles]` section of `mise.toml`; edit their sources, not destination paths.
+Claude and Codex settings are an exception: `mise run agent-settings` merges
+tracked preferences into real machine-local files to preserve app-written state.
 GNU Stow has been retired; `[dotfiles]` is **opt-in**, so a new config under
 `home/` does nothing until it also has an entry.
 
@@ -112,18 +113,20 @@ Notable aliases:
 
 ### How `home/.ai/` reaches each tool
 
-`home/.ai/` is the one source for everything agent-facing. Nothing reads it
-there — it fans out three different ways, and the mechanism differs per
-destination. This table is the map:
+`home/.ai/` is the source for shared agent instructions, skills, and settings
+manifests. Agents reach instructions and skills through the links below;
+`mise run agent-settings` reads the settings manifests directly.
 
 | Source | Destination | Mechanism | Consumer |
 |--------|-------------|-----------|----------|
 | `.ai/AGENTS.md` | `~/.claude/CLAUDE.md` | in-repo symlink, then `[dotfiles]` | Claude Code, every session |
-| `.ai/AGENTS.md` | `~/AGENTS.md` | `[dotfiles]` | Codex, Cursor, Amp |
+| `.ai/AGENTS.md` | `~/.codex/AGENTS.md` | `[dotfiles]` | Codex, every session |
+| `.ai/AGENTS.md` | `~/AGENTS.md` | `[dotfiles]` | Cursor, Amp |
 | `.ai/agents/` | `~/.claude/agents` | in-repo symlink | Claude Code subagents |
 | `.ai/commands/` | `~/.claude/commands` | in-repo symlink | Claude Code slash commands |
 | `.ai/skills/` | `~/.claude/skills` | in-repo symlink (whole dir) | Claude Code |
 | `.ai/skills/<tracked>` | `~/.codex/skills/<name>` | `mise run codex-skills` | Codex |
+| `.ai/skills/<tracked>` | `~/.pi/agent/skills/<name>` | `mise run pi-skills` | Pi |
 | `.ai/` | `~/.ai` | `[dotfiles]` | canonical path; nothing reads it today |
 
 Three things about this that are easy to get wrong:
@@ -138,8 +141,8 @@ repo — a link out to `~/.agents` or `~/.local` dangles on a fresh clone.
 **Claude Code and Codex see different skill sets, deliberately.** Claude gets
 the whole directory, including `skills/synced/` — the org/account sync, keyed by
 an `<org>_<user>` UUID, gitignored and re-fetchable, which Claude Code manages
-itself. Codex gets only the skills this repo *tracks*, because
-`mise run codex-skills` derives its list from `git ls-files`.
+itself. Codex and Pi get only the skills this repo *tracks*; their skill-link tasks
+derive the list from `git ls-files`.
 
 **Adding a skill is one edit:** a `!` line in `.gitignore`. That allowlist is the
 opt-in gate; nothing else needs updating, and `[tasks.bootstrap]` runs
@@ -160,7 +163,8 @@ from one file:
 | Destination | Via | Scope |
 |-------------|-----|-------|
 | `~/.claude/CLAUDE.md` | `home/.claude/CLAUDE.md -> ../.ai/AGENTS.md` | **every Claude Code session** |
-| `~/AGENTS.md` | `[dotfiles]` entry | Codex, Cursor, Amp — the AGENTS.md convention |
+| `~/.codex/AGENTS.md` | `[dotfiles]` entry | **every Codex session** |
+| `~/AGENTS.md` | `[dotfiles]` entry | Cursor, Amp — the AGENTS.md convention |
 
 `home/.ai/agents/*.md` are **subagents** — helpers invoked for a delegated task,
 not the session's own prompt. That distinction bit us: the Telegram
@@ -173,17 +177,42 @@ Rule of thumb: **every session → `AGENTS.md`; on demand → a skill; delegated
 task → `agents/`.** Anything long or situational belongs in a skill so it isn't
 in every context (the Telegram details are a skill for exactly this reason).
 
-`model` is deliberately **not** in the tracked `settings.json`. Claude Code
-renames models often enough that it was usually the only line changing, so it
-lives in `~/.claude/settings.local.json` — a real file beside the linked
-`settings.json` (which `mode = "symlink-each"` allows), already gitignored by
-`**/.claude/settings.local.json`. Cost: a new machine starts on the default
-model until you set it there once.
+### Agent settings and machine-local state
 
-**settings.json** defines:
-- Pre-allowed Bash commands: `go get/run/test`, `git checkout/tag`, `ls`, `find`, `grep`, `jq`, `gh api/run/repo`
-- Status line: runs `~/.claude/statusline.sh` (3-line display: model/cost/duration, context bar + git info, token breakdown)
-- Enabled plugins: `typescript-lsp`, `gopls-lsp`, `agent-deck`
+`home/.ai/settings/shared.json` defines managed Claude preferences and Codex
+config key paths. `grafana.json` and `personal.json` supply machine overrides,
+selected by the stamped `MISE_ENV`. These source files contain no credentials.
+
+`mise run agent-settings` merges them into real `~/.claude/settings.json` and
+`~/.codex/config.toml` files. These two destinations are deliberately not
+symlinked: Codex writes worktree trust and app settings, and both tools can
+change their own preferences. The task preserves unmanaged keys and backs up
+existing files under each tool's `dotfiles-backups/` directory before changes.
+It uses Codex's native `config/batchWrite` API with a version check, rather than
+parsing or rewriting TOML itself. It makes no model calls.
+
+- Shared settings cover permissions, status line, common plugins, Codex model
+  defaults, and Hive MCP endpoints. Manage these values in the source manifests;
+  local edits to managed keys are reset on the next converge.
+- Grafana enables Enghub, Airbud, and Slack. Personal disables those Claude
+  plugins and removes Codex's Airbud server and the Grafana marketplace entry.
+- Claude's `settings.local.json`, model choice, auth, and sessions remain local.
+  The setup task does not read or write `settings.local.json`.
+- Plannotator's existing plugin setting is retained. The handwritten
+  `diff-review`, `doc-review`, and `msg-review` skills remain available.
+- `CHECK=1 mise run agent-settings` reports drift without changing settings.
+  It runs from `mise run check`. Bootstrap and `mise run dotfiles` apply settings.
+- Legacy repo symlinks are copied into local files before changing any settings.
+  Back up app-edited legacy source files before pulling a revision that removes
+  them on another machine; Git may otherwise report those files as modified.
+
+Hive worktrees use bare repositories. Codex 0.164.0's trust resolver expects a
+normal main checkout when sharing trust across worktrees, so per-worktree trust
+entries are expected here. The setup task never prunes or broadens trust.
+
+Validate the migration and machine switching with
+`python3 -m unittest discover -s tasks -p 'agent_settings_test.py'`. The tests use
+the installed Codex app-server in temporary homes, without model calls.
 
 **.ai/AGENTS.md** standing instructions:
 - Communication: plain language, concrete explanations, and candid uncertainty
@@ -582,4 +611,7 @@ to authenticate and fetch secrets.
 - **[BACKUP.md](BACKUP.md)** - Pre-wipe checklist (Time Machine, projects tar, secrets push)
 - **[SETUP.md](SETUP.md)** - New machine setup guide
 
+## Pi
 
+See [home/.pi/README.md](home/.pi/README.md) for Pi setup and extension usage.
+Validate with `node --test tasks/pi-*.test.mts`.

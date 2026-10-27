@@ -21,8 +21,10 @@ min_version = "2026.10.9"
 [dotfiles]
 # Cross-harness agent instructions. The same file reaches Claude Code as
 # ~/.claude/CLAUDE.md (via the home/.claude/CLAUDE.md symlink) and everything
-# that follows the AGENTS.md convention (Codex, Cursor, Amp) as ~/AGENTS.md.
+# that follows the AGENTS.md convention as ~/AGENTS.md. Codex also needs its
+# documented global location; project discovery stops at the repository root.
 "~/AGENTS.md" = "home/.ai/AGENTS.md"
+"~/.codex/AGENTS.md" = "home/.ai/AGENTS.md"
 
 "~/.zshrc" = "home/.zshrc"
 "~/.gemrc" = "home/.gemrc"
@@ -42,8 +44,18 @@ min_version = "2026.10.9"
 # Per-file links — each of these directories holds live state we must not
 # shadow: Claude Code's sessions/cache/history, git's local `gitk`, gh's auth in
 # hosts.yml, mise's own miserc.toml, and ~/.local/bin's other binaries.
-"~/.claude" = { source = "home/.claude", mode = "symlink-each" }
-"~/.codex/config.toml" = "home/.codex/config.toml"
+# Settings mix preferences with app-written state; agent-settings converges them.
+"~/.claude" = { source = "home/.claude", mode = "symlink-each", exclude = ["settings.json"] }
+"~/.pi/agent/extensions/ci-watch" = "home/.pi/agent/extensions/ci-watch"
+"~/.pi/agent/extensions/footer" = "home/.pi/agent/extensions/footer"
+"~/.pi/agent/extensions/editor.ts" = "home/.pi/agent/extensions/editor.ts"
+"~/.pi/agent/extensions/ask-user-question.ts" = "home/.pi/agent/extensions/ask-user-question.ts"
+"~/.pi/agent/extensions/handoff.ts" = "home/.pi/agent/extensions/handoff.ts"
+"~/.pi/agent/extensions/skill-menu.ts" = "home/.pi/agent/extensions/skill-menu.ts"
+"~/.pi/agent/extensions/review" = "home/.pi/agent/extensions/review"
+"~/.pi/agent/agents/diff-reviewer.md" = "home/.pi/agent/agents/diff-reviewer.md"
+"~/.pi/agent/themes/codex.json" = "home/.pi/agent/themes/codex.json"
+"~/.pi/agent/themes/codex-light.json" = "home/.pi/agent/themes/codex-light.json"
 "~/.config/gh" = { source = "home/.config/gh", mode = "symlink-each" }
 "~/.config/git" = { source = "home/.config/git", mode = "symlink-each" }
 "~/.config/glow" = { source = "home/.config/glow", mode = "symlink-each" }
@@ -373,7 +385,12 @@ fi
 
 [tasks.dotfiles]
 description = "Deploy config symlinks from [dotfiles] (replaces GNU Stow)"
+depends_post = ["agent-settings"]
 run = "mise bootstrap --yes --only dotfiles"
+
+[tasks.agent-settings]
+description = "Merge shared and per-machine agent preferences into local settings (CHECK=1 reports drift)"
+run = "python3 tasks/agent-settings.py"
 
 [tasks.secrets-pull]
 description = "Fetch secrets from 1Password (with preview)"
@@ -450,6 +467,8 @@ echo
 mise bootstrap plan
 echo
 CHECK=1 mise run codex-skills
+CHECK=1 mise run pi-skills
+CHECK=1 mise run agent-settings
 """
 
 [tasks.macos-defaults]
@@ -541,69 +560,18 @@ echo "hive-link: linked $LINK -> $target"
 '''
 
 [tasks.codex-skills]
-# Codex reads skills from ~/.codex/skills; the in-repo home/.claude/skills
-# symlink only serves Claude Code. Derived from `git ls-files` rather than a
-# list here, because .gitignore's allowlist is already the opt-in gate for a
-# skill — a second registration would just be another place to forget, and
-# forgetting it fails silently. It also excludes home/.ai/skills/synced/ for
-# free: that is the untracked org/account sync, which is Claude's to manage.
-#
-# Links whole skill directories, not files. ~/.codex/skills must stay a real
-# directory: it holds live state (.system) and hand-made links into other repos
-# (paperclip), both of which this leaves alone.
-#
-# `CHECK=1` reports drift and changes nothing, which is how `mise run check`
-# covers these links — they are not `[dotfiles]` entries, so
-# `mise bootstrap dotfiles status` cannot see them.
-description = "Link repo-tracked skills into ~/.codex/skills (CHECK=1 to report only)"
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
+description = "Link tracked skills into Codex (CHECK=1 to report only)"
+run = "bash tasks/link-agent-skills.sh codex"
 
-CHECK="${CHECK:-}"
-SRC="$(git rev-parse --show-toplevel)/home/.ai/skills"
-DEST="$HOME/.codex/skills"
-[ -n "$CHECK" ] || mkdir -p "$DEST"
-[ -d "$DEST" ] || { echo "codex-skills: $DEST does not exist yet"; exit 0; }
+[tasks.pi-skills]
+description = "Link tracked skills into Pi (CHECK=1 to report only)"
+run = "bash tasks/link-agent-skills.sh pi"
 
-want="$(git ls-files 'home/.ai/skills/*/SKILL.md' | cut -d/ -f4 | sort -u)"
-[ -n "$want" ] || { echo "codex-skills: no tracked skills found; refusing to prune" >&2; exit 0; }
-
-linked=0
-for name in $want; do
-  target="$SRC/$name"
-  link="$DEST/$name"
-  [ -d "$target" ] || { echo "codex-skills: tracked but missing on disk: $name" >&2; continue; }
-  if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then continue; fi
-  if [ -e "$link" ] && [ ! -L "$link" ]; then
-    echo "codex-skills: $link exists and is not a symlink; leaving it" >&2; continue
-  fi
-  if [ -n "$CHECK" ]; then echo "  would link  $name"; else ln -sfn "$target" "$link"; echo "  linked $name"; fi
-  linked=$((linked + 1))
-done
-
-# Prune only links we own: ones pointing into SRC whose skill is no longer
-# tracked. Anything pointing elsewhere (paperclip) or not a symlink is left.
-pruned=0
-for link in "$DEST"/*; do
-  [ -L "$link" ] || continue
-  tgt="$(readlink "$link")"
-  case "$tgt" in "$SRC"/*) ;; *) continue ;; esac
-  name="$(basename "$link")"
-  printf '%s\n' $want | grep -qx "$name" && continue
-  if [ -n "$CHECK" ]; then echo "  would prune $name (no longer tracked)"; else rm "$link"; echo "  pruned $name"; fi
-  pruned=$((pruned + 1))
-done
-
-n=$(printf '%s\n' $want | wc -l | tr -d ' ')
-if [ -z "$CHECK" ]; then
-  echo "codex-skills: $n tracked, $linked linked, $pruned pruned"
-elif [ $((linked + pruned)) -eq 0 ]; then
-  echo "codex-skills: $n tracked, in sync"
-else
-  echo "codex-skills: $n tracked, DRIFT — $linked to link, $pruned to prune" >&2
-fi
-'''
+[tasks.pi-setup]
+description = "Converge Pi packages and Hive MCP, preserving local preferences"
+depends = ["pi-skills"]
+wait_for = ["install-scripts"]
+run = "mise exec -- go run tasks/pi-setup.go"
 
 [tasks.dirwatch-service]
 # `dirwatch install` copies the running binary to ~/.local/share/dirwatch/bin and
@@ -699,7 +667,7 @@ run = "mise self-update"
 # buried under other output and the converge hung waiting on an invisible
 # password. `raw` hands it the terminal directly.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "neovim-setup", "tmux-setup", "install-scripts"]
+depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "pi-setup", "agent-settings", "neovim-setup", "tmux-setup", "install-scripts"]
 run = "./install/macos"
 raw = true
 

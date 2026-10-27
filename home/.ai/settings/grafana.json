@@ -1,0 +1,22 @@
+{
+  "claude": {
+    "enabledPlugins": {
+      "grafana-enghub@grafana-ai-kit": true,
+      "grafana-airbud@grafana-ai-kit": true,
+      "slack@claude-plugins-official": true
+    },
+    "extraKnownMarketplaces": {
+      "grafana-ai-kit": {
+        "source": {
+          "source": "github",
+          "repo": "grafana/ai-kit"
+        }
+      }
+    }
+  },
+  "codex": {
+    "mcp_servers.airbud": {
+      "url": "https://airbud-mcp-prod-1000862261726.us-central1.run.app/mcp"
+    }
+  }
+}

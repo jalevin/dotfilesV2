@@ -6,12 +6,9 @@
 # ~/.config/mise is deployed with `symlink-each`, so only config.toml is linked
 # and a real miserc.toml can sit beside it.
 #
-# Overlay [bootstrap.packages] entries merge with the base. hive was this
-# file's only [dotfiles] entry; its configs now live in iCloud, reached by
-# [tasks.hive-link] rather than a symlink from this repo.
-
-# No [dotfiles] here: hive was the only per-machine config, and it now lives in
-# iCloud under hive/grafana/ (see [tasks.hive-link] in mise.toml).
+# Agent integrations use the same stamped MISE_ENV through
+# `mise run agent-settings`; sources live in home/.ai/settings/.
+# Hive configs live in iCloud, reached by [tasks.hive-link].
 
 # Work-only packages. gcloud is here rather than in the shared set because the
 # personal machine has no GKE clusters to authenticate against; it also drags in
