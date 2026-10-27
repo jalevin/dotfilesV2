@@ -8,15 +8,19 @@ backend = "aqua:crossplane/cli"
 specifiers = ["2.5.0"]
 
 [tools.crossplane."platforms.linux-arm64"]
+checksum = "sha256:2ae3bfe43206e47454c2634dace1427bd35794f616619e8f34ce23ce5b811dfd"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/linux_arm64/crossplane"
 
 [tools.crossplane."platforms.linux-arm64-musl"]
+checksum = "sha256:2ae3bfe43206e47454c2634dace1427bd35794f616619e8f34ce23ce5b811dfd"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/linux_arm64/crossplane"
 
 [tools.crossplane."platforms.linux-x64"]
+checksum = "sha256:065dd6b40c9ea5fc71e49900d5c924cc0bec7f58375922ddbde6b402f292347e"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/linux_amd64/crossplane"
 
 [tools.crossplane."platforms.linux-x64-musl"]
+checksum = "sha256:065dd6b40c9ea5fc71e49900d5c924cc0bec7f58375922ddbde6b402f292347e"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/linux_amd64/crossplane"
 
 [tools.crossplane."platforms.macos-arm64"]
@@ -24,9 +28,11 @@ checksum = "blake3:7aa866e8b2dc5b563e0800219a36b4843174668bad9513f6a10e8a99373fe
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/darwin_arm64/crossplane"
 
 [tools.crossplane."platforms.macos-x64"]
+checksum = "sha256:b7d5749caff9c467ec03376b03772aaee2135aaf55f970a8a8fcbc341daf1a42"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/darwin_amd64/crossplane"
 
 [tools.crossplane."platforms.windows-x64"]
+checksum = "sha256:a1de20a2a3375ded8aef59af573d4ed44aa68661a21100b64fe3ec59147299db"
 url = "https://cli.crossplane.io/stable/v2.5.0/bin/windows_amd64/crossplane.exe"
 
 [[tools.go-jsonnet]]
@@ -75,18 +81,22 @@ backend = "aqua:jsonnet-bundler/jsonnet-bundler"
 specifiers = ["0.6.0"]
 
 [tools.jsonnet-bundler."platforms.linux-arm64"]
+checksum = "sha256:19f2da64816137cd87a82dd963c752ff4b7c8701fc1ed7b979c356321dcf3f5a"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-linux-arm64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841763"
 
 [tools.jsonnet-bundler."platforms.linux-arm64-musl"]
+checksum = "sha256:19f2da64816137cd87a82dd963c752ff4b7c8701fc1ed7b979c356321dcf3f5a"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-linux-arm64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841763"
 
 [tools.jsonnet-bundler."platforms.linux-x64"]
+checksum = "sha256:78e54afbbc3ff3e0942b1576b4992277df4f6beb64cddd58528a76f0cd70db54"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-linux-amd64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841752"
 
 [tools.jsonnet-bundler."platforms.linux-x64-musl"]
+checksum = "sha256:78e54afbbc3ff3e0942b1576b4992277df4f6beb64cddd58528a76f0cd70db54"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-linux-amd64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841752"
 
@@ -96,10 +106,12 @@ url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841749"
 
 [tools.jsonnet-bundler."platforms.macos-x64"]
+checksum = "sha256:73262cfb5052d047044a8bbcf99ed1683bfb71e73f43042ab503c6fdfc9df054"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-darwin-amd64"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841744"
 
 [tools.jsonnet-bundler."platforms.windows-x64"]
+checksum = "sha256:6af1455edfc92db1ace049e251df50ac04fcde497df3b98e716caf2652555984"
 url = "https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v0.6.0/jb-windows-amd64.exe"
 url_api = "https://api.github.com/repos/jsonnet-bundler/jsonnet-bundler/releases/assets/187841767"
 
