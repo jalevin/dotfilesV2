@@ -417,6 +417,17 @@ unchanged`) until the receipt is dropped by hand. Today nothing is brew-owned �
 all 20 casks report to mise. Change packages through `mise update` /
 `mise bootstrap packages`, and the ownership split stays clean.
 
+**Post-install steps need mise ≥ 2026.10.9** (enforced by `min_version`).
+Older mise poured bottles without running a formula's `post_install_steps`, so
+ca-certificates never rebuilt `etc/ca-certificates/cert.pem` — Homebrew's
+openssl kept a months-old bundle that still trusted the emSign ECC Root CA - G3
+and AAA Certificate Services roots the formula now excludes. The step runs only
+at install time: `mise bootstrap packages apply` skips a keg that is already
+present, and there is no force flag. To re-run it, move the keg out of
+`Cellar/` and its `opt/` link away, then
+`mise bootstrap packages apply --yes brew:<formula>`. The rebuilt
+`cert.pem` should carry a fresh mtime.
+
 **`[bootstrap.brew] adopt = true`** lets mise take over an app already at the
 cask's destination instead of reinstalling it. It downloads the artifact to
 verify, then adopts the existing bundle in place — so no bundle replacement and

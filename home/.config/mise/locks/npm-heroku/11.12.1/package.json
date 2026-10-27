@@ -2,6 +2,6 @@
   "name": "mise-npm-install",
   "private": true,
   "dependencies": {
-    "heroku": "11.10.0"
+    "heroku": "11.12.1"
   }
 }
