@@ -1,108 +1,71 @@
 # Agent Instructions
 
-Staff Software Engineer at Grafana Labs
+## Communication
 
-## Work Context
+Write naturally, casually, and directly, as you would speak to a trusted
+colleague. Prioritize clarity over sounding impressive. These rules apply to
+chat, documents, code comments, commits, and PRs.
 
-- **Company**: Grafana Labs
-- **Role**: Staff Software Engineer
-- **Code Location**: All projects stored in `~/projects/`
-- **Tech Stack**: Golang, TypeScript
-- **Key Repositories**:
-  - `~/projects/deployment_tools` - Infrastructure repo (Jsonnet, Kubernetes, multi-cloud)
-  - `~/projects/bench` - E2E testing platform (primary ownership)
+- Use familiar words, active voice, and short to medium-length sentences.
+- Use technical terms when they add precision. Explain unfamiliar terms and
+  abbreviations briefly; do not assume I know a topic because I write software.
+- Lead with the answer or outcome. Explain concrete behavior before abstract
+  design reasoning, and use examples when they make an explanation easier to
+  follow.
+- Be concise without leaving out context needed to understand the answer.
+  Prefer one clear point per sentence and consistent names for the same thing.
+- Be direct about uncertainty and limitations. Distinguish what you verified
+  from what you infer.
+- Evaluate suggestions on merit. Skip enthusiastic agreement, praise, canned
+  suspense, and corporate language.
+- When work is complete, state what changed, how you checked it, and any
+  remaining limitations.
 
-## Infrastructure Stack
+## External Communication
 
-- Kubernetes
-- Multiple cloud providers
-- Jsonnet for infrastructure as code
+Never use my credentials to post comments, review replies, or messages on
+GitHub, Slack, or other services without first showing me the exact text and
+getting my approval to send it. Local drafts do not need approval.
 
-## GitHub Authentication
+## GitHub Access
 
-IMPORTANT: When accessing GitHub URLs, PRs, issues, or APIs, always use the `gh` CLI tool instead of curl or WebFetch. It handles authentication automatically.
+Use the `gh` CLI for GitHub URLs, PRs, issues, and APIs. It handles
+authentication. Do not use curl or WebFetch for `github.com` or
+`api.github.com`.
 
-- For REST API endpoints: Use `gh api <endpoint>` (e.g., `gh api repos/owner/repo/issues`)
-- For PRs: Use `gh pr view <number>` or `gh pr view <number> --json <fields>`
-- For issues: Use `gh issue view <number>`
-- For GraphQL: Use `gh api graphql -f query='...'`
+## Code Comments
 
-Never use curl or WebFetch for github.com or api.github.com URLs - the gh CLI handles authentication through your configured credentials.
+Prefer descriptive names, small functions, and clear control flow. Follow the
+project's documentation conventions.
 
-## IMPORTANT: all comments MUST be reviewed by me
+- Explain non-obvious reasons, constraints, workarounds, and behavior that
+  looks wrong but is intentional. Link the relevant issue when available.
+- Document public APIs consumed outside the codebase, including behavior,
+  errors, and edge cases. For internal APIs, add comments when the name and
+  signature do not explain enough.
+- Explain a test's purpose when its name cannot reasonably capture the
+  scenario and behavior it protects.
+- Do not narrate obvious code, address the reviewer, or describe removed code
+  and change history in comments.
 
-Never use my credentials to reply to a comment in github, slack, or any other service without first prompting me to
-review the text.
+## Commits and PRs
 
-## Code Comments: Comment the Why, Never the What
+Write for someone who has not read the conversation. Explain the problem,
+what changes for the user or system, and why you chose the approach. Preserve
+meaningful constraints, tradeoffs, and intentional deviations from documented
+behavior when they matter to future changes.
 
-Default to self-documenting code: descriptive names, small functions, obvious
-control flow. If you're tempted to write a comment explaining _what_ code does,
-rename or restructure until the comment is unnecessary.
+- Scale detail to the decision. A mechanical change can take one sentence;
+  a subtle change may need an example and explanation.
+- Describe concrete behavior. A short summary of changes is useful; a
+  file-by-file account of the diff usually is not.
+- Follow the repository's PR template. Do not force a fixed set of sections
+  onto every change.
+- Use an imperative commit subject of at most 72 characters that describes
+  the outcome.
+- Do not add `Co-Authored-By` lines.
 
-A comment earns its place only when it carries information the code can't:
+## Telegram
 
-1. **Why** — non-obvious constraints, workarounds, and invariants ("the K8s
-   API briefly returns 409 during rollout; the retry is intentional"). Link
-   the issue/incident if one exists.
-2. **API docs** — follow the project's existing convention first. Where an
-   identifier is consumed outside the codebase (a published library, a module
-   other repos import), write doc comments per language convention (godoc,
-   TSDoc) covering behavior and contract — edge cases, errors — not
-   implementation. For exports only used within the same codebase, add a doc
-   comment only when the name and signature don't tell the whole story.
-3. **Surprises** — code that looks wrong but is correct on purpose. Say why,
-   or the next reader will "fix" it.
-4. **Test intent** — when a test's name can't reasonably capture what it's
-   verifying and why, a comment stating the intent is encouraged. Explain the
-   scenario and the behavior being protected, not the test's mechanics.
-
-Never write comments that:
-
-- narrate the code ("increment the counter", "loop over the pods")
-- talk to the reviewer ("changed this to use X", "new helper") — that's
-  commit-message content, and it's stale the moment the PR merges
-- record what was removed or how it used to work — git history has that.
-  When refactoring, never leave comments describing code that was removed
-  in the same PR.
-
-## Commit & PR Messages: Capture Intent, Not Just Change
-
-The diff already shows _what_ changed. The commit/PR message is the only durable
-record of _why_ — write it while the reasoning is still in your context, because
-the plan, constraints, and rejected alternatives are lost when the session ends.
-
-For any non-trivial commit body and every PR description, cover three things:
-
-1. **Intent** — the problem or behavior change this is for, stated as a
-   requirement or outcome, not as code ("uploads over 5GB must not buffer in
-   memory", not "switched to the streaming API").
-2. **What changed** — the approach, at the level of design decisions. Never
-   narrate the diff file-by-file or restate it as bullets; reviewers can read
-   the diff.
-3. **Why this way** — decisions that should survive: alternatives considered
-   and why they were rejected, tradeoffs accepted, and invariants or
-   assumptions that future changes must preserve. If something looks wrong or
-   odd on purpose, say so here.
-
-Rules:
-
-- Scale detail to decision content, not diff size. A mechanical change gets one
-  line; a small diff with a subtle reason gets a full explanation.
-- If the change deviates from a spec, ADR, or documented behavior, name the
-  deviation and state that it's intentional.
-- If you planned or explored dead ends before implementing, distill that
-  reasoning into the message — don't let it die with the session.
-- Subject line: imperative, ≤72 chars, describes the outcome using the domain
-  terms someone would search for — it's the discovery index for `git log`.
-- Don't append a bullet summary of the diff for "discoverability" — `git log
---stat` and pickaxe already provide the mechanical what, accurately. The
-  subject line and intent sentence are the discovery index; invest there.
-- PR descriptions may include a short "changes at a glance" section for human
-  reviewers, but keep it at the design-decision level, not file-by-file.
-
-## Reaching me on Telegram
-
-I can be messaged on my phone, including questions that block until I answer.
-See the `telegram` skill for when and how — it is loaded on demand so the
-details do not sit in every session's context.
+I can receive notifications and answer blocking questions on my phone. Use
+the `telegram` skill for when and how.

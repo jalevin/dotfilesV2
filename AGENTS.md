@@ -186,9 +186,10 @@ model until you set it there once.
 - Enabled plugins: `typescript-lsp`, `gopls-lsp`, `agent-deck`
 
 **.ai/AGENTS.md** standing instructions:
-- Role: Staff Software Engineer at Grafana Labs
-- Primary repos: `~/projects/deployment_tools` (Jsonnet/K8s infra), `~/projects/bench` (E2E testing)
-- Tech stack: Golang, TypeScript, Kubernetes, Jsonnet
+- Communication: plain language, concrete explanations, and candid uncertainty
+- External communication: show exact text and get approval before posting comments or messages
+- Code comments: preserve useful rationale and contracts; avoid narration
+- Commits and PRs: explain the problem, behavior change, and reasoning at a suitable length
 - GitHub access: always use `gh` CLI, never `curl`/WebFetch for GitHub URLs
 - Commit style: no `Co-Authored-By` lines
 
