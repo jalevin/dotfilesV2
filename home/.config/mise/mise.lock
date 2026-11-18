@@ -226,6 +226,46 @@ checksum = "sha256:6a802fd2cdd9155ffcd7335dcca47d802cd8b5ceb68c751dd718e396272aa
 url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Windows_x86_64.zip"
 url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979816"
 
+[[tools."github:hay-kot/svx"]]
+version = "0.6.0"
+backend = "github:hay-kot/svx"
+specifiers = ["0.6.0"]
+
+[tools."github:hay-kot/svx"."platforms.linux-arm64"]
+checksum = "sha256:69c45bdf384ee5157677d3c830a101d862f6918f101bc440e0ac1df3e7db3701"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337945"
+
+[tools."github:hay-kot/svx"."platforms.linux-arm64-musl"]
+checksum = "sha256:69c45bdf384ee5157677d3c830a101d862f6918f101bc440e0ac1df3e7db3701"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337945"
+
+[tools."github:hay-kot/svx"."platforms.linux-x64"]
+checksum = "sha256:be270903eafa08f5fc2be4835caeeeca6cd04b56f45dec727bc3c97a2f863303"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337947"
+
+[tools."github:hay-kot/svx"."platforms.linux-x64-musl"]
+checksum = "sha256:be270903eafa08f5fc2be4835caeeeca6cd04b56f45dec727bc3c97a2f863303"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337947"
+
+[tools."github:hay-kot/svx"."platforms.macos-arm64"]
+checksum = "sha256:6a60108b8a6c334216ac9d8ded50be2a433d7e49c0a23d373b499e774aae5636"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337982"
+
+[tools."github:hay-kot/svx"."platforms.macos-x64"]
+checksum = "sha256:bef33c0a9054ec34d12f0be8d4c16aa70d8d6062f60abc10aecc34271ab764b6"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337946"
+
 [[tools.go]]
 version = "1.27.1"
 backend = "core:go"

@@ -45,6 +45,8 @@ hive = { version = "0.70.0", minimum_release_age = "0s" }
 # Watches ~/Downloads and converts HEIC to JPEG; runs as a LaunchAgent via
 # `mise run dirwatch-service`. Config: home/.config/dirwatch/dirwatch.yml.
 "github:hay-kot/dirwatch" = "0.1.1"
+# Runs a repo's dev services as tmux windows, one stack per checkout.
+"github:hay-kot/svx" = "0.6.0"
 "github:googleworkspace/cli" = "0.22.5"
 # `latest` resolves to prereleases here (0.27.0.beta5), so pin the stable line.
 "gem:ruby-lsp" = "0.26.11"
