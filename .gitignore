@@ -75,3 +75,6 @@ home/.ai/skills/*
 !home/.ai/skills/research/
 !home/.ai/skills/review/
 !home/.ai/skills/wrap/
+
+# Python bytecode from running task tests
+__pycache__/

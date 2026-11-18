@@ -56,6 +56,10 @@ def detach(path, expected_source, check):
         return False
     if path.resolve() != expected_source.resolve():
         raise RuntimeError('Refusing to replace an unmanaged symlink: ' + str(path))
+    if not path.exists():
+        if not check:
+            path.unlink()
+        return True
     content = path.read_bytes()
     if not check:
         backup(path, content)
