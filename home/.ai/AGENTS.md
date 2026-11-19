@@ -65,6 +65,13 @@ behavior when they matter to future changes.
   the outcome.
 - Do not add `Co-Authored-By` lines.
 
+## PR Follow-Up
+
+After creating a PR or pushing commits to an open PR, automatically run the
+`babysit-pr` skill in the current session. Continue until the latest head is
+green or needs my decision or external intervention. If already babysitting,
+continue the existing loop. Skip when I explicitly ask to push only.
+
 ## Telegram
 
 I can receive notifications and answer blocking questions on my phone. Use

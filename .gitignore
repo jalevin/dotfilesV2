@@ -52,6 +52,7 @@ home/.config/op/
 # sync or a tool's own installer, and are re-fetchable rather than managed
 # here. Add an exception per skill as it's ready to be checked in.
 home/.ai/skills/*
+!home/.ai/skills/babysit-pr/
 !home/.ai/skills/cleanup-comments/
 !home/.ai/skills/collab-plan/
 !home/.ai/skills/daily-prep/
