@@ -83,7 +83,7 @@ export function renderFooter(width: number, data: FooterDetails, theme: FooterTh
   return " ".repeat(padding) + truncateToWidth(line, available) + " ".repeat(padding);
 }
 
-export default function footer(pi: ExtensionAPI) {
+export default function statusline(pi: ExtensionAPI) {
   pi.on("session_start", (_event, ctx) => {
     if (ctx.mode !== "tui") return;
     ctx.ui.setFooter((tui, _theme, footerData) => {

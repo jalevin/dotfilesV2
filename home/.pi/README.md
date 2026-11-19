@@ -156,9 +156,9 @@ Validate with `node --test tasks/pi-ci-watch.test.mts` (Node 24's native TypeScr
 support; no additional npm dependencies). Pi loads the extension's TypeScript with
 its own loader. GitHub access uses `gh`; no Claude-specific script paths are used.
 
-## Footer
+## Status line
 
-`home/.pi/agent/extensions/footer/` replaces Pi's interactive footer with one line:
+`home/.pi/agent/extensions/statusline/` replaces Pi's interactive footer with one line:
 model/effort, context used/limit/percentage, branch, working directory, and estimated
 session cost, all aligned left. Theme colors distinguish the fields; context turns
 amber at 70% and red at 90%. Unknown usage after compaction stays `?`. Narrow panes
@@ -167,4 +167,4 @@ tool usage, and is an estimate rather than a subscription bill.
 The CI widget remains separate, and other extensions' status messages are retained.
 
 Deploy its individual mise entry and run `/reload` in Pi. Validate layout and lifecycle
-with `node --test tasks/pi-footer.test.mts`; these tests use the installed Pi runtime.
+with `node --test tasks/pi-statusline.test.mts`; these tests use the installed Pi runtime.

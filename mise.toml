@@ -49,7 +49,7 @@ min_version = "2026.10.21"
 # Settings mix preferences with app-written state; agent-settings converges them.
 "~/.claude" = { source = "home/.claude", mode = "symlink-each", exclude = ["settings.json"] }
 "~/.pi/agent/extensions/ci-watch" = "home/.pi/agent/extensions/ci-watch"
-"~/.pi/agent/extensions/footer" = "home/.pi/agent/extensions/footer"
+"~/.pi/agent/extensions/statusline" = "home/.pi/agent/extensions/statusline"
 "~/.pi/agent/extensions/editor.ts" = "home/.pi/agent/extensions/editor.ts"
 "~/.pi/agent/extensions/ask-user-question.ts" = "home/.pi/agent/extensions/ask-user-question.ts"
 "~/.pi/agent/extensions/handoff.ts" = "home/.pi/agent/extensions/handoff.ts"

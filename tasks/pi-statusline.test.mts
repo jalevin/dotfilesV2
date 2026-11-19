@@ -19,8 +19,8 @@ const codexTheme = themeApi.loadThemeFromPath(themePath, "truecolor");
 const jiti = createJiti(import.meta.url, { alias: {
   "@earendil-works/pi-tui": join(modules, "@earendil-works/pi-tui/dist/index.js"),
 } });
-const { default: footer, renderFooter, directoryLabel, estimatedSessionCost } = await jiti.import(
-  new URL("../home/.pi/agent/extensions/footer/index.ts", import.meta.url).pathname,
+const { default: statusline, renderFooter, directoryLabel, estimatedSessionCost } = await jiti.import(
+  new URL("../home/.pi/agent/extensions/statusline/index.ts", import.meta.url).pathname,
 );
 const theme = { colors: codexTheme.colors, fg: (_color: string, text: string) => text,
   style: (text: string) => text };
@@ -103,7 +103,7 @@ test("home abbreviation respects directory boundaries and strips control sequenc
 });
 test("footer reads current model and retains extension statuses; branch watcher is disposed", () => {
   let start: any, factory: any, disposed = false, rendered = false, branchChanged: any;
-  footer({ on: (_event: string, callback: any) => start = callback, getThinkingLevel: () => "high" });
+  statusline({ on: (_event: string, callback: any) => start = callback, getThinkingLevel: () => "high" });
   const ctx: any = { mode: "tui", model: { id: "model-one", contextWindow: 200000 },
     sessionManager: { getCwd: () => details.cwd, getSessionId: () => "session", getLeafId: () => "leaf", getEntries: () => [] },
     getContextUsage: () => details.usage,
