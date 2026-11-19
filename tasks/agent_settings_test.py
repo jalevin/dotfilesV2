@@ -88,6 +88,33 @@ customPreference = true
             with self.assertRaises(RuntimeError):
                 settings.detach(other, root / 'unmanaged.json', check=False)
 
+    def test_claude_migration_recovers_missing_legacy_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            target = home / '.claude/settings.json'
+            target.parent.mkdir()
+            target.symlink_to(ROOT / 'home/.claude/settings.json')
+            desired = {'attribution': {'commit': '', 'pr': ''}}
+            self.assertEqual(settings.configure_claude(home, desired, check=True), 1)
+            self.assertTrue(target.is_symlink())
+            settings.configure_claude(home, desired, check=False)
+            self.assertFalse(target.is_symlink())
+            self.assertEqual(json.loads(target.read_text()), desired)
+            self.assertEqual(settings.configure_claude(home, desired, check=True), 0)
+
+    def test_claude_managed_preferences_preserve_selected_model(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            target = home / '.claude/settings.json'
+            target.parent.mkdir()
+            target.write_text('{"model":"my-selected-model"}')
+            shared = json.loads((ROOT / 'home/.ai/settings/shared.json').read_text())
+            self.assertNotIn('model', shared['claude'])
+            settings.configure_claude(home, shared['claude'], check=False)
+            current = json.loads(target.read_text())
+            self.assertEqual(current['model'], 'my-selected-model')
+            self.assertEqual(current['attribution'], shared['claude']['attribution'])
+
 
 if __name__ == '__main__':
     unittest.main()

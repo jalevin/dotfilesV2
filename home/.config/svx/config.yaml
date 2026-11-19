@@ -1,0 +1,15 @@
+# svx user config, deployed to ~/.config/svx/config.yaml.
+# Each repo's services live in its own svx.yaml; this file only holds
+# machine-wide settings. svx keeps its state in ~/.local/state/svx, not here.
+
+log_level: info
+
+menubar:
+  enabled: true
+
+# svx.yaml files for repos that don't ship their own. Keys match the checkout
+# by full path, directory name, or glob (longest glob wins). Relative values
+# resolve against this directory, so keep them in projects/ beside this file:
+#   shop: projects/shop.yaml
+#   '~/projects/grafana/*': projects/grafana.yaml
+projects: {}

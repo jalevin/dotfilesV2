@@ -55,53 +55,53 @@ backend = "gem:ruby-lsp"
 specifiers = ["0.26.11"]
 
 [[tools."github:backnotprop/plannotator"]]
-version = "0.27.15"
+version = "0.28.65"
 backend = "github:backnotprop/plannotator"
-specifiers = ["0.27.15"]
+specifiers = ["0.28.65"]
 
 [tools."github:backnotprop/plannotator".options]
 matching = "plannotator-"
 
 [tools."github:backnotprop/plannotator"."platforms.linux-arm64"]
-checksum = "sha256:186b4feec9c47fff2038a0ceaf0634f4bf6ce24f6ab6d780c3ef422c24b4d40f"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-linux-arm64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100473"
+checksum = "sha256:86e7be71a7d7948d355ed3e0856f2d218b6e7b5701196048c5c3fe132633a900"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-linux-arm64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214801"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.linux-arm64-musl"]
-checksum = "sha256:186b4feec9c47fff2038a0ceaf0634f4bf6ce24f6ab6d780c3ef422c24b4d40f"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-linux-arm64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100473"
+checksum = "sha256:86e7be71a7d7948d355ed3e0856f2d218b6e7b5701196048c5c3fe132633a900"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-linux-arm64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214801"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.linux-x64"]
-checksum = "sha256:efdb33f4e0aa14d66e7f0358773a11cc46f5b5fc225709d6eac4d9e8d965a355"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-linux-x64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100466"
+checksum = "sha256:d08f2934126f1f71b2b5be4ca12653c03245a8697cd5b0a792f79b6a6dca13ad"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-linux-x64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214817"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.linux-x64-musl"]
-checksum = "sha256:efdb33f4e0aa14d66e7f0358773a11cc46f5b5fc225709d6eac4d9e8d965a355"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-linux-x64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100466"
+checksum = "sha256:d08f2934126f1f71b2b5be4ca12653c03245a8697cd5b0a792f79b6a6dca13ad"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-linux-x64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214817"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.macos-arm64"]
-checksum = "sha256:f33e114451fd196bffc46aa217492fc724fe15828ce86007609cfebc08ad5304"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-darwin-arm64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100470"
+checksum = "sha256:10d9837a6ea94ef46bbc991005d5a659c64c81bfd0607c10c00353ac2e0956ee"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-darwin-arm64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214798"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.macos-x64"]
-checksum = "sha256:f06092f0e316ade7d115e634e9daecc094325344fe77419619340a1869aec248"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-darwin-x64"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100459"
+checksum = "sha256:bbf070b6aa564c3ac3d9b9cdd8fede8ff2d4efd6727b39aaea72c73064584cc7"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-darwin-x64.tar.xz"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214807"
 provenance = "github-attestations"
 
 [tools."github:backnotprop/plannotator"."platforms.windows-x64"]
-checksum = "sha256:abccafefe8958df5eae4bdf8349571bdc37598410136ed21536f91bb32dfe69d"
-url = "https://github.com/backnotprop/plannotator/releases/download/v0.27.15/plannotator-win32-x64.exe"
-url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/566100447"
+checksum = "sha256:c8a064d5fedd2db770fb401a6896a960c8332f0479fd64eade055234e982884b"
+url = "https://github.com/backnotprop/plannotator/releases/download/v0.28.65/plannotator-win32-x64.exe"
+url_api = "https://api.github.com/repos/backnotprop/plannotator/releases/assets/749214824"
 provenance = "github-attestations"
 
 [[tools."github:googleworkspace/cli"]]
@@ -226,6 +226,46 @@ checksum = "sha256:6a802fd2cdd9155ffcd7335dcca47d802cd8b5ceb68c751dd718e396272aa
 url = "https://github.com/hay-kot/mi/releases/download/v0.4.0/mi_Windows_x86_64.zip"
 url_api = "https://api.github.com/repos/hay-kot/mi/releases/assets/385979816"
 
+[[tools."github:hay-kot/svx"]]
+version = "0.6.0"
+backend = "github:hay-kot/svx"
+specifiers = ["0.6.0"]
+
+[tools."github:hay-kot/svx"."platforms.linux-arm64"]
+checksum = "sha256:69c45bdf384ee5157677d3c830a101d862f6918f101bc440e0ac1df3e7db3701"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337945"
+
+[tools."github:hay-kot/svx"."platforms.linux-arm64-musl"]
+checksum = "sha256:69c45bdf384ee5157677d3c830a101d862f6918f101bc440e0ac1df3e7db3701"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337945"
+
+[tools."github:hay-kot/svx"."platforms.linux-x64"]
+checksum = "sha256:be270903eafa08f5fc2be4835caeeeca6cd04b56f45dec727bc3c97a2f863303"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337947"
+
+[tools."github:hay-kot/svx"."platforms.linux-x64-musl"]
+checksum = "sha256:be270903eafa08f5fc2be4835caeeeca6cd04b56f45dec727bc3c97a2f863303"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337947"
+
+[tools."github:hay-kot/svx"."platforms.macos-arm64"]
+checksum = "sha256:6a60108b8a6c334216ac9d8ded50be2a433d7e49c0a23d373b499e774aae5636"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337982"
+
+[tools."github:hay-kot/svx"."platforms.macos-x64"]
+checksum = "sha256:bef33c0a9054ec34d12f0be8d4c16aa70d8d6062f60abc10aecc34271ab764b6"
+checksum_source = "mise-versions"
+url = "https://github.com/hay-kot/svx/releases/download/v0.6.0/svx_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/hay-kot/svx/releases/assets/694337946"
+
 [[tools.go]]
 version = "1.27.1"
 backend = "core:go"
@@ -260,39 +300,44 @@ checksum = "sha256:a3911b5e0e1b1053f25ed0675f4c1c6aad1e2bfcf253df2b9be4caabd2edd
 url = "https://dl.google.com/go/go1.27.1.windows-amd64.zip"
 
 [[tools.hive]]
-version = "0.61.0"
+version = "0.70.0"
 backend = "github:colonyops/hive"
-specifiers = ["0.61.0"]
+specifiers = ["0.70.0"]
 
 [tools.hive."platforms.linux-arm64"]
-checksum = "sha256:39d9e9b1b41b08770961d800313c6c344510056bf07d993b8a542f98cce35725"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947721"
+checksum = "sha256:a94e7a26ff4957afefcb913e6d7aee470afd6086d38598270897621b7010c282"
+checksum_source = "mise-versions"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262365"
 
 [tools.hive."platforms.linux-arm64-musl"]
-checksum = "sha256:39d9e9b1b41b08770961d800313c6c344510056bf07d993b8a542f98cce35725"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947721"
+checksum = "sha256:a94e7a26ff4957afefcb913e6d7aee470afd6086d38598270897621b7010c282"
+checksum_source = "mise-versions"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262365"
 
 [tools.hive."platforms.linux-x64"]
-checksum = "sha256:9f55f1c3ed0fd0ec9f29f34664d155c1daa3fc198ae81609bf132865c863fe5d"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947717"
+checksum = "sha256:3692b9b786ee9d1db83eb06b8efabce832df41340bccde6aff2a003d89c73c18"
+checksum_source = "mise-versions"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262364"
 
 [tools.hive."platforms.linux-x64-musl"]
-checksum = "sha256:9f55f1c3ed0fd0ec9f29f34664d155c1daa3fc198ae81609bf132865c863fe5d"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947717"
+checksum = "sha256:3692b9b786ee9d1db83eb06b8efabce832df41340bccde6aff2a003d89c73c18"
+checksum_source = "mise-versions"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262364"
 
 [tools.hive."platforms.macos-arm64"]
-checksum = "sha256:92459116095b6151b58b748f221f6bd93d1331cec6614f53353c3335bbc237ed"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947746"
+checksum = "sha256:d6ccaa34c891264ef6a72b7af0ef440e0b6462f461392a52eab20c5335d76af7"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262366"
 
 [tools.hive."platforms.macos-x64"]
-checksum = "sha256:2f21411513fb55b4372fd87dd292cb969e7e8aa1592c68bb6a09bc420361e58f"
-url = "https://github.com/colonyops/hive/releases/download/v0.61.0/hive_Darwin_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/616947720"
+checksum = "sha256:044650213b21ffc4f553b5bab4ff89eb3ff0bcf47c31397d1355a3d6b223c483"
+checksum_source = "mise-versions"
+url = "https://github.com/colonyops/hive/releases/download/v0.70.0/hive_Darwin_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/colonyops/hive/releases/assets/711262362"
 
 [[tools.node]]
 version = "24.15.0"

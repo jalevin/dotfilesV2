@@ -40,6 +40,7 @@ min_version = "2026.10.21"
 "~/.config/k9s" = "home/.config/k9s"
 "~/.config/nvim" = "home/.config/nvim"
 "~/.config/ripgrep" = "home/.config/ripgrep"
+"~/.config/svx" = "home/.config/svx"
 "~/.config/tmux" = "home/.config/tmux"
 
 # Per-file links — each of these directories holds live state we must not
@@ -593,6 +594,13 @@ run = "mise exec -- go run tasks/pi-setup.go"
 description = "Install/refresh the dirwatch LaunchAgent (HEIC -> JPEG in ~/Downloads)"
 run = "dirwatch install"
 
+[tasks.svx-menubar]
+# `svx bar --install` writes a LaunchAgent pinned to the versioned mise install
+# path (…/github-hay-kot-svx/<version>/svx) and snapshots PATH at install time,
+# so a version bump leaves the menu bar on the old binary until this runs again.
+description = "Install/refresh the svx menu bar LaunchAgent"
+run = "svx bar --install"
+
 [tasks.icloud-check]
 # Fails hard: hive's config and Jump Desktop are read from iCloud Drive, so a
 # machine without it converges into a half-working state. This checks iCloud
@@ -680,7 +688,7 @@ run = "mise self-update"
 # buried under other output and the converge hung waiting on an invisible
 # password. `raw` hands it the terminal directly.
 description = "Imperative setup remainder (mise bootstrap's final step)"
-depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "hive-link", "codex-skills", "pi-setup", "agent-settings", "neovim-setup", "tmux-setup", "install-scripts"]
+depends = ["fonts", "go-link", "icloud-check", "dirwatch-service", "svx-menubar", "hive-link", "codex-skills", "pi-setup", "agent-settings", "neovim-setup", "tmux-setup", "install-scripts"]
 run = "./install/macos"
 raw = true
 
