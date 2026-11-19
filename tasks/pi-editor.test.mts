@@ -57,17 +57,17 @@ test("app actions and submission continue through the native CustomEditor",()=>{
 });
 test("autocomplete remains outside the filled box and keeps its native behavior",async()=>{
  const editor=create();editor.setAutocompleteProvider({
-  triggerCharacters:["$"],getSuggestions:async()=>({prefix:"$",items:[{value:"$review",label:"$review"},{value:"$research",label:"$research"}]}),
-  applyCompletion:()=>({lines:["$review "],cursorLine:0,cursorCol:8}),
+  triggerCharacters:["$"],getSuggestions:async()=>({prefix:"$",items:[{value:"$pr-review",label:"$pr-review"},{value:"$research",label:"$research"}]}),
+  applyCompletion:()=>({lines:["$pr-review "],cursorLine:0,cursorCol:11}),
  });
  editor.setText("$");editor.handleInput("\t");
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(editor.isShowingAutocomplete(),true);
  const lines=editor.render(100),plain=lines.map(tui.stripTerminalSequences);
- assert.ok(plain.some((line:string)=>line.includes("$review")));
- const menuLine=lines.find((line:string)=>tui.stripTerminalSequences(line).includes("$review"));
+ assert.ok(plain.some((line:string)=>line.includes("$pr-review")));
+ const menuLine=lines.find((line:string)=>tui.stripTerminalSequences(line).includes("$pr-review"));
  assert.equal(menuLine.includes("\x1b[48;2;59;59;59m"),false);
- editor.handleInput("\t");assert.equal(editor.getText(),"$review ");
+ editor.handleInput("\t");assert.equal(editor.getText(),"$pr-review ");
 });
 test("extension installs only for the TUI and restores the default on shutdown",()=>{
  const events=new Map<string,any>();let installed:any;

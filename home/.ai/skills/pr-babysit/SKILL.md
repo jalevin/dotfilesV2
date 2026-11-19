@@ -1,5 +1,5 @@
 ---
-name: babysit-pr
+name: pr-babysit
 description: Monitor a GitHub PR's CI and review feedback, fix actionable failures and comments, commit and push updates, and surface decisions that need the user. Use when asked to babysit a PR, get its CI green, or keep addressing review feedback through verification. Does not merge the PR.
 ---
 
@@ -49,7 +49,7 @@ enough to claim all tests passed. Distinguish tests from deployments and other
 checks needing separate authority.
 
 Keep a small, local progress record outside tracked source, for example under
-`git rev-parse --git-path babysit-pr`. Record the PR URL, head SHA, CI runs and
+`git rev-parse --git-path pr-babysit`. Record the PR URL, head SHA, CI runs and
 attempts, comment IDs/updated timestamps, dispositions, fix commits, validations
 and pending decisions. Use it to avoid duplicate work after a restart, but
 refresh GitHub before trusting it.

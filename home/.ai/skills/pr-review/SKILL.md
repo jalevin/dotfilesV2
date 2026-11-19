@@ -1,5 +1,5 @@
 ---
-name: review
+name: pr-review
 description: >
   Single-pass code review of the current branch (or a diff) that routes the changes
   to relevant concerns, dispatches fresh-context reviewer sub-agents, verifies findings
@@ -9,7 +9,7 @@ description: >
 argument-hint: "[PR URL or base-branch]"
 ---
 
-# Code Review
+# PR Review
 
 One orchestrated review that favors **signal over volume**. The goal is a short list of
 findings a human reviewer will trust — not an exhaustive dump. A review that flags thirty

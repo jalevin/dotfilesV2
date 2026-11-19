@@ -21,26 +21,26 @@ function api(){
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
 test("dollar skills expand through the native skill command and preserve arguments",()=>{
- const skills=[{name:"review"}];
- assert.equal(menu.expandDollarSkill("$review https://github.com/acme/app/pull/2",skills),"/skill:review https://github.com/acme/app/pull/2");
- assert.equal(menu.expandDollarSkill("$review\nlook at auth",skills),"/skill:review look at auth");
- for(const literal of ["$HOME","$unknown","echo $review","price is $42"])assert.equal(menu.expandDollarSkill(literal,skills),undefined);
+ const skills=[{name:"pr-review"}];
+ assert.equal(menu.expandDollarSkill("$pr-review https://github.com/acme/app/pull/2",skills),"/skill:pr-review https://github.com/acme/app/pull/2");
+ assert.equal(menu.expandDollarSkill("$pr-review\nlook at auth",skills),"/skill:pr-review look at auth");
+ for(const literal of ["$HOME","$unknown","echo $pr-review","price is $42"])assert.equal(menu.expandDollarSkill(literal,skills),undefined);
 });
 test("dollar menu filters discovered skills and preserves existing completion providers",async()=>{
  let delegated=0;
  const base={triggerCharacters:["@"],getSuggestions:async()=>{delegated++;return null},applyCompletion:()=>({fallback:true})};
- const provider=menu.skillAutocomplete(base,()=>[{name:"review",description:"Review code"},{name:"research"},{name:"wrap"}]);
+ const provider=menu.skillAutocomplete(base,()=>[{name:"pr-review",description:"Review code"},{name:"research"},{name:"wrap"}]);
  assert.deepEqual(provider.triggerCharacters,["@","$"]);
  const all=await provider.getSuggestions(["$"],0,1,{});assert.equal(all.items.length,3);
- const found=await provider.getSuggestions(["$rev"],0,4,{});assert.deepEqual(found.items.map((i:any)=>i.value),["$review"]);
- const completed=provider.applyCompletion(["$rev url"],0,4,found.items[0],"$rev");
- assert.deepEqual(completed,{lines:["$review url"],cursorLine:0,cursorCol:7});
+ const found=await provider.getSuggestions(["$pr-r"],0,5,{});assert.deepEqual(found.items.map((i:any)=>i.value),["$pr-review"]);
+ const completed=provider.applyCompletion(["$pr-r url"],0,5,found.items[0],"$pr-r");
+ assert.deepEqual(completed,{lines:["$pr-review url"],cursorLine:0,cursorCol:10});
  await provider.getSuggestions(["@file"],0,5,{});assert.equal(delegated,1);
  assert.deepEqual(provider.applyCompletion(["@file"],0,5,{value:"file"},"@file"),{fallback:true});
 });
 test("skill menu hooks use Pi's live skill catalog",()=>{
- const pi=api();(pi as any).getCommands=()=>[{name:"skill:review",source:"skill"},{name:"ci-watch",source:"extension"}];menu.default(pi);
- const result=pi.events.get("input")({text:"$review PR"});assert.equal(result.text,"/skill:review PR");
+ const pi=api();(pi as any).getCommands=()=>[{name:"skill:pr-review",source:"skill"},{name:"ci-watch",source:"extension"}];menu.default(pi);
+ const result=pi.events.get("input")({text:"$pr-review PR"});assert.equal(result.text,"/skill:pr-review PR");
  assert.equal(pi.events.get("input")({text:"$ci-watch"}).action,"continue");
 });
 const question={question:"Which mode?",header:"Mode",options:[{label:"Watch",description:"Observe"},{label:"Fix",description:"Repair"}]};

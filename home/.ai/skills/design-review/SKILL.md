@@ -6,7 +6,7 @@ description: >
   glossary, and concrete examples; saves verified findings and draft comments in a
   review file displayed in Hive canvas. Use for design decisions, assumptions,
   tradeoffs, migration, and deployment readiness. For implementation correctness use
-  review; for opening a document for human annotations use doc-review.
+  pr-review; for opening a document for human annotations use doc-review.
 ---
 
 # Design Review
