@@ -5,7 +5,7 @@ mise. Authentication, settings, and sessions stay local to the machine.
 
 ## Setup and skills
 
-After installing Pi, run `mise run pi-setup`. It links the 21 tracked shared skills,
+After installing Pi, run `mise run pi-setup`. It links the tracked shared skills,
 installs the pinned packages from `home/.pi/setup.json`, and configures Hive Drive
 MCP through Pi's CLI. Bootstrap also runs it. Existing model, authentication, theme,
 and unrelated package/server preferences are preserved. `CHECK=1 mise run pi-skills`
@@ -25,11 +25,32 @@ The extension converts a leading, recognized `$name` into Pi's native
 continue to work. Ordinary shell variables such as `$HOME` are left alone.
 Skill descriptions also support natural-language selection by the model.
 
-`pi-subagents` provides delegation, and the Pi `diff-reviewer` profile reads its
-shared contract from `~/.ai/agents/diff-reviewer.md`. It defaults to fresh context
-and inherits the selected model. `pi-web-access` provides web research. These are
-pinned in the setup manifest; update the pins deliberately rather than using
-`pi update` to move managed packages independently.
+`pi-subagents` provides delegation and bundled agents, including `reviewer` for
+code and plan review and `oracle` for design questions and second opinions. Their
+prompts live in the installed package's `agents/` directory, normally
+`~/.pi/agent/npm/node_modules/pi-subagents/agents/`; no separate skill install or
+copy is needed. Inspect the available agents with `/subagents`.
+
+The custom Pi `diff-reviewer` profile reads its shared contract from
+`~/.ai/agents/diff-reviewer.md`. It defaults to fresh context and inherits the
+selected model. It is separate from the package's bundled `reviewer`.
+
+`pi-intercom` adds communication between local Pi sessions and integrates with
+subagents for parent/child questions through `contact_supervisor`. Start or reload
+Pi after installation. Use `/alias api-worker` to name a session, then `/intercom`
+or Alt+M to choose another connected session and send it a message. Both sessions
+must have the extension loaded. The broker starts automatically; its state stays
+local under `~/.pi/agent/intercom/`, outside the repo. Hive still manages sessions.
+
+For a parallel review, ask Pi to use the bundled `reviewer` for implementation
+bugs and tests and `oracle` for the approach and design. Give each agent the exact
+diff or commit range, requirements, and any PR stack boundaries, then ask the
+parent to reconcile their findings. Repository-specific checks, such as AI SDK
+parity review, belong in that repository's own skills.
+
+`pi-web-access` provides web research. Packages are pinned in the setup manifest;
+update the pins deliberately rather than using `pi update` to move managed
+packages independently.
 
 Hive Drive connects to `http://127.0.0.1:50505/mcp/drive`, verified against this
 machine's running Hive. Inspect it with `pi mcp list` or `/mcp`; update the setup
