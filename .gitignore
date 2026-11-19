@@ -40,6 +40,7 @@ home/.config/gh/*
 # before that file is deployed.
 home/.claude/settings.local.json
 home/.config/mise/miserc.toml
+home/.config/mise/config.local.toml
 home/.config/.semgrep/
 
 # Tool runtime data (credentials, caches)

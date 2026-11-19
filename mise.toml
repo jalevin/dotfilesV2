@@ -6,7 +6,8 @@
 # Older mise poured brew bottles without running `post_install_steps`, which
 # left ca-certificates' cert.pem stale and still trusting roots the formula
 # excludes (emSign G3, AAA Certificate Services). See AGENTS.md → Packages.
-min_version = "2026.10.9"
+# Private dotfile history setup below uses the 2026.10.21 command set.
+min_version = "2026.10.21"
 
 # ---------------------------------------------------------
 # Dotfiles — opt-in: only what's listed deploys.
@@ -395,6 +396,18 @@ run = "python3 tasks/agent-settings.py"
 [tasks.secrets-pull]
 description = "Fetch secrets from 1Password (with preview)"
 run = "./tasks/secrets-pull.sh"
+
+[tasks."private-config:push"]
+description = "Save private configuration and push/fetch its mise history"
+run = ["mise dot save", "mise dot sync"]
+
+[tasks."private-config:pull"]
+description = "Fetch private configuration and apply it, stopping on conflicts"
+run = ["mise dot sync --fetch-only", "mise dot pull"]
+
+[tasks."private-config:status"]
+description = "Show private configuration history and sync status"
+run = "mise dot status"
 
 [tasks.secrets-push]
 description = "Upload local secrets to 1Password (with preview)"

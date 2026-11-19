@@ -559,6 +559,13 @@ guard.
 
 ## Secrets Management
 
+Portable SSH files now also use manual mise history sync to the separate private
+`jalevin/dotfiles-private` repository. See [PRIVATE-CONFIG.md](PRIVATE-CONFIG.md)
+for save/push/pull and second-laptop restoration. The four SSH document entries
+below remain a fallback pending second-laptop verification. Do not add private
+keys or agent login files to mise history. Connection settings in
+`home/.config/mise/config.local.toml` are machine-local and gitignored.
+
 Sensitive files (`~/.ssh/config`, `/etc/hosts`) are stored in 1Password and synced via mise tasks.
 They are NOT stored in this git repo.
 The tasks explicitly select **Jeff’s Family** using the account ID in

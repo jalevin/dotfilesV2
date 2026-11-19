@@ -84,6 +84,8 @@ SSH and commit signing, and secrets are stored there as documents.
 - [ ] 1Password > Settings > Developer > **SSH Agent** — enable
 - [ ] 1Password > Settings > Developer > **Integrate with 1Password CLI**
 - [ ] Test: `op account list`
+- [ ] Restore portable SSH configuration using [PRIVATE-CONFIG.md](PRIVATE-CONFIG.md).
+      The 1Password SSH documents below remain a migration fallback.
 - [ ] Pull secrets (`~/.ssh/config`, its Hive VM include/host pin/public key selector, `/etc/hosts`; SOPS age key on personal only):
   ```bash
   mise run secrets-pull

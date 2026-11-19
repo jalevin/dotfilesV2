@@ -26,6 +26,16 @@ Copy `projects.tar.gz` to external drive or cloud storage.
 
 ## 3. Secrets to 1Password
 
+First save and publish portable SSH configuration to the private mise history:
+
+```sh
+mise run private-config:push
+mise run private-config:status
+```
+
+See [PRIVATE-CONFIG.md](PRIVATE-CONFIG.md) for restoration. The SSH documents
+below remain a migration fallback until both laptops have been verified.
+
 ```bash
 cd ~/projects/dotfiles
 mise run secrets-push
