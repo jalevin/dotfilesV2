@@ -5,6 +5,13 @@ Jeff Levin's macOS dotfiles for a Staff Software Engineer at Grafana Labs.
 This file is the canonical repository guidance for coding agents. Shared personal
 instructions live in `home/.ai/AGENTS.md`.
 
+## Task tracking
+
+Use [TODO.md](TODO.md) as this repository's persistent task list. Check it when
+starting work, add agreed follow-ups that remain unfinished, and mark items
+complete after verifying them. Link to detailed setup or design docs instead
+of duplicating their instructions. Keep completed items for context.
+
 ## Repository Layout
 
 ```

@@ -1,5 +1,15 @@
 # TODO
 
+## Private SSH configuration
+
+- [ ] Verify private SSH configuration restoration on the second laptop using
+      [PRIVATE-CONFIG.md](PRIVATE-CONFIG.md#another-laptop). Confirm all four SSH
+      files are restored, SSH access works, and Hive Desktop connects.
+- [ ] After verification on both laptops, remove the four SSH document entries
+      from `tasks/secrets-common.sh` and update the secrets documentation. Keep
+      the existing 1Password documents temporarily as a fallback; `/etc/hosts`
+      and the personal SOPS key continue to use 1Password.
+
 ## mise bootstrap migration
 
 Migrating machine setup to declarative [`mise bootstrap`](https://mise.jdx.dev/bootstrap.html)
