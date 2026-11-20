@@ -5,6 +5,12 @@ mise. Authentication, settings, and sessions stay local to the machine.
 
 ## Setup and skills
 
+Pi reads `home/.ai/AGENTS.md` from `~/.pi/agent/AGENTS.md`, so the shared instructions
+apply even outside your home directory. Under `~`, Pi also finds `~/AGENTS.md` (kept for
+Cursor and Amp). Pi only skips a context file whose path repeats, so the
+`context-dedupe.ts` extension drops files that resolve to the same real file and keeps
+the first. Run `/reload` after editing the instructions.
+
 After installing Pi, run `mise run pi-setup`. It links the tracked shared skills,
 installs the pinned packages from `home/.pi/setup.json`, and configures MCP servers
 through Pi's CLI. Bootstrap also runs it. Existing model, authentication, theme,

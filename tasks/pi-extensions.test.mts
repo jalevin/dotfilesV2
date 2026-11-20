@@ -11,7 +11,7 @@ const alias=Object.fromEntries(["pi-coding-agent","pi-tui","pi-ai","pi-agent-cor
 alias.typebox=join(modules,"typebox/build/index.mjs");
 const jiti=createJiti(import.meta.url,{alias});
 const load=(file:string)=>jiti.import(new URL("../home/.pi/agent/extensions/"+file,import.meta.url).pathname);
-const menu=await load("skill-menu.ts"),questions=await load("ask-user-question.ts"),handoff=await load("handoff.ts"),review=await load("review/index.ts");
+const menu=await load("skill-menu.ts"),questions=await load("ask-user-question.ts"),handoff=await load("handoff.ts"),review=await load("review/index.ts"),dedupe=await load("context-dedupe.ts");
 function api(){
  const events=new Map<string,any>(),commands=new Map<string,any>(),tools:any[]=[],sent:string[]=[];
  return {events,commands,tools,sent,on:(name:string,callback:any)=>events.set(name,callback),
@@ -132,4 +132,16 @@ test("multi-select Tab navigation preserves selected options and custom text",as
  for(const key of ["\t","\r","\x1b[Z","\r","\t","\t","X","\t","\r"])component.handleInput(key);
  const answer=(await result).details.answers[0];
  assert.deepEqual(answer.selected,["Fix","Watch","X"]);
+});
+test("context files that link to the same file load once, keeping the first",async()=>{
+ const dir=await fs.mkdtemp(join(tmpdir(),"pi-ctx-"));
+ const real=join(dir,"real.md"),global=join(dir,"global.md"),home=join(dir,"home.md"),other=join(dir,"other.md");
+ await fs.writeFile(real,"x");await fs.writeFile(other,"y");await fs.symlink(real,global);await fs.symlink(real,home);
+ const files=[{path:global},{path:home},{path:other},{path:join(dir,"missing.md")}];
+ const p=api();dedupe.default(p);
+ const event={systemPromptOptions:{contextFiles:files}};
+ p.events.get("before_agent_start")(event);
+ assert.deepEqual(event.systemPromptOptions.contextFiles.map((f:any)=>f.path),[global,other,join(dir,"missing.md")]);
+ assert.equal(event.systemPromptOptions.contextFiles,files);
+ await fs.rm(dir,{recursive:true});
 });

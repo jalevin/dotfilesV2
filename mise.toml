@@ -24,8 +24,11 @@ min_version = "2026.10.21"
 # ~/.claude/CLAUDE.md (via the home/.claude/CLAUDE.md symlink) and everything
 # that follows the AGENTS.md convention as ~/AGENTS.md. Codex also needs its
 # documented global location; project discovery stops at the repository root.
+# Pi's global copy covers sessions outside $HOME; under $HOME it also finds
+# ~/AGENTS.md, and the context-dedupe extension drops that second copy.
 "~/AGENTS.md" = "home/.ai/AGENTS.md"
 "~/.codex/AGENTS.md" = "home/.ai/AGENTS.md"
+"~/.pi/agent/AGENTS.md" = "home/.ai/AGENTS.md"
 
 "~/.zshrc" = "home/.zshrc"
 "~/.gemrc" = "home/.gemrc"
@@ -55,6 +58,7 @@ min_version = "2026.10.21"
 "~/.pi/agent/extensions/handoff.ts" = "home/.pi/agent/extensions/handoff.ts"
 "~/.pi/agent/extensions/skill-menu.ts" = "home/.pi/agent/extensions/skill-menu.ts"
 "~/.pi/agent/extensions/review" = "home/.pi/agent/extensions/review"
+"~/.pi/agent/extensions/context-dedupe.ts" = "home/.pi/agent/extensions/context-dedupe.ts"
 "~/.pi/agent/agents/diff-reviewer.md" = "home/.pi/agent/agents/diff-reviewer.md"
 "~/.pi/agent/themes/codex.json" = "home/.pi/agent/themes/codex.json"
 "~/.pi/agent/themes/codex-light.json" = "home/.pi/agent/themes/codex-light.json"

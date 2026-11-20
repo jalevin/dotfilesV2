@@ -122,6 +122,7 @@ manifests. Agents reach instructions and skills through the links below;
 | `.ai/AGENTS.md` | `~/.claude/CLAUDE.md` | in-repo symlink, then `[dotfiles]` | Claude Code, every session |
 | `.ai/AGENTS.md` | `~/.codex/AGENTS.md` | `[dotfiles]` | Codex, every session |
 | `.ai/AGENTS.md` | `~/AGENTS.md` | `[dotfiles]` | Cursor, Amp |
+| `.ai/AGENTS.md` | `~/.pi/agent/AGENTS.md` | `[dotfiles]` | Pi, every session (duplicate under `~` dropped by `context-dedupe.ts`) |
 | `.ai/agents/` | `~/.claude/agents` | in-repo symlink | Claude Code subagents |
 | `.ai/commands/` | `~/.claude/commands` | in-repo symlink | Claude Code slash commands |
 | `.ai/skills/` | `~/.claude/skills` | in-repo symlink (whole dir) | Claude Code |
@@ -165,6 +166,7 @@ from one file:
 | `~/.claude/CLAUDE.md` | `home/.claude/CLAUDE.md -> ../.ai/AGENTS.md` | **every Claude Code session** |
 | `~/.codex/AGENTS.md` | `[dotfiles]` entry | **every Codex session** |
 | `~/AGENTS.md` | `[dotfiles]` entry | Cursor, Amp — the AGENTS.md convention |
+| `~/.pi/agent/AGENTS.md` | `[dotfiles]` entry | **every Pi session**, including outside `~` |
 
 `home/.ai/agents/*.md` are **subagents** — helpers invoked for a delegated task,
 not the session's own prompt. That distinction bit us: the Telegram
