@@ -7,7 +7,13 @@
   "mcpServers": {
     "hive-drive": {
       "url": "http://127.0.0.1:50505/mcp/drive",
-      "exposure": "codemode"
+      "exposure": "codemode",
+      "description": "Hive Desktop documents, canvases, diff reviews, and pane/tab layout for the current Hive session."
+    },
+    "hive-desktop": {
+      "url": "http://127.0.0.1:50505/mcp",
+      "exposure": "codemode",
+      "description": "Hive Desktop app state: sessions and tags, workspaces, inbox, actions and flows, schedules, profiles, feeds, and diagnostics."
     }
   }
 }

@@ -6,8 +6,8 @@ mise. Authentication, settings, and sessions stay local to the machine.
 ## Setup and skills
 
 After installing Pi, run `mise run pi-setup`. It links the tracked shared skills,
-installs the pinned packages from `home/.pi/setup.json`, and configures Hive Drive
-MCP through Pi's CLI. Bootstrap also runs it. Existing model, authentication, theme,
+installs the pinned packages from `home/.pi/setup.json`, and configures MCP servers
+through Pi's CLI. Bootstrap also runs it. Existing model, authentication, theme,
 and unrelated package/server preferences are preserved. `CHECK=1 mise run pi-skills`
 reports skill-link drift without changing anything; both Pi and Codex use
 `tasks/link-agent-skills.sh`, with `git ls-files` as the source of the skill list.
@@ -70,11 +70,26 @@ parity review, belong in that repository's own skills.
 update the pins deliberately rather than using `pi update` to move managed
 packages independently.
 
-Hive Drive connects to `http://127.0.0.1:50505/mcp/drive`, verified against this
-machine's running Hive. Inspect it with `pi mcp list` or `/mcp`; update the setup
-manifest if Hive's configured port changes. Models can discover the canvas tools
-through Pi's built-in codemode. Session identity must follow the tool schemas;
-connecting the server does not authorize writing to another session's canvas.
+### MCP servers
+
+`home/.pi/setup.json` lists servers for both machines. `setup.grafana.json` and
+`setup.personal.json` are overlays selected by `MISE_ENV`: an entry adds or
+replaces a server, and `null` removes it, so switching a machine cleans up the
+other machine's servers. Servers you add by hand are left alone.
+
+| Server | Machines | Notes |
+| --- | --- | --- |
+| `hive-drive` | both | Hive canvases, documents, and layout (`127.0.0.1:50505/mcp/drive`) |
+| `hive-desktop` | both | Hive sessions, workspaces, inbox, actions, and schedules (`127.0.0.1:50505/mcp`) |
+| `airbud` | Grafana | Sign in once with `pi mcp login airbud` |
+| `slack` | Grafana | Sign in once with `pi mcp login slack`. Slack has no dynamic client registration, so this reuses the Claude Slack plugin's published client ID (callback port 3118); Slack shows the session as that app |
+| `grafana-enghub` | Grafana | Runs from Claude's `grafana-ai-kit` marketplace checkout; signs in through a browser window on first use and stores it in `~/.enghub-mcp/` |
+
+All use `codemode` exposure: tools are called from codemode scripts instead of
+being declared to the model. Each server's `description` is what tells the model
+the server exists — Pi lists it in the system prompt — so keep it specific.
+Update the manifest if Hive's port changes. Session identity must follow the tool
+schemas; connecting a server does not authorize writing to another session's canvas.
 
 ## Questions, Plannotator, and handoffs
 

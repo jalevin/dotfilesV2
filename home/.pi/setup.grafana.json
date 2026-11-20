@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "airbud": {
+      "url": "https://airbud-mcp-prod-1000862261726.us-central1.run.app/mcp",
+      "exposure": "codemode",
+      "description": "Grafana go-to-market data: dashboards, BigQuery, metrics, lineage, accounts, and pipeline analysis."
+    },
+    "grafana-enghub": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "cd \"$HOME/.claude/plugins/marketplaces/grafana-ai-kit/plugins/grafana-enghub/mcp\" && npm run setup --silent && npm start"
+      ],
+      "exposure": "codemode",
+      "description": "Grafana EngHub (Backstage) catalog: search services, teams, and other entities, and read their TechDocs."
+    },
+    "slack": {
+      "url": "https://mcp.slack.com/mcp",
+      "oauth": {
+        "clientId": "1601185624273.8899143856786",
+        "callbackPort": 3118,
+        "callbackUrl": "http://localhost:3118/callback"
+      },
+      "exposure": "codemode",
+      "description": "Grafana Slack workspace: search and read messages, channels, threads, users, and canvases; send messages only with the user's approval of the exact text."
+    }
+  }
+}
