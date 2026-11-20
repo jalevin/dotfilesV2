@@ -1,17 +1,17 @@
 ---
-name: research
+name: dev-research
 description: >
   Research how a codebase works today and write a factual research doc to
   .hive/research/. Use when the user asks for deep research, wants to understand how
   a feature works, or needs analysis of patterns and architecture across the codebase.
   Fans out parallel sub-agents only when the question spans several areas.
-allowed-tools: "Bash(git status:*),Bash(git log:*),Bash(git diff:*),Bash(git rev-parse:*),Bash(gh:*),Bash(hive:*),Bash(~/.claude/skills/research/scripts/doc-meta.sh),WebSearch,Read,Write,Task(*)"
+allowed-tools: "Bash(git status:*),Bash(git log:*),Bash(git diff:*),Bash(git rev-parse:*),Bash(gh:*),Bash(hive:*),Bash(~/.claude/skills/dev-research/scripts/doc-meta.sh),WebSearch,Read,Write,Task(*)"
 ---
 
 # Research Codebase
 
 Produce a factual map of the code as it exists today, saved to `.hive/research/`. The
-output feeds `/plan-write`, so it records facts, not proposals.
+output feeds `/dev-plan`, so it records facts, not proposals.
 
 ## Scope Constraint
 
@@ -68,7 +68,7 @@ format. Do not pass the ticket or the intended change.
 ## Step 4: Gather Metadata
 
 ```bash
-~/.claude/skills/research/scripts/doc-meta.sh
+~/.claude/skills/dev-research/scripts/doc-meta.sh
 ```
 
 Use its values in the frontmatter. Never write placeholder values. If `pushed: yes`,

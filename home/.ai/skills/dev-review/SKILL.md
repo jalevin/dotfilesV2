@@ -1,12 +1,14 @@
 ---
-name: pr-review
+name: dev-review
 description: >
   Single-pass code review of the current branch (or a diff) that routes the changes
   to relevant concerns, dispatches fresh-context reviewer sub-agents, verifies findings
   to strip false positives, and saves a beginner-friendly design walkthrough,
-  ranked findings, and draft PR comments in a review file displayed in Hive canvas. Use when the
-  user asks to review local changes, a branch, or a PR before it goes to humans.
-argument-hint: "[PR URL or base-branch]"
+  ranked findings, and draft PR comments in a review file. Output goes to Hive canvas,
+  a GitHub review with inline comments (posted only after approval), or the file alone.
+  Use when the user asks to review local changes, a branch, their own PR before it goes
+  to humans, or someone else's PR.
+argument-hint: "[PR URL or base-branch] [--to hive|github|file]"
 ---
 
 # PR Review
@@ -15,10 +17,42 @@ One orchestrated review that favors **signal over volume**. The goal is a short 
 findings a human reviewer will trust — not an exhaustive dump. A review that flags thirty
 things trains the author to ignore all thirty.
 
-**Default base branch:** `main`. If a base-branch argument is given, use it instead.
-For a PR URL, resolve its actual base and head with `gh`; review that diff rather than
-assuming the PR targets `main`. Record the reviewed revisions so the walkthrough and
-comment anchors describe the same version.
+**Base branch.** Review only this branch's slice, never everything since `main`.
+Resolve the base in this order and state which rule applied:
+
+1. A base-branch argument.
+2. The PR's actual base, from `gh pr view <url-or-branch> --json baseRefName`.
+3. The parent recorded by `/dev-stack`: `git config branch.<branch>.dev-parent`.
+4. `main`. First check for a local branch sitting between this branch and `main`:
+   another branch whose tip is an ancestor of `HEAD` but not of `main`
+   (`git merge-base --is-ancestor <tip> HEAD` succeeds, and fails against `main`).
+   If one exists, ask whether it is the parent instead of silently diffing against
+   `main`.
+
+Record the reviewed revisions so the walkthrough and comment anchors describe the
+same version.
+
+**Stack map.** When the base is not `main`, or open PRs are based on this branch,
+build a stack map: each PR or branch from `main` upward with its base and a one-line
+purpose, marking the one under review. Use
+`gh pr list --json number,title,headRefName,baseRefName` and any `Stacked on` lines in
+PR bodies. A parent that has already merged means the branch needs a restack before
+review; say so (see `/dev-babysit`) instead of reviewing a diff that contains the
+parent's commits.
+
+## Destination
+
+The review file (Step 6) is always written; it is the record and the source for every
+other view. `--to` picks where else the review goes:
+
+| Destination | Default when | Also produces |
+|-------------|--------------|---------------|
+| `hive` | reviewing your own branch or PR | Hive canvas (Step 7) |
+| `github` | the PR's author is someone else (`gh pr view --json author` vs `gh api user`) | one GitHub review: a summary body plus inline comments (Step 8) |
+| `file` | Hive is unavailable, or the user asks | nothing else |
+
+State the destination with the routing decision in Step 2. `github` never means
+auto-posting: drafts are shown and posted only after the user approves the exact text.
 
 ## Operating principles
 
@@ -43,6 +77,20 @@ git diff --name-only
 
 Combine both diffs. Detect the primary language(s) from the changed file extensions —
 this selects the language notes in Step 3.
+
+For a PR that is not the current checkout, do not switch the user's working tree.
+Fetch the PR head and review it in a detached worktree, so reviewers can read full
+files at the reviewed revision:
+
+```bash
+gh pr view <url> --json number,baseRefName,headRefOid,author,title,body
+git fetch origin pull/<number>/head "<baseRefName>"
+git worktree add --detach "$(mktemp -d)/pr-<number>" <headRefOid>
+git diff "$(git merge-base origin/<baseRefName> <headRefOid>)" <headRefOid>
+```
+
+Remove the worktree (`git worktree remove`) when the review is saved. Read the PR
+body and linked issue for the stated intent.
 
 ## Step 2 — Classify and route
 
@@ -100,7 +148,13 @@ Give each sub-agent ONLY:
 - the concern definition below (paste the relevant subsection),
 - the changed hunks relevant to that concern (not the whole repo),
 - the language notes for the detected language(s),
-- a one-line statement of the change's intent.
+- a one-line statement of the change's intent,
+- the stack map, if there is one, with this instruction: do not report work that the
+  map assigns to a parent or later PR as missing from this one.
+
+Whether this PR's boundary in the stack is right is `/dev-rethink`'s question, not a
+review concern. If a reviewer notices a boundary problem anyway, keep it as a Minor
+note pointing at `/dev-rethink`.
 
 Each sub-agent must return findings in the **Finding schema** (below) or
 `no_findings` / `not_applicable`. Record every dispatched agent (concern + result) — the
@@ -280,7 +334,8 @@ it helps explain the change. Link to the code supporting the explanation.]
 
 _Concerns: [activated concerns + one-line reason each]_
 _Reviewers dispatched: [each `diff-reviewer` sub-agent + its concern(s) + result, e.g. `Correctness → findings`, `Design → no_findings`]_
-_Scope: [PR URL if applicable, base and head revisions, any local changes included]_
+_Scope: [PR URL if applicable, base and head revisions and which base rule applied, any local changes included]_
+_Stack: [stack map with this PR marked, or "not stacked"]_
 
 [2-3 sentence overview: what the branch does, overall quality, merge readiness.]
 
@@ -370,7 +425,9 @@ tags: [component, topic]
 ---
 ```
 
-## Step 7 — Open the review in Hive canvas
+## Step 7 — Open the review in Hive canvas (`hive` destination)
+
+Skip this step for the `github` and `file` destinations.
 
 The saved Markdown file is the source of truth for the whole review, including diagrams
 and comment drafts. Use the Hive Drive tools to display that same content in a named
@@ -402,10 +459,47 @@ review rather than an older canvas.
   review and state that it could not be opened. Do not claim the canvas is visible:
   `open_canvas` confirms only that the UI open was requested.
 
-## External reviewer (optional)
+## Step 8 — Post to GitHub (`github` destination)
 
-For an independent second opinion from a different model, run `/review-with-codex`
-alongside this skill — spawn it before Step 3 so codex reviews concurrently, then merge
-its findings during Step 5 under an **External Review (Codex)** heading. Codex gets clean
-context by design; do not feed it this skill's findings before it reviews (avoid
-"context laundering" — a second reviewer is only useful if it can independently disagree).
+Skip this step for the `hive` and `file` destinations.
+
+The saved file keeps the full walkthrough for the user; the author does not need it.
+The GitHub review carries only what the author should act on:
+
+- **Summary body:** two to four sentences covering what the PR does well, the main
+  concerns, and the merge verdict. Lead with blocking items. No diagrams, glossary, or
+  severity counts.
+- **Inline comments:** one per approved draft from "Proposed PR comments", anchored to
+  the reviewed head. Say whether each is blocking. Prefix optional items with `nit:` or
+  `optional:`, and phrase uncertain points as questions.
+- **Event:** `REQUEST_CHANGES` when an approved draft is Critical or Major, `APPROVE`
+  only when the user says so, otherwise `COMMENT`.
+
+Write the tone for a colleague's PR: grounded in observed behavior, specific about the
+fix, no lecturing. Write each paragraph as one unwrapped line; GitHub renders hard line
+breaks literally.
+
+Present the exact summary, each inline comment with its anchor, and the event, then
+wait for approval. After approval, recheck that the PR head still equals the reviewed
+SHA. If it moved, re-anchor or re-review the changed hunks and show revised text again.
+Submit everything as one review so the author gets one notification:
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<number>/reviews --input review.json
+```
+
+```json
+{
+  "commit_id": "<reviewed head SHA>",
+  "event": "COMMENT",
+  "body": "<summary>",
+  "comments": [
+    { "path": "auth.go", "line": 45, "side": "RIGHT", "body": "<comment>" },
+    { "path": "auth.go", "start_line": 50, "line": 54, "side": "RIGHT", "body": "<multi-line comment>" }
+  ]
+}
+```
+
+`line` is the line number in the file at the reviewed head, and must fall inside a
+diff hunk. Comments outside the diff go in the summary body instead. Record the review
+URL and posted comment count in the saved file.

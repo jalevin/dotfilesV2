@@ -230,6 +230,8 @@ the installed Codex app-server in temporary homes, without model calls.
 - Commits and PRs: explain the problem, behavior change, and reasoning at a suitable length
 - GitHub access: always use `gh` CLI, never `curl`/WebFetch for GitHub URLs
 - Commit style: no `Co-Authored-By` lines
+- PR follow-up: babysit any branch with an open PR after a push
+- Development lifecycle: the `dev-*` skills, from research to babysit, stack-aware
 
 ### Agent skills (`home/.ai/skills/`)
 

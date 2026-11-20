@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.9"
+# dependencies = []
+# ///
+"""Read and drive the agent pane of a hive session.
+
+    hive-agent peek <session> [--lines N] [--json]
+    hive-agent send <session> <text...> [--no-submit]
+
+`peek` reports a best-guess state (busy, approval, ready, unknown, not_found),
+context use when the status bar shows a used/total ratio, and the pane tail.
+The state detection matches Claude Code's UI; for other agents treat it as a
+hint and read the tail. `send` types text into the agent window and submits it.
+
+Hive gives each session an agent window and a `shell` window, and `shell` is
+usually the active one, so a bare tmux target reads or types into the wrong
+window. This script resolves the agent window by name and matches session
+names exactly.
+
+Adapted from the hive orchestrator's bin/orc.py (originally hay-kot/dotfiles).
+"""
+
+# Keeps `X | None` hints unevaluated, so this runs on the 3.9 macOS ships.
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import subprocess
+import sys
+import time
+
+
+# hive spawns two windows per session, and `shell` is usually the active one, so
+# every tmux target has to name the agent window explicitly.
+AGENT_WINDOWS = {
+    "claude", "codex", "pi", "aider", "opencode", "crush", "cursor", "agent", "llm",
+}
+
+# These markers match Claude Code's UI. Other agents (pi, Codex) render different
+# text, so `state` is a hint: callers should read the pane tail before acting.
+# Stable across spinner words and model names — Claude Code prints it whenever a
+# turn is in flight.
+BUSY_MARKER = "esc to interrupt"
+APPROVAL_MARKERS = ("Do you want", "Would you like", "1. Yes")
+SUBMIT_DELAY_SECONDS = 2
+
+RATIO_FIELD = re.compile(
+    r"\s*(\d+(?:\.\d+)?[km]?)\s*/\s*(\d+(?:\.\d+)?[km]?)(?:\s+\d+%)?\s*", re.IGNORECASE
+)
+# Statuslines differ per user: some write the ratio as its own field, others
+# inline in parentheses next to a bar and percentage, e.g. `▮▮▯ 12% (45k / 200k)`.
+RATIO_PARENS = re.compile(
+    r"\(\s*(\d+(?:\.\d+)?[km]?)\s*/\s*(\d+(?:\.\d+)?[km]?)\s*\)", re.IGNORECASE
+)
+FIELD_SEPARATORS = re.compile(r"[·│]")
+# An empty prompt, or one showing only Claude Code's placeholder suggestion
+# (`❯ Try "fix lint errors"`), which a fresh session renders until the first turn.
+PROMPT_LINE = re.compile(r'\s*[❯>]\s*(?:Try ".*")?\s*')
+
+
+
+def tmux(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["tmux", *args], capture_output=True, text=True)
+
+
+def session_exists(session: str) -> bool:
+    # "=" forces an exact match; without it tmux resolves prefixes and a short
+    # name can silently hit a longer session.
+    return tmux("has-session", "-t", f"={session}").returncode == 0
+
+
+def list_windows(session: str) -> list[list[str]]:
+    result = tmux("list-windows", "-t", f"={session}", "-F", "#{window_index}\t#{window_name}")
+    return [line.split("\t", 1) for line in result.stdout.splitlines() if "\t" in line]
+
+
+def agent_target(session: str) -> str | None:
+    """Return the tmux target of the session's agent window, or None if no window
+    is named after a known agent."""
+    for index, name in list_windows(session):
+        # Windows are named after the agent profile, which may carry a suffix
+        # (`claude-yolo`, `codex-safe`), so match on the agent part.
+        if name.lower().split("-", 1)[0] in AGENT_WINDOWS:
+            return f"={session}:{index}"
+    return None
+
+
+def parse_tokens(text: str) -> float | None:
+    """Parse a token count as the status bar writes it: 0, 45k, 1.2m, 200000."""
+    match = re.fullmatch(r"(\d+(?:\.\d+)?)([km])?", text.strip(), re.IGNORECASE)
+    if not match:
+        return None
+    scale = {"k": 1_000, "m": 1_000_000}.get((match.group(2) or "").lower(), 1)
+    return float(match.group(1)) * scale
+
+
+def read_context(pane: str) -> tuple[str, int | None]:
+    """Pull `used/total` out of the status bar and turn it into a percentage.
+
+    The status bar is a "·"-separated line — `branch · 117k/1m 12% · model · effort` —
+    so the ratio is matched field by field rather than by scanning the line: branch
+    names carry slashes too. Past some usage Claude Code appends its own percentage
+    to the field, which the ratio already tells us.
+    """
+    for line in reversed(pane.splitlines()[-12:]):
+        if not FIELD_SEPARATORS.search(line):
+            continue
+        for field in FIELD_SEPARATORS.split(line):
+            match = RATIO_FIELD.fullmatch(field) or RATIO_PARENS.search(field)
+            if not match:
+                continue
+            used, total = parse_tokens(match.group(1)), parse_tokens(match.group(2))
+            if used is None or total is None or total <= 0:
+                continue
+            return f"{match.group(1)}/{match.group(2)}", round(used / total * 100)
+    return "unknown", None
+
+
+def read_state(pane: str) -> str:
+    # rstrip first: a short session in a tall window leaves the bottom rows blank,
+    # and the last 25 lines would then hold nothing to match.
+    tail = pane.rstrip().splitlines()[-25:]
+    joined = "\n".join(tail)
+    if BUSY_MARKER in joined:
+        return "busy"
+    if any(marker in joined for marker in APPROVAL_MARKERS):
+        return "approval"
+    # The prompt is not the last line — the status bar and the permissions hint
+    # render below it.
+    if any(PROMPT_LINE.fullmatch(line) for line in tail):
+        return "ready"
+    return "unknown"
+
+
+def cmd_peek(args) -> int:
+    if not session_exists(args.session):
+        report = {"session": args.session, "state": "not_found"}
+        print(json.dumps(report) if args.json else f"session: {args.session}\nstate: not_found")
+        return 1
+
+    target = agent_target(args.session)
+    guessed = target is None
+    if guessed:
+        # Reading the wrong window is harmless, so peek falls back to the first
+        # one and says so. send refuses instead, because the fallback is often
+        # the shell window, where Enter would run the text as a command.
+        windows = list_windows(args.session)
+        target = f"={args.session}:{windows[0][0]}" if windows else f"={args.session}"
+    pane = tmux("capture-pane", "-t", target, "-p", "-S", "-200").stdout
+    state = read_state(pane)
+    context, percent = read_context(pane)
+    tail = "\n".join(pane.rstrip().splitlines()[-args.lines:])
+
+    if args.json:
+        print(json.dumps({
+            "session": args.session,
+            "target": target.lstrip("="),
+            "target_guessed": guessed,
+            "state": state,
+            "context": context,
+            "context_percent": percent,
+            "tail": tail,
+        }))
+        return 0
+
+    percent_note = f" ({percent}%)" if percent is not None else ""
+    print(f"session: {args.session}")
+    guess_note = " (guessed: no window named after a known agent)" if guessed else ""
+    print(f"target: {target.lstrip('=')}{guess_note}")
+    print(f"state: {state}")
+    print(f"context: {context}{percent_note}")
+    print("---")
+    print(tail)
+    return 0
+
+
+def cmd_send(args) -> int:
+    if not session_exists(args.session):
+        print(f"error: no tmux session named '{args.session}'", file=sys.stderr)
+        return 1
+
+    target = agent_target(args.session)
+    if target is None:
+        print(f"error: no agent window in '{args.session}'", file=sys.stderr)
+        return 1
+    message = " ".join(args.text)
+    # -l sends the text literally, so a message containing "Enter" or "C-c" is
+    # typed instead of interpreted as a key.
+    tmux("send-keys", "-l", "-t", target, message)
+    if args.no_submit:
+        print(f"typed into {target.lstrip('=')} (not submitted)")
+        return 0
+    # Claude Code drops a trailing Enter that arrives while it is still rendering
+    # a long paste, so submit on a separate beat.
+    time.sleep(SUBMIT_DELAY_SECONDS)
+    tmux("send-keys", "-t", target, "Enter")
+    print(f"sent to {target.lstrip('=')}")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="hive-agent", description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    peek = commands.add_parser("peek", help="state hint, context use, and pane tail")
+    peek.add_argument("session")
+    peek.add_argument("--lines", type=int, default=20)
+    peek.add_argument("--json", action="store_true")
+    peek.set_defaults(func=cmd_peek)
+
+    send = commands.add_parser("send", help="type text into a session's agent pane")
+    send.add_argument("session")
+    send.add_argument("text", nargs="+")
+    send.add_argument("--no-submit", action="store_true", help="type without pressing Enter")
+    send.set_defaults(func=cmd_send)
+
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -53,11 +53,9 @@ home/.config/op/
 # sync or a tool's own installer, and are re-fetchable rather than managed
 # here. Add an exception per skill as it's ready to be checked in.
 home/.ai/skills/*
-!home/.ai/skills/pr-babysit/
 !home/.ai/skills/cleanup-comments/
 !home/.ai/skills/collab-plan/
 !home/.ai/skills/daily-prep/
-!home/.ai/skills/design-review/
 !home/.ai/skills/diff-review/
 !home/.ai/skills/doc-review/
 !home/.ai/skills/meeting-notes/
@@ -67,16 +65,23 @@ home/.ai/skills/*
 !home/.ai/skills/obsidian-cli/
 !home/.ai/skills/summarize/
 !home/.ai/skills/telegram/
-# Hive session workflow, adopted from hay-kot/dotfiles (2026-09-30) so the hive
-# orchestrator can drive sessions through research -> plan -> hc -> review.
+# Dev lifecycle: research -> plan -> build -> rethink -> review -> pr -> babysit,
+# plus stack and review-batch. research, plan, rethink, and pr started as copies
+# of hay-kot/dotfiles skills.
+!home/.ai/skills/dev-babysit/
+!home/.ai/skills/dev-orchestrate/
+!home/.ai/skills/dev-build/
+!home/.ai/skills/dev-plan/
+!home/.ai/skills/dev-pr/
+!home/.ai/skills/dev-research/
+!home/.ai/skills/dev-rethink/
+!home/.ai/skills/dev-review/
+!home/.ai/skills/dev-review-batch/
+!home/.ai/skills/dev-stack/
+# Honeycomb (hive hc) task workflow, adopted from hay-kot/dotfiles (2026-09-30).
 !home/.ai/skills/hc-loop/
 !home/.ai/skills/hc-next/
-!home/.ai/skills/plan-mini/
 !home/.ai/skills/plan-to-hc/
-!home/.ai/skills/plan-write/
-!home/.ai/skills/research/
-!home/.ai/skills/pr-review/
-!home/.ai/skills/wrap/
 
 # Python bytecode from running task tests
 __pycache__/

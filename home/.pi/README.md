@@ -22,26 +22,27 @@ Run `/reload` in an open Pi session after deploying changes. Start a prompt with
 `$` to open the skill menu, type part of a name, and select it with Tab/Enter:
 
 ```text
-$pr-review https://github.com/owner/repo/pull/123
-$design-review https://github.com/owner/repo/pull/123
+$dev-review https://github.com/owner/repo/pull/123
+$dev-research how does auth refresh work
 ```
 
 The extension converts a leading, recognized `$name` into Pi's native
-`/skill:name` before skill expansion. `/skill:pr-review` and `/skill:design-review`
-continue to work. Ordinary shell variables such as `$HOME` are left alone.
+`/skill:name` before skill expansion. `/skill:dev-review` and the
+other `/skill:` forms continue to work. Ordinary shell variables such as `$HOME` are left alone.
 Skill descriptions also support natural-language selection by the model.
 
 ### Where the startup entries come from
 
 | Entries | Source |
 | --- | --- |
-| Shared skills such as `pr-review`, `pr-babysit`, and `research` | Tracked under `home/.ai/skills/` and linked by `mise run pi-skills` |
+| Shared skills such as the `dev-*` lifecycle | Tracked under `home/.ai/skills/` and linked by `mise run pi-skills` |
 | `pi-subagents`, `council-mode`, and all six bundled prompts (`/council`, `/gather-context-and-clarify`, `/parallel-cleanup`, `/parallel-research`, `/parallel-review`, `/review-loop`) | The installed `pi-subagents` package |
 | `pi-intercom` | The installed `pi-intercom` package |
 | Skills shown as `auto (user)` under `~/.agents/skills/` | Discovered directly by Pi, outside this repo's managed skill links |
 
-Use `$pr-review` for code review and `$pr-babysit` to follow a PR through CI and
-review feedback. Plannotator's `/review:code` and `/review:doc` commands open the
+The `dev-*` skills cover the development lifecycle described in
+`home/.ai/AGENTS.md`: `$dev-review` for code review and `$dev-babysit` to
+follow a PR through CI and review feedback. Plannotator's `/review:code` and `/review:doc` commands open the
 annotation UI. Package prompts such as `/parallel-review` keep their upstream names.
 
 The locally installed `agento11y-instrument` comes from Grafana's gcx skill

@@ -62,15 +62,51 @@ behavior when they matter to future changes.
 - Follow the repository's PR template. Do not force a fixed set of sections
   onto every change.
 - Use an imperative commit subject of at most 72 characters that describes
-  the outcome.
+  the outcome, using the domain terms someone would search `git log` for.
+- Put explored dead ends and rejected alternatives in the commit body when
+  they explain the choice. That reasoning is lost when the session ends.
 - Do not add `Co-Authored-By` lines.
+
+PR bodies follow the `dev-pr` skill: the repository's template when there is
+one, written from the commit messages rather than the diff, and shorter than
+them. Write each PR paragraph as one unwrapped line; GitHub renders line
+breaks inside a paragraph literally.
 
 ## PR Follow-Up
 
-After creating a PR or pushing commits to an open PR, automatically run the
-`pr-babysit` skill in the current session. Continue until the latest head is
-green or needs my decision or external intervention. If already babysitting,
-continue the existing loop. Skip when I explicitly ask to push only.
+After any push, if the branch has an open PR (including one just created or a
+draft), automatically run the `dev-babysit` skill in the current session.
+Continue until the latest head is green or needs my decision or external
+intervention. For a draft PR, follow CI only until it is marked ready. If
+already babysitting, continue the existing loop. Skip only when I say not to
+babysit.
+
+## Development Lifecycle
+
+My own work moves through these skills. Name the next step when handing off.
+
+```
+dev-research → dev-plan → dev-build → dev-rethink → dev-review → dev-pr → dev-babysit
+                                          │
+                                     dev-stack (next stacked branch)
+```
+
+- `dev-research`: how the code works today, when the area is unfamiliar.
+- `dev-plan`: decisions with me, then an oracle challenges the approach for
+  large or risky plans. `small` mode for scoped changes.
+- `dev-build`: implement the plan phase by phase, committing each.
+- `dev-rethink`: once it works, check its shape and, in a stack, its
+  boundary. Run it at the point I split off the next branch.
+- `dev-review`: correctness review against the branch's real base.
+- `dev-pr`: commit, check, push, open the PR (`draft` or `push` modes).
+- `dev-babysit`: CI and review feedback; restacks after a parent merges.
+- `dev-stack`: start the next branch on top, show the stack, or restack.
+
+I work in stacks: each PR targets the branch below it. Diff and review
+against that base, not `main`.
+
+For other people's PRs, use `dev-review` (it posts to GitHub after approval)
+or `dev-review-batch` for a queue.
 
 ## Telegram
 

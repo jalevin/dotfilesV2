@@ -203,6 +203,40 @@ check (`icloud-check`); the old `first-run` task is gone.
 - [ ] iCloud `hive/{grafana,personal}/config.yaml` header comment still points
       at the retired `machines/<env>/hive-config.yaml` paths.
 
+## Dev lifecycle skills
+
+Replace the copied research/plan/review skills with one `dev-` lifecycle:
+`dev-research → dev-plan → dev-build → dev-rethink → dev-review → dev-pr →
+dev-babysit`, plus `dev-stack` for starting the next stacked branch.
+
+- [x] Rename `research`, `plan-write`, `pr-review`, `pr-babysit` to `dev-*` and
+      update references.
+- [x] Fold `plan-mini` into `dev-plan` as a small mode; add an oracle step
+      after decisions for large or risky plans.
+- [x] Add `dev-rethink` from hay-kot's `rethink`, plus a stack-split check.
+- [x] Make `dev-review` and `dev-babysit` stack-aware: real base, stack map,
+      restack after a parent squash-merges.
+- [x] Add `dev-stack`, `dev-build`, and `dev-pr` (`wrap` + hay-kot's
+      `pr-create-auto`, with `push` and `draft` modes).
+- [x] Retire `design-review`, `plan-mini`, and `wrap`.
+- [x] Document the lifecycle and PR-message split in `home/.ai/AGENTS.md`.
+- [x] Add a destination option to `dev-review`: `hive`, `github`, or `file`.
+- [x] Add `dev-review-batch` for reviewing a queue of other people's PRs,
+      tracked in Honeycomb.
+- [x] Update the Hive orchestrator routes in iCloud for both machines.
+- [x] Add `dev-orchestrate`: fan out to Hive worker sessions from a normal chat,
+      with Honeycomb as the record and `hive msg` for events. It replaces the
+      orchestrator workspace's Claude Code cron monitoring pass.
+- [x] Move the orchestrator's pane helper into `home/.local/bin/hive-agent`
+      (`peek` and `send` only; Honeycomb and session tags replace its watchlist).
+- [ ] Try `dev-orchestrate` with `dev-review-batch` on a two-PR batch. Check that
+      `hive batch` hands the prompt to pi, workers claim and report, and the
+      first GitHub review posts with correctly anchored inline comments.
+- [ ] Teach `hive-agent peek` pi's busy and idle markers once a pi worker pane is
+      available to sample; today its state detection only matches Claude Code.
+- [ ] Retire the iCloud orchestrator workspace (both machines) after
+      `dev-orchestrate` has been used for real.
+
 ## Open
 
 - [ ] `mise run claude-prune` — 1.4GB of old Claude Code versions. Not run by

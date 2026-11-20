@@ -1,4 +1,0 @@
-interface:
-  display_name: "PR Babysit"
-  short_description: "Watch CI and reviews, fix issues, and push updates"
-  default_prompt: "Use $pr-babysit to monitor this PR, fix actionable CI and review issues, and push updates until the current head is green or needs my decision."

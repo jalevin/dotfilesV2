@@ -85,6 +85,7 @@ min_version = "2026.10.21"
 # one package, and only the five commands reach PATH.
 "~/.local/bin/find-env" = "home/.local/bin/find-env"
 "~/.local/bin/heic2jpeg" = "home/.local/bin/heic2jpeg"
+"~/.local/bin/hive-agent" = "home/.local/bin/hive-agent"
 "~/.local/bin/tg-await" = "telegram/tg-await"
 "~/.local/bin/tg-brokerd" = "telegram/tg-brokerd"
 "~/.local/bin/tg-listen" = "telegram/tg-listen"

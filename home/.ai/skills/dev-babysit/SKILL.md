@@ -1,6 +1,6 @@
 ---
-name: pr-babysit
-description: Monitor a GitHub PR's CI and review feedback, fix actionable failures and comments, commit and push updates, and surface decisions that need the user. Use when asked to babysit a PR, get its CI green, or keep addressing review feedback through verification. Does not merge the PR.
+name: dev-babysit
+description: Monitor a GitHub PR's CI and review feedback, fix actionable failures and comments, commit and push updates, and surface decisions that need the user. Handles stacked PRs, including restacking a child after its parent merges. Use when asked to babysit a PR, get its CI green, or keep addressing review feedback through verification. Does not merge the PR.
 ---
 
 # Babysit a PR
@@ -38,6 +38,10 @@ the target is ambiguous. Confirm the base repository, head repository and branch
 (including forks), current head SHA, PR state and push destination. Never infer
 the push destination from the base repository alone.
 
+Check whether the PR is part of a stack: its base is another open PR's head branch
+(the parent), or open PRs use its head branch as their base (the children). Record
+the stack map in the progress record. See [Stacked PRs](#stacked-prs).
+
 Inspect local changes and instructions. Preserve unrelated work; use a separate
 worktree when needed. Verify the checkout matches the PR before editing. If the
 PR is closed or merged, report that and stop instead of reviving it.
@@ -49,7 +53,7 @@ enough to claim all tests passed. Distinguish tests from deployments and other
 checks needing separate authority.
 
 Keep a small, local progress record outside tracked source, for example under
-`git rev-parse --git-path pr-babysit`. Record the PR URL, head SHA, CI runs and
+`git rev-parse --git-path dev-babysit`. Record the PR URL, head SHA, CI runs and
 attempts, comment IDs/updated timestamps, dispositions, fix commits, validations
 and pending decisions. Use it to avoid duplicate work after a restart, but
 refresh GitHub before trusting it.
@@ -123,6 +127,36 @@ silence as approval. Keep the question and its rationale visible in the progress
 record, and identify the exact repository or skill instruction if it is the
 reason approval is required. In particular, this skill's **Scope and authority**
 section requires approval of exact text before external replies.
+
+## Stacked PRs
+
+Babysit one PR at a time, normally the lowest unmerged one. Read CI failures in a
+child against its parent: a failure that also occurs at the parent's head belongs to
+the parent.
+
+**Fixes to a parent.** After pushing to a PR that has children, the children are
+behind. Report which children need a rebase onto the new parent head
+(`git rebase <parent-branch>` on each child). Offer to do it; do not do it unasked,
+since each rebase needs a force push.
+
+**Parent merged.** When the parent PR merges, restack the child before anything else:
+
+1. Get the parent's final head before it merged:
+   `gh pr view <parent> --json headRefOid,mergeCommit`. That SHA is the old base,
+   even if the parent branch was deleted.
+2. Replay only the child's own commits onto the new base:
+   `git rebase --onto origin/main <old-parent-head> <child-branch>`. With a squash
+   merge, a plain `git rebase origin/main` would try to replay the parent's original
+   commits and conflict, because the squash commit has a different SHA.
+3. Retarget the PR if GitHub did not (it does automatically only when the parent's
+   branch was deleted on merge): `gh pr edit <child> --base main`.
+4. Push with `git push --force-with-lease=<child-branch>:<old-child-head>`.
+
+Show the plan (old base, new base, commits to replay, and the push) and get approval
+once before running it. This is the one force push this skill does, and only with
+that approval. Clear `git config branch.<child>.dev-parent` or point it at the new
+base. Then run CI follow-up on the restacked head as usual. If the PR body has a
+`Stacked on` line, draft the updated line for approval.
 
 ## Waiting and stopping
 
