@@ -24,9 +24,9 @@ test("editor is a filled prompt box without horizontal rules",()=>{
  const lines=editor.render(100),plain=lines.map(tui.stripTerminalSequences);
  assert.match(plain[1],/^> hello/);assert.equal(plain[0].trim(),"");assert.equal(plain[2].trim(),"");
  assert.equal(plain.some((line:string)=>line.includes("─")),false);
- assert.ok(lines[1].includes("\x1b[48;2;59;59;59m"));
- assert.ok(lines[0].includes("\x1b[48;2;59;59;59m"));
- assert.ok(lines[2].includes("\x1b[48;2;59;59;59m"));
+ assert.ok(lines[1].includes("\x1b[48;2;66;69;75m"));
+ assert.ok(lines[0].includes("\x1b[48;2;66;69;75m"));
+ assert.ok(lines[2].includes("\x1b[48;2;66;69;75m"));
  assert.equal(tui.visibleWidth(lines[0]),100);assert.equal(tui.visibleWidth(lines[2]),100);
  assert.equal(lines.length,3);
  assert.ok(lines[1].includes(tui.CURSOR_MARKER));assert.equal(editor.getText(),"hello");
@@ -66,7 +66,7 @@ test("autocomplete remains outside the filled box and keeps its native behavior"
  const lines=editor.render(100),plain=lines.map(tui.stripTerminalSequences);
  assert.ok(plain.some((line:string)=>line.includes("$pr-review")));
  const menuLine=lines.find((line:string)=>tui.stripTerminalSequences(line).includes("$pr-review"));
- assert.equal(menuLine.includes("\x1b[48;2;59;59;59m"),false);
+ assert.equal(menuLine.includes("\x1b[48;2;66;69;75m"),false);
  editor.handleInput("\t");assert.equal(editor.getText(),"$pr-review ");
 });
 test("extension installs only for the TUI and restores the default on shutdown",()=>{

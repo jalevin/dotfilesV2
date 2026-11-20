@@ -122,7 +122,11 @@ GitHub write, or canvas write is required by these checks.
 
 ## Theme
 
-The `codex` dark theme uses Catppuccin Mocha; `codex-light` uses Catppuccin Latte.
+The `codex` dark theme matches colors sampled from Codex in this terminal: body text
+uses the terminal's default foreground, secondary text uses neutral grays (`#a9aaad`,
+`#949699`), user messages sit on a `#4b4d53` band, the prompt on `#42454b`, and tool
+rows have no background except errors. Syntax and footer accents keep Catppuccin Mocha
+hues, which already match Codex. `codex-light` uses Catppuccin Latte.
 Both use Codex's blue UI accents. The terminal still owns the overall background;
 Pi's widgets and syntax colors are adapted to its own theme roles.
 

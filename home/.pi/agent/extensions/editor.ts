@@ -44,8 +44,8 @@ export class PromptEditor extends CustomEditor {
         line = prefix + row;
       }
       line = truncateToWidth(line, width);
-      const gray = theme.appearance === "light" ? 217 : 59;
-      return theme.style(line + " ".repeat(Math.max(0, width - visibleWidth(line))), { fg: "text", bg: rgbColor(gray, gray, gray) });
+      const [r, g, b] = theme.appearance === "light" ? [217, 217, 217] : [66, 69, 75];
+      return theme.style(line + " ".repeat(Math.max(0, width - visibleWidth(line))), { fg: "text", bg: rgbColor(r, g, b) });
     });
   }
 
