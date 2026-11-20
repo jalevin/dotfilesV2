@@ -174,9 +174,10 @@ its own loader. GitHub access uses `gh`; no Claude-specific script paths are use
 ## Status line
 
 `home/.pi/agent/extensions/statusline/` replaces Pi's interactive footer with one line:
-model/effort, context used/limit/percentage, branch, working directory, and estimated
-session cost, all aligned left. Theme colors distinguish the fields; context turns
-amber at 70% and red at 90%. Unknown usage after compaction stays `?`. Narrow panes
+working directory, branch, model/effort, context remaining (for example
+`Context 88% left`), and estimated session cost in purple, all aligned
+left. Theme colors distinguish the fields; context turns amber at 70% used and red
+at 90% used. Unknown usage after compaction stays `?`. Narrow panes
 shorten the directory first. Cost sums Pi's recorded usage, including compaction and
 tool usage, and is an estimate rather than a subscription bill.
 The CI widget remains separate, and other extensions' status messages are retained.

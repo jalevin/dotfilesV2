@@ -5,12 +5,6 @@ import { colorToRgb, rgbColor, stripTerminalSequences, truncateToWidth, visibleW
 
 const plain = (text: string) => stripTerminalSequences(text).replace(/\p{Cc}/gu, " ");
 
-export function formatTokens(tokens: number): string {
-  if (tokens < 1_000) return String(Math.round(tokens));
-  if (tokens < 1_000_000) return `${Number((tokens / 1_000).toFixed(1))}k`;
-  return `${Number((tokens / 1_000_000).toFixed(1))}M`;
-}
-
 export function directoryLabel(cwd: string, home: string): string {
   const withinHome = relative(home, cwd);
   if (withinHome === "") return "~";
@@ -25,7 +19,6 @@ type FooterDetails = {
   model: string;
   effort: string;
   usage?: ContextUsage;
-  contextWindow?: number;
   estimatedCost?: number;
 };
 
@@ -56,29 +49,28 @@ export function renderFooter(width: number, data: FooterDetails, theme: FooterTh
   if (width < 1) return "";
   const padding = width > 3 ? 1 : 0;
   const available = width - padding * 2;
-  const window = data.usage?.contextWindow ?? data.contextWindow;
   const percent = data.usage?.percent;
   const known = percent !== undefined && percent !== null;
-  const used = data.usage?.tokens ?? (known && window ? Math.round(window * percent / 100) : undefined);
-  const context = `ctx ${used === undefined || used === null ? "?" : formatTokens(used)}/${window ? formatTokens(window) : "?"}${known ? ` ${Math.round(percent)}%` : ""}`;
+  const context = `Context ${known ? `${Math.max(0, 100 - Math.round(percent))}%` : "?"} left`;
   const contextColor = known && percent >= 90 ? "error" : known && percent >= 70 ? "warning" : undefined;
   const joiner = theme.fg("dim", " · ");
-  const leading = [
+  const details = [
+    data.branch ? accent(theme, "syntaxFunction", plain(data.branch)) : theme.fg("muted", "no branch"),
     accent(theme, "syntaxType", `${plain(data.model)}/${plain(data.effort)}`),
     contextColor ? theme.fg(contextColor, context) : accent(theme, "syntaxNumber", context),
-    data.branch ? accent(theme, "syntaxFunction", plain(data.branch)) : theme.fg("muted", "no branch"),
   ].join(joiner);
-  const cost = accent(theme, "syntaxNumber", `~$${data.estimatedCost === undefined ? "?" : data.estimatedCost.toFixed(3)}`);
+  const cost = accent(theme, "syntaxKeyword", `~$${data.estimatedCost === undefined ? "?" : data.estimatedCost.toFixed(3)}`);
+  const trailing = details + joiner + cost;
   let directory = plain(directoryLabel(data.cwd, data.home));
-  const fixedWidth = visibleWidth(leading + joiner + joiner + cost);
+  const fixedWidth = visibleWidth(joiner + trailing);
   if (fixedWidth + visibleWidth(directory) > available) directory = plain(basename(data.cwd) || data.cwd);
   const directoryBudget = available - fixedWidth;
   let line = directoryBudget > 0
-    ? [leading, accent(theme, "syntaxString", truncateToWidth(directory, directoryBudget)), cost].join(joiner)
-    : leading + joiner + cost;
+    ? accent(theme, "syntaxString", truncateToWidth(directory, directoryBudget)) + joiner + trailing
+    : trailing;
   // On very narrow panes preserve the trailing estimate when it fits.
   if (visibleWidth(line) > available && available > visibleWidth(cost + joiner) + 4) {
-    line = truncateToWidth(leading, available - visibleWidth(cost + joiner)) + joiner + cost;
+    line = truncateToWidth(details, available - visibleWidth(cost + joiner)) + joiner + cost;
   }
   return " ".repeat(padding) + truncateToWidth(line, available) + " ".repeat(padding);
 }
@@ -102,7 +94,7 @@ export default function statusline(pi: ExtensionAPI) {
           const line = renderFooter(width, {
             cwd: ctx.sessionManager.getCwd(), home: homedir(), branch: footerData.getGitBranch(),
             model: ctx.model?.id ?? "no model", effort: pi.getThinkingLevel(),
-            usage: ctx.getContextUsage(), contextWindow: ctx.model?.contextWindow,
+            usage: ctx.getContextUsage(),
             estimatedCost,
           }, ctx.ui.theme);
           const statuses = [...footerData.getExtensionStatuses()].sort(([a], [b]) => a.localeCompare(b))

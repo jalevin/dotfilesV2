@@ -27,9 +27,9 @@ const theme = { colors: codexTheme.colors, fg: (_color: string, text: string) =>
 const details = { cwd: "/Users/jeff/projects/dotfiles", home: "/Users/jeff", branch: "main", model: "claude-opus-4-8",
   effort: "high", usage: { tokens: 24000, contextWindow: 200000, percent: 12 }, estimatedCost: 1.234 };
 
-test("wide footer shows directory, branch, model, effort, and context on one line", () => {
+test("wide footer leads with the directory and branch, then model, effort, context, and cost", () => {
   const line = renderFooter(140, details, theme);
-  assert.equal(line.trim(), "claude-opus-4-8/high · ctx 24k/200k 12% · main · ~/projects/dotfiles · ~$1.234");
+  assert.equal(line.trim(), "~/projects/dotfiles · main · claude-opus-4-8/high · Context 88% left · ~$1.234");
   assert.equal(/ {2,}/.test(line.trim()), false);
   assert.equal(line.includes("\n"), false);
   assert.ok(tui.visibleWidth(line) <= 140);
@@ -44,7 +44,7 @@ test("long Hive worktrees and Unicode remain within narrow pane widths", () => {
 });
 test("unknown context after compaction is not shown as zero usage", () => {
   const line = renderFooter(140, { ...details, usage: { tokens: null, contextWindow: 200000, percent: null } }, theme);
-  assert.match(line, /ctx \?\/200k/);
+  assert.match(line, /Context \? left/);
   assert.doesNotMatch(line, /0%/);
 });
 test("context thresholds and absent models render safely", () => {
@@ -56,17 +56,18 @@ test("context thresholds and absent models render safely", () => {
   renderFooter(140, { ...details, usage: { ...details.usage, percent: 95 } }, colored);
   assert.ok(colors.includes("error"));
   const line = renderFooter(140, { ...details, model: "no model", usage: undefined, contextWindow: undefined }, theme);
-  assert.match(line, /no model/); assert.match(line, /ctx \?\/\?/);
+  assert.match(line, /no model/); assert.match(line, /Context \? left/);
 });
-test("footer matches Codex's softened syntax accents and preserves trailing cost", () => {
+test("footer uses softened syntax accents, with cost distinct from context", () => {
   const fields = new Map<string, string>();
   const colored = { ...theme, style: (text: string, options: any) => { fields.set(text, tui.colorToHex(options.fg)); return text; } };
   renderFooter(140, details, colored);
   assert.equal(fields.get("claude-opus-4-8/high"), "#f6e2b7");
-  assert.equal(fields.get("ctx 24k/200k 12%"), "#f2b590");
+  assert.equal(fields.get("Context 88% left"), "#f2b590");
   assert.equal(fields.get("main"), "#8fb3ef");
   assert.equal(fields.get("~/projects/dotfiles"), "#abdfa7");
-  assert.equal(fields.get("~$1.234"), fields.get("ctx 24k/200k 12%"));
+  assert.equal(fields.get("~$1.234"), "#c8a9ee");
+  assert.notEqual(fields.get("~$1.234"), fields.get("Context 88% left"));
   assert.match(renderFooter(70, details, theme), /~\$1\.234\s*$/);
 });
 test("dark and light themes validate and render with Pi's color handling", () => {
@@ -78,7 +79,7 @@ test("dark and light themes validate and render with Pi's color handling", () =>
       const line = renderFooter(140, details, actual);
       assert.ok(line.includes("\u001b["));
       assert.ok(tui.visibleWidth(line) <= 140);
-      assert.match(tui.stripTerminalSequences(line), /claude-opus-4-8\/high.*~\$1\.234/);
+      assert.match(tui.stripTerminalSequences(line), /~\/projects\/dotfiles · main · claude-opus-4-8\/high.*~\$1\.234/);
     }
   }
 });
