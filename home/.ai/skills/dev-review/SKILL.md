@@ -54,6 +54,27 @@ other view. `--to` picks where else the review goes:
 State the destination with the routing decision in Step 2. `github` never means
 auto-posting: drafts are shown and posted only after the user approves the exact text.
 
+## Re-reviews and limits
+
+An agent reviewer and an agent author can keep each other busy indefinitely, and each
+round mostly finds a few more old problems rather than new ones. Before reviewing a PR,
+look for earlier rounds: review files in `.hive/reviews/` with the same `pr` in their
+frontmatter, and existing review threads on the PR
+(`gh api repos/<owner>/<repo>/pulls/<number>/comments --paginate`). Then:
+
+- **Round 1** is a full review. **Later rounds** review only what changed since the
+  last reviewed SHA (`git diff <reviewed-sha> <head>`), plus whether each earlier
+  finding was resolved and whether a fix introduced a new problem. Run a full review
+  again only when the user asks, or when a force-push dropped the reviewed SHA.
+- **Never repeat** a finding that an earlier round or an existing thread already
+  raised. If it is still unresolved, say so in one line in the summary instead.
+- **Cap at three rounds.** In round 3 and later, report only Critical and Major
+  findings. If round 3 still finds Major problems, stop and recommend that the author
+  step back and reconsider the approach, and point to `/dev-rethink`, instead of
+  another round.
+
+Record the round number in the review file's frontmatter.
+
 ## Operating principles
 
 1. **Signal first.** A missed nit costs nothing; a false positive costs trust. When in
@@ -146,7 +167,14 @@ When uncertain, dispatch **more** agents, not fewer.
 Give each sub-agent ONLY:
 
 - the concern definition below (paste the relevant subsection),
-- the changed hunks relevant to that concern (not the whole repo),
+- the changed hunks relevant to that concern, as the focus,
+- the full current version of each file those hunks touch, plus the paths of direct
+  callers and callees of changed functions and of the tests that cover them, so the
+  reviewer can read surrounding code instead of judging lines in isolation. Bugs that
+  only show up across files (a contract defined elsewhere, a default set in config)
+  are invisible from hunks alone,
+- the reviewed base and head revisions, so the reviewer can run `git show` and
+  `git diff` itself,
 - the language notes for the detected language(s),
 - a one-line statement of the change's intent,
 - the stack map, if there is one, with this instruction: do not report work that the
@@ -189,7 +217,10 @@ Confidence, not coverage percentage.
 ### Concern: Comments
 Why over what.
 - Remove comments that restate code, repeat the symbol name, or are decoration.
-- Flag stale comments that no longer match behavior (these are bugs).
+- Flag stale comments that no longer match behavior (these are bugs), and comments that
+  describe removed behavior or change history ("previously", "no longer", deleted names).
+  For the history kind, draft a GitHub suggested change that deletes it: an inline
+  comment anchored to the comment's lines with an empty ```` ```suggestion ```` block.
 - Flag missing "why" on non-obvious decisions (magic numbers, workarounds, ordering constraints).
 - Fix by renaming, not commenting, where naming is the real issue. Godoc/JSDoc on exported symbols is expected, not noise.
 
@@ -227,8 +258,8 @@ Before reporting, run an adversarial verification pass to kill plausible-but-wro
 
 For every finding of severity **Major or Critical**:
 1. Spawn a fresh skeptic sub-agent (use `diff-reviewer` with a refute prompt) given ONLY the
-   finding, the relevant diff hunk, and the concern definition — **not** the original
-   reviewer's reasoning.
+   finding, the relevant diff hunk, the paths of the full files it involves, and the
+   concern definition — **not** the original reviewer's reasoning.
 2. The skeptic's job is to *refute* the finding and defaults to `refuted: true` when
    uncertain. It returns `{ refuted: boolean, reason: string }`.
 3. **Drop** any finding the skeptic refutes; record it in a `Dropped in verification`
@@ -245,8 +276,11 @@ Merge reviewer outputs into one review:
 - Order by severity, then confidence.
 
 ### Finding schema
-Each finding: **severity**, **confidence** (high/medium/low), `file:line`, one-line
-problem, why it matters, concrete fix.
+Each finding: **severity**, **confidence** (high/medium/low), `file:line`, whether the
+diff **introduced** it or it is **pre-existing**, one-line problem, why it matters,
+concrete fix. Keep pre-existing findings in their own list after the others; they are
+context, not the author's defects, and they never set the verdict. A class of bug that
+recurs is one finding listing every location.
 
 ### Severity
 | Level | Meaning | Blocks merge? |
@@ -420,7 +454,9 @@ date: YYYY-MM-DD
 repository: owner/repo
 branch: <branch>
 commit: <HEAD hash>
-base_branch: main
+base_branch: <reviewed base>
+pr: <PR number, or omit for a local review>
+round: <1 for a first review; see Re-reviews and limits>
 tags: [component, topic]
 ---
 ```
@@ -466,14 +502,34 @@ Skip this step for the `hive` and `file` destinations.
 The saved file keeps the full walkthrough for the user; the author does not need it.
 The GitHub review carries only what the author should act on:
 
-- **Summary body:** two to four sentences covering what the PR does well, the main
-  concerns, and the merge verdict. Lead with blocking items. No diagrams, glossary, or
-  severity counts.
+- **Summary body:** exactly `LGTM` when there are no inline comments, or one line such
+  as `LGTM, a couple of optional notes inline.` when there are. A blocking review names
+  the blocker in one or two sentences. Do not restate what the PR does, praise it, or
+  recap tests and checks; that belongs in the review file.
 - **Inline comments:** one per approved draft from "Proposed PR comments", anchored to
-  the reviewed head. Say whether each is blocking. Prefix optional items with `nit:` or
+  the reviewed head, one or two sentences each. Prefix non-blocking items with `nit:` or
   `optional:`, and phrase uncertain points as questions.
-- **Event:** `REQUEST_CHANGES` when an approved draft is Critical or Major, `APPROVE`
-  only when the user says so, otherwise `COMMENT`.
+- **Suggestions:** whenever the fix is a concrete code, test, doc, or spec change,
+  include a GitHub `suggestion` block for the anchored lines instead of describing the
+  fix. When the change belongs outside the diff hunks, such as a new test, put the code
+  in a fenced block in the comment. Check that suggested code compiles and passes
+  where practical. Drop a non-blocking comment that cannot be made concrete.
+- **Pre-existing findings:** never block, and are not posted on the PR unless the user
+  wants them, labeled `pre-existing:` so they read as context, not as the author's
+  mistakes. For a verified pre-existing Critical or Major finding, draft a GitHub issue
+  instead, so it is fixed on its own rather than in someone else's PR. First search
+  for an existing one (`gh issue list --repo <owner>/<repo> --search "<key terms>"
+  --state all`); if it exists, link it in the review file instead. The draft has a
+  title naming the problem, the `file:line` and quoted code at the reviewed SHA, why
+  it matters, a suggested fix, and a link to the PR where it was found. Show the exact
+  title and body and create it with `gh issue create` only after the user approves.
+  Minor and Nit pre-existing findings stay in the review file.
+- **Event:** `REQUEST_CHANGES` when an approved draft is a Critical or Major finding
+  that this PR introduced. `APPROVE` only when the user says so; agreeing to a batch
+  brief's verdict rules counts. Otherwise `COMMENT`. On your own PR GitHub allows only
+  `COMMENT`.
+
+A batch brief from `/dev-review-batch` can change these defaults for its batch.
 
 Write the tone for a colleague's PR: grounded in observed behavior, specific about the
 fix, no lecturing. Write each paragraph as one unwrapped line; GitHub renders hard line

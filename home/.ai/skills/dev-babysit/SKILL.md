@@ -184,7 +184,12 @@ claim the PR is merge-ready based on CI alone.
 
 If required approval, credentials, infrastructure or an unresolved design choice
 prevents completion, finish independent work and report the precise blocker and
-next action. If the same failure persists through three attempted fixes without
+next action. Automated reviewers (bots, or agent reviews such as `/dev-review`) can
+keep posting new findings after every fix push. Fix a flagged class of bug everywhere
+it occurs, not only the cited line. After three rounds of fixes in response to automated
+review on the same PR, stop fixing new findings below Major. Summarize what is left and
+ask the user whether the approach needs rethinking (`/dev-rethink`) before another
+round. If the same failure persists through three attempted fixes without
 new evidence, stop changing code and present the attempts and decision needed.
 Honor a user-specified time limit or stop request. Preserve the progress record
 for resuming; do not report success when work is blocked or time runs out.

@@ -71,9 +71,69 @@ func setCallbackURL(path, name, url string) error {
 }
 
 // piSetup is a setup manifest. In a machine overlay, a null server removes it.
+// AgentOverrides pins fields such as model and thinking for pi-subagents agents
+// whose definitions ship inside the package and would be overwritten on update.
 type piSetup struct {
-	Packages []string              `json:"packages"`
-	Servers  map[string]*mcpServer `json:"mcpServers"`
+	Packages       []string                  `json:"packages"`
+	Servers        map[string]*mcpServer     `json:"mcpServers"`
+	AgentOverrides map[string]map[string]any `json:"agentOverrides"`
+}
+
+// setAgentOverrides merges the managed fields into settings.json at
+// subagents.agentOverrides.<agent>.<field>, keeping every other key and agent
+// as they are. It writes only when a managed value differs, and reports whether
+// it changed the file.
+func setAgentOverrides(path string, overrides map[string]map[string]any) (bool, error) {
+	if len(overrides) == 0 {
+		return false, nil
+	}
+	file := map[string]json.RawMessage{}
+	if err := readPiJSON(path, &file, true); err != nil {
+		return false, err
+	}
+	subagents := map[string]json.RawMessage{}
+	if raw, ok := file["subagents"]; ok {
+		if err := json.Unmarshal(raw, &subagents); err != nil {
+			return false, fmt.Errorf("%s: subagents: %w", path, err)
+		}
+	}
+	current := map[string]map[string]any{}
+	if raw, ok := subagents["agentOverrides"]; ok {
+		if err := json.Unmarshal(raw, &current); err != nil {
+			return false, fmt.Errorf("%s: subagents.agentOverrides: %w", path, err)
+		}
+	}
+	changed := false
+	for agent, fields := range overrides {
+		if current[agent] == nil {
+			current[agent] = map[string]any{}
+		}
+		for field, value := range fields {
+			if !reflect.DeepEqual(current[agent][field], value) {
+				current[agent][field] = value
+				changed = true
+			}
+		}
+	}
+	if !changed {
+		return false, nil
+	}
+	var err error
+	if subagents["agentOverrides"], err = json.Marshal(current); err != nil {
+		return false, err
+	}
+	if file["subagents"], err = json.Marshal(subagents); err != nil {
+		return false, err
+	}
+	data, err := json.MarshalIndent(file, "", "  ")
+	if err != nil {
+		return false, err
+	}
+	mode := os.FileMode(0o644)
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+	return true, os.WriteFile(path, append(data, '\n'), mode)
 }
 
 // loadSetup merges home/.pi/setup.json with the overlay for MISE_ENV.
@@ -93,6 +153,17 @@ func loadSetup() (piSetup, error) {
 	setup.Packages = append(setup.Packages, overlay.Packages...)
 	for name, server := range overlay.Servers {
 		setup.Servers[name] = server
+	}
+	for agent, fields := range overlay.AgentOverrides {
+		if setup.AgentOverrides == nil {
+			setup.AgentOverrides = map[string]map[string]any{}
+		}
+		if setup.AgentOverrides[agent] == nil {
+			setup.AgentOverrides[agent] = map[string]any{}
+		}
+		for field, value := range fields {
+			setup.AgentOverrides[agent][field] = value
+		}
 	}
 	return setup, nil
 }
@@ -202,7 +273,14 @@ func configurePi() error {
 			}
 		}
 	}
-	fmt.Println("Pi packages and MCP configuration are in sync.")
+	changed, err := setAgentOverrides(filepath.Join(home, ".pi/agent/settings.json"), setup.AgentOverrides)
+	if err != nil {
+		return err
+	}
+	if changed {
+		fmt.Println("Updated subagents.agentOverrides in ~/.pi/agent/settings.json.")
+	}
+	fmt.Println("Pi packages, MCP configuration, and agent overrides are in sync.")
 	return nil
 }
 func main() {

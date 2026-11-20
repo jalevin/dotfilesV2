@@ -94,9 +94,24 @@ shared bar every review in the batch applies:
 
 - Who the author is and what they are working toward, if the user says
 - What blocks merge in this repository, and what is only a nit
+- The verdict rules below, and `dev-review` Step 8's GitHub text style, unless the
+  user changes them
 - Repository conventions that reviews should check (from AGENTS.md, CONTRIBUTING, or
   the user)
 - Anything the user asked to focus on or ignore
+
+Default verdict rules for every review in the batch:
+
+- Minor and Nit findings never block. Draft them as inline comments prefixed `nit:` or
+  `optional:`, and include them in the same review.
+- No verified Critical or Major finding introduced by the PR means the verdict is
+  APPROVE and the drafted GitHub event is `APPROVE`, even when nits are attached.
+  Agreeing to these rules in the brief is what lets `dev-review` Step 8 draft
+  `APPROVE`. The user still approves the exact text before anything is posted.
+- A verified Critical or Major finding that the PR introduced means REQUEST CHANGES.
+- Pre-existing findings never set the verdict. They stay in the review file and are
+  posted only if the user asks. Verified pre-existing Critical or Major findings
+  become issue drafts (see `dev-review` Step 8), collected in Step 6.
 
 Confirm the brief with the user in one message. It keeps the 1st and 10th review to
 the same standard.
@@ -154,6 +169,11 @@ pattern with the PRs it appears in. Draft, but do not send, a short note to the 
 or team about the pattern, and ask the user whether to send it, add it to each
 review, or drop it.
 
+Then collect the pre-existing issue drafts from every review file. Several PRs can hit
+the same old bug, so merge duplicates into one draft that links each PR where it was
+found. Show the list of issue drafts with their exact text, and create only the ones
+the user approves.
+
 ## Step 7 — Re-review after the author pushes
 
 When the user returns to the batch, compare each `done` task's recorded SHA with the PR
@@ -165,6 +185,9 @@ head (`gh pr view <url> --json headRefOid,state`). For a PR that moved:
 - Check whether each earlier comment was resolved, and whether the fix introduced a
   new problem.
 - Draft replies or a follow-up review the same way, with the same approval gate.
+- Follow `dev-review`'s "Re-reviews and limits": no repeated findings, and from round
+  3 only Critical and Major findings, with a recommendation to rethink the approach
+  if Major problems remain.
 
 Set merged or closed PRs to `cancelled` with a comment. When every task is `done` or
 `cancelled`, close the epic and give the user the final table.

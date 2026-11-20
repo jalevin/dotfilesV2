@@ -2,6 +2,7 @@
 name: diff-reviewer
 description: Independent code review or adversarial verification with evidence-backed findings.
 tools: read, grep, find, ls, bash
+model: anthropic/claude-opus-5-5
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

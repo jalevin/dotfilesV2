@@ -13,8 +13,11 @@ the first. Run `/reload` after editing the instructions.
 
 After installing Pi, run `mise run pi-setup`. It links the tracked shared skills,
 installs the pinned packages from `home/.pi/setup.json`, and configures MCP servers
-through Pi's CLI. Bootstrap also runs it. Existing model, authentication, theme,
-and unrelated package/server preferences are preserved. `CHECK=1 mise run pi-skills`
+through Pi's CLI. Bootstrap also runs it. It also pins the model and thinking level
+of pi-subagents' bundled `reviewer` and `oracle` through `agentOverrides` in the
+setup manifest, merged into `subagents.agentOverrides` in `settings.json`; the
+bundled prompts stay upstream's, so package updates keep the pins. Existing model,
+authentication, theme, and unrelated package/server preferences are preserved. `CHECK=1 mise run pi-skills`
 reports skill-link drift without changing anything; both Pi and Codex use
 `tasks/link-agent-skills.sh`, with `git ls-files` as the source of the skill list.
 
@@ -124,7 +127,8 @@ results return to the originating session; cancellation, process errors, and ses
 changes do not become repair requests. External replies still require text approval.
 
 Validate with `node --test tasks/pi-*.test.mts`, `bash -n tasks/link-agent-skills.sh`,
-and `mise exec -- go vet tasks/pi-setup.go`. No live model call, browser review,
+`mise exec -- go vet tasks/pi-setup.go`, and
+`mise exec -- go test tasks/pi-setup.go tasks/pi-setup_test.go`. No live model call, browser review,
 GitHub write, or canvas write is required by these checks.
 
 ## Theme

@@ -15,5 +15,15 @@
       "exposure": "codemode",
       "description": "Hive Desktop app state: sessions and tags, workspaces, inbox, actions and flows, schedules, profiles, feeds, and diagnostics."
     }
+  },
+  "agentOverrides": {
+    "reviewer": {
+      "model": "anthropic/claude-opus-5-5",
+      "thinking": "high"
+    },
+    "oracle": {
+      "model": "anthropic/claude-opus-5-5",
+      "thinking": "high"
+    }
   }
 }

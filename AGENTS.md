@@ -641,4 +641,5 @@ to authenticate and fetch secrets.
 ## Pi
 
 See [home/.pi/README.md](home/.pi/README.md) for Pi setup and extension usage.
-Validate with `node --test tasks/pi-*.test.mts`.
+Validate with `node --test tasks/pi-*.test.mts` and
+`mise exec -- go test tasks/pi-setup.go tasks/pi-setup_test.go`.
